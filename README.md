@@ -22,6 +22,7 @@ This fork consolidates:
 - `doc-domain`
 - `doc-gherkin`
 - `doc-openapi`
+- `doc-approval`
 - `nestjs-think`
 - `nestjs-plan`
 - `nestjs-refactor`
@@ -144,6 +145,7 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `feat-spec` is the mixed-request entry point for new feature slices or new backend contracts. It closes the shared feature contract and ownership boundary first, then hands backend contract closure to `nestjs-think`. Frontend-only requests stay in `nuxt-think`; backend-only requests stay in `nestjs-think`.
 - `nestjs-think` keeps backend contract and persistence viability together, including Prisma/schema impact when relevant, instead of splitting data modeling into a separate default step.
 - `doc-openapi` publishes the canonical HTTP transport artifact beside `domain.md` and the approved `.feature` files after `nestjs-think` and before `nuxt-think`.
+- `doc-approval` turns a domain spec (`domain.md` + `*.feature`) into a non-technical approval PDF for a business sponsor, translating the Gherkin scenarios into plain business language and keeping the source HTML beside the spec for re-generation.
 - `nestjs-think` and `nestjs-plan` stay backend-first; `nuxt-think` and `nuxt-plan` cover Nuxt planning.
 - `nestjs-refactor` is the structural cleanup workflow for existing NestJS backends that need SOLID and Clean Architecture restoration in bounded batches.
 - `nestjs-test` handles Gherkin-driven backend coverage, audit routing, and backend test stabilization.
