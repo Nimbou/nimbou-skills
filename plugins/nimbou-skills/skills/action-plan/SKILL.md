@@ -54,6 +54,15 @@ Use **Perguntas Poderosas**: qual é o resultado real (não a atividade)? Por qu
 
 Saída da fase: **objetivo em uma frase, com indicador e prazo**. Se não dá para medir se foi atingido, ainda não é objetivo — é desejo.
 
+**Confirme o objetivo campo a campo, com opções, antes de seguir.** O objetivo é a raiz do plano — se ele estiver torto, todo o resto herda o erro, e aqui é onde consertar é mais barato. Use um único `AskUserQuestion` (até 4 sub-perguntas por chamada) e ofereça **opções concretas** para cada campo que você **inferiu ou reformulou** — nunca para o que o usuário já ditou literal:
+
+- **Resultado (frase)**: ofereça 2-3 reformulações — a sua proposta + variações de escopo (mais estreita / mais ampla).
+- **Indicador**: ofereça os candidatos de métrica ("churn mensal %" vs "nº de cancelamentos" vs "NRR").
+- **Meta**: ofereça faixas — conservadora / alvo / agressiva (ex.: "6,2%→5%", "6,2%→4%", "6,2%→3%").
+- **Prazo**: ofereça datas candidatas ancoradas em algo real (fim do trimestre, data da diretoria).
+
+Campo que o usuário já deu exato, não pergunte — confirme no resumo. Como são opções para clicar, não perguntas abertas, isso custa pouca fricção mesmo cobrindo vários campos.
+
 ### Fase 2 — Capturar
 Antes de organizar, despeje. Peça tudo o que já existe na cabeça do usuário sobre o tema — pendências, ideias, obstáculos, gente envolvida, coisas que já começaram — sem julgar, sem ordenar, sem filtrar.
 
@@ -81,11 +90,20 @@ Cada ação **da fase ativa** carrega o 5W2H completo — *o quê, por quê, que
 
 Estruturar marcos é a decisão mais cara do plano: é onde o objetivo vira arquitetura. **Não detalhe ações (fase 4) sobre marcos que o usuário ainda não confirmou** — detalhar um marco errado é o retrabalho mais caro de desfazer.
 
-Volte ao usuário com os marcos propostos e confirme, via `AskUserQuestion`, em uma rodada dedicada:
+Volte ao usuário com os marcos propostos e confirme, via `AskUserQuestion`, sempre com **opções para clicar**. Duas camadas:
+
+**Camada 1 — o conjunto (uma rodada):**
 
 1. **O conjunto está certo?** Apresente os marcos como lista curta (estado do mundo, não tarefa). Falta algum? Sobra algum? Deixe o usuário adicionar/remover.
 2. **A sequência e o corte de fase.** Qual marco vem primeiro? Onde termina a fase que começa agora e onde começa a próxima? (é o que separa **fase ativa** de **roadmap**). Confirme aqui também o **porte** inferido.
-3. **Cada marco de peso vale o esforço?** Para os marcos maiores, confirme o `resultado_verificavel` e o `prazo` — é aqui que "estudar concorrentes" é flagrado como não-marco antes de custar caro.
+
+**Camada 2 — item a item de cada marco, com opções, só onde necessário.** Para cada marco confirmado, confirme os campos que você **inferiu** (não os que o usuário ditou), oferecendo opções — um `AskUserQuestion` por marco (agrupe os marcos leves numa chamada só):
+
+- **Nome / resultado verificável**: ofereça a formulação como estado do mundo + variações ("Cobrança recorrente em produção" vs "Cobrança recorrente para clientes novos"). É aqui que "estudar concorrentes" é flagrado como não-marco antes de custar caro.
+- **Prazo**: ofereça datas candidatas (não deixe o usuário digitar do zero se você já tem âncoras).
+- **Indicador**: ofereça as métricas candidatas de progresso do marco.
+
+"Se necessário" é a régua: campo que o usuário já fixou, você só confirma no resumo; campo que você preencheu por inferência, você **pergunta com opções**. O usuário responde clicando — por isso dá para descer ao nível de item sem cansá-lo, desde que você não pergunte o que já está decidido. Só avance para a fase 4 depois que os marcos (conjunto + itens inferidos) estiverem validados.
 
 Quantas perguntas: uma por eixo acima, mais uma confirmação por marco de peso. Plano pequeno: 1-2 perguntas. Programa: 4-6 — e está certo gastar aqui. Só avance para a fase 4 quando o usuário validar a lista.
 
@@ -128,12 +146,12 @@ Verbos suspeitos: melhorar, otimizar, alinhar, acompanhar, revisar, estruturar, 
 
 Use `AskUserQuestion` com opções concretas — o usuário responde clicando, e opções bem-formadas já fazem metade do trabalho de decomposição.
 
-**Orçamento de perguntas, em duas etapas — não as misture:**
+**Orçamento em duas naturezas diferentes — não as confunda:**
 
-- **Descoberta (fases 1-2): 5 a 8 perguntas**, em 2 ou 3 rodadas. Cubra, nesta ordem de prioridade: resultado real e indicador → prazo/ciclo → quem está envolvido (nomes) → restrições (orçamento, time, sistemas, legal) → o que já foi tentado → o que já existe pendente (captura). Passar disso na descoberta e o usuário abandona exatamente na fase mais valiosa.
-- **Confirmação dos marcos (portão, fase 3→4): 1 a 6 perguntas**, conforme o porte. Aqui gastar é investimento: é a única etapa em que você trava a arquitetura antes de detalhá-la, e marco errado confirmado cedo é o erro mais caro. Pequeno: 1-2. Programa: 4-6 (uma por fase mais os marcos de peso).
+- **Descoberta (fases 1-2): 5 a 8 perguntas abertas**, em 2 ou 3 rodadas. É o orçamento caro: pergunta aberta cansa. Cubra, nesta ordem: resultado real e indicador → prazo/ciclo → quem está envolvido (nomes) → restrições (orçamento, time, sistemas, legal) → o que já foi tentado → o que já existe pendente (captura). Passar disso e o usuário abandona na fase mais valiosa.
+- **Confirmação por opções (objetivo ao fim da fase 1; marcos no portão fase 3→4): barato, pode ser item a item.** Aqui o usuário **clica** em vez de redigir, então a régua não é "quantas perguntas" e sim "confirme só o que você inferiu". Agrupe até 4 campos por chamada de `AskUserQuestion`. Regra: campo que o usuário ditou exato → confirme no resumo, não pergunte; campo que você preencheu por inferência → ofereça opções e deixe ele escolher. Uma rodada de opções para o objetivo, mais uma por marco de peso (agrupando os leves).
 
-Descubra e estruture primeiro; confirme os marcos depois. Confirmar marcos antes de ter capturado é confirmar um palpite.
+Descubra e estruture primeiro; confirme (objetivo e marcos) depois, sempre por opções. Confirmar marcos antes de ter capturado é confirmar um palpite.
 
 Se o usuário já trouxe contexto rico (briefing, ata, diagnóstico), **não pergunte o que já está escrito** — extraia, confirme num resumo curto e gaste as perguntas só nas lacunas e no portão de marcos.
 

@@ -44,6 +44,21 @@ Se ninguém perde o sono, o plano não tem dono — e um plano sem dono não é 
 
 As respostas dizem se você está diante de um plano pequeno/médio (um ciclo) ou de um programa (várias fases). Não decida o porte aqui — só colete o sinal; a decisão é confirmada no portão dos marcos.
 
+### Confirmar o objetivo, campo a campo, com opções
+
+Fechada a Fase 1, você tem um objetivo *proposto* — quase sempre reformulado a partir do que o usuário disse. Confirme-o antes de capturar, porque o objetivo é a raiz: erro aqui contamina marcos, ações e indicadores, e consertar depois custa o plano inteiro.
+
+Um `AskUserQuestion` (até 4 sub-perguntas), **opções concretas** por campo, só para o que você inferiu:
+
+| Campo | Opções que você oferece |
+|---|---|
+| Resultado (frase) | 2-3 reformulações: a sua + uma mais estreita + uma mais ampla |
+| Indicador | as métricas candidatas ("churn mensal %" vs "nº de cancelamentos" vs "NRR") |
+| Meta | faixas conservadora / alvo / agressiva (ex.: 6,2%→5% · →4% · →3%) |
+| Prazo | datas ancoradas em algo real (fim de trimestre, reunião de diretoria) |
+
+Campo que o usuário já cravou, não vira pergunta — só confirmação no resumo. São opções para clicar, não redação: cobrir quatro campos custa um clique cada.
+
 ---
 
 ## Fase 2 — Capturar
@@ -111,13 +126,26 @@ Se a ação começa com "definir", "decidir" ou "entender", ela ainda é um proj
 
 Entre estruturar (fase 3) e detalhar (fase 4) existe uma decisão que não pode ser presumida: **o usuário concorda com esta arquitetura de marcos?** Detalhar 5W2H e ação de 48h sobre um marco que o usuário vai rejeitar é o retrabalho mais caro do processo. Por isso este portão é obrigatório e explícito.
 
-Conduza uma rodada dedicada de `AskUserQuestion`, três eixos:
+Conduza a confirmação por `AskUserQuestion`, sempre com **opções para clicar**, em duas camadas.
+
+**Camada 1 — o conjunto (uma rodada):**
 
 1. **O conjunto de marcos.** Liste-os como estados do mundo, curtos. Pergunte diretamente: falta algum resultado intermediário? Algum aqui é esforço disfarçado de marco? Deixe o usuário adicionar e remover — a lista dele vence a sua.
 2. **Sequência, corte de fase e porte.** Qual a ordem? Onde termina a fase ativa e começa o roadmap? Confirme o porte que você inferiu na captura ("isto me parece um programa de ~2 fases; concorda?"). É aqui que plano grande vira plano grande *estruturado*, não plano grande *inflado*.
-3. **Marcos de peso, um a um.** Para os 2-3 marcos mais caros ou mais arriscados, confirme o `resultado_verificavel` (como saberemos que aconteceu) e o `prazo`. Marco caro com resultado nebuloso é bomba-relógio; confirmar cedo é barato.
 
-Quantas perguntas: uma por eixo, mais uma por marco de peso. Pequeno: 1-2. Médio: 2-3. Grande/programa: 4-6 — e é o único ponto do fluxo em que gastar perguntas se paga com folga. Só siga para a fase 4 depois do "sim" do usuário à lista.
+**Camada 2 — item a item de cada marco, com opções, só onde necessário:**
+
+Para cada marco confirmado, confirme os campos que **você inferiu** — não os que o usuário ditou. Um `AskUserQuestion` por marco (agrupe os leves numa chamada), oferecendo opções:
+
+| Campo do marco | Opções que você oferece |
+|---|---|
+| Nome / resultado verificável | a formulação como estado do mundo + variações de escopo ("Cobrança recorrente em produção" vs "…para clientes novos") |
+| Prazo | datas candidatas ancoradas (fim da fase, marco anterior + X dias) |
+| Indicador | as métricas candidatas de progresso do marco |
+
+É aqui que "estudar concorrentes" é flagrado como não-marco e reescrito antes de custar 5W2H. Marco caro com resultado nebuloso é bomba-relógio; confirmar cedo, por clique, é barato.
+
+**A régua do "se necessário":** campo que o usuário já cravou → confirmação no resumo, sem pergunta; campo que você preencheu por inferência → pergunta com opções. Como o usuário responde clicando, dá para descer ao nível de item sem cansá-lo — o que cansa é perguntar o que já estava decidido. Só siga para a fase 4 depois do "sim" ao conjunto e aos itens inferidos.
 
 Se o usuário mudar a estrutura aqui (juntar dois marcos, mover um para o roadmap, promover um item do backlog), reestruture antes de detalhar. É de graça mudar um marco antes do 5W2H; é caro depois.
 
