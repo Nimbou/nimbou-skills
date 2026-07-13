@@ -1,0 +1,175 @@
+---
+name: action-plan
+description: 'Transforma um objetivo de trabalho (mesmo cru, tipo "reduzir churn" ou "organizar o financeiro") num plano de ação executável em PDF, via entrevista estruturada. Escala de plano pequeno a programa multi-fase. Usa um método híbrido — Perguntas Poderosas (O Poder da Ação), captura e próxima-ação (GTD), 5W2H e PDCA — com guardrails contra os quatro modos clássicos de falha: ação vaga, sem dono, plano inflado e plano que ninguém revisa. Use SEMPRE que o usuário pedir plano de ação, plano de trabalho, planejamento de projeto/iniciativa, roadmap de execução, 5W2H, PDCA, "como eu tiro isso do papel", "preciso destravar esse projeto", ou quando trouxer uma meta/objetivo/OKR sem saber como executar — mesmo que não use a palavra "plano". Use também no modo revisão, quando o usuário quiser atualizar/fechar um ciclo de um plano já existente (gera a próxima versão: v2, v3...). NÃO use para cronograma de tarefas pessoais triviais, lista de compras, nem para gerenciar backlog já estruturado em ferramenta (Jira/Asana).'
+---
+
+# Plano de Ação
+
+## O que esta skill faz
+
+Conduz uma entrevista curta e produz um **plano de ação em PDF**, versionado por ciclo (v1, v2, v3…). Escala do plano pequeno de uma frente ao **programa multi-fase** de meses.
+
+O ponto não é "gerar um plano" — qualquer modelo faz isso. É gerar um plano que **sobrevive ao contato com a realidade**. Planos de trabalho quase sempre morrem das mesmas quatro formas, e o método existe inteiro para bloquear cada uma:
+
+| Modo de falha | Como se manifesta | Guardrail |
+|---|---|---|
+| Ação vaga | "Melhorar o processo de onboarding" | Verbo físico observável + critério de conclusão |
+| Sem dono / sem data | Responsável = "a equipe"; prazo = "Q3" | Um nome próprio, uma data exata |
+| Plano inflado | 40 ações detalhadas de uma vez, zero execução | Só a **fase ativa** é detalhada; o resto vira roadmap/backlog |
+| Ninguém revisa | Vira PDF morto na primeira semana | Cadência, indicadores e gatilhos de ajuste dentro do doc |
+
+Um plano bonito que viole qualquer um desses é uma falha da skill — mesmo que o usuário goste na hora.
+
+## Os dois modos
+
+**Modo NOVO PLANO** (padrão): o usuário traz um objetivo, cru ou detalhado. Rode as fases, confirme os marcos, gere o PDF v1.
+
+**Modo REVISÃO**: o usuário traz um plano existente (PDF de um ciclo anterior) e quer fechar/atualizar o ciclo. Extraia o conteúdo do PDF (`pdftotext -layout arquivo.pdf -`, ou pypdf), rode as fases 5 → 3 → 4 (Ciclar → re-Estruturar → Destravar) e gere a versão seguinte com a seção **Check / Act** preenchida. Não recomece do zero: o valor da revisão está em comparar planejado com realizado. Em programa multi-fase, a revisão fecha a **fase ativa** e promove a próxima fase do roadmap a ativa — detalhando-a agora até a ação.
+
+Na dúvida sobre o modo, pergunte antes de trabalhar.
+
+## Porte do plano — dimensione antes de estruturar
+
+Nem todo objetivo cabe em um ciclo. O porte define quantas fases e quantas perguntas:
+
+| Porte | Sinais | Estrutura | Horizonte |
+|---|---|---|---|
+| Pequeno | 1 resultado, 1 dono, poucas frentes | 2-3 marcos, ciclo único | 2-4 semanas |
+| Médio | várias frentes, uma equipe | 3-5 marcos, ciclo único | 30-90 dias |
+| Grande | múltiplas frentes/dependências | 5-8 marcos, uma ou duas fases | 3-6 meses |
+| Programa | iniciativa que não termina em um ciclo | várias **fases**, cada uma um ciclo executável | 6-18 meses |
+
+**Regra que não muda com o porte: só a fase ativa é detalhada até a ação.** Em plano grande/programa, você preenche 5W2H + ação de 48h apenas nos marcos da **fase ativa** (a que começa agora). As fases seguintes entram como **roadmap** — nome, resultado esperado, período e marcos previstos, sem 5W2H. Detalhar seis meses de ações à frente é a forma sofisticada de inflar: fica bonito e envelhece em duas semanas.
+
+Não pergunte "seu plano é grande?". Infira o porte de quantas frentes e quantos donos apareceram na captura, e **confirme o porte junto com os marcos**, no portão de confirmação.
+
+## As 5 fases + o portão
+
+Detalhes, banco de perguntas e exemplos de reescrita estão em `references/method.md`. Leia esse arquivo antes da fase 1 — é curto e é onde mora a substância do método.
+
+### Fase 1 — Confrontar
+Antes de planejar, ataque o objetivo. A maioria dos planos ruins é um plano bem-feito para o objetivo errado.
+
+Use **Perguntas Poderosas**: qual é o resultado real (não a atividade)? Por que agora? Qual o custo de não fazer nada? O que já foi tentado e falhou, e por quê?
+
+Saída da fase: **objetivo em uma frase, com indicador e prazo**. Se não dá para medir se foi atingido, ainda não é objetivo — é desejo.
+
+### Fase 2 — Capturar
+Antes de organizar, despeje. Peça tudo o que já existe na cabeça do usuário sobre o tema — pendências, ideias, obstáculos, gente envolvida, coisas que já começaram — sem julgar, sem ordenar, sem filtrar.
+
+Isso existe porque planejar direto a partir da memória seletiva produz planos que esquecem justamente o que já estava travando. A captura bruta é o antídoto. Se o usuário travar, pergunte: "o que mais está pendurado nisso que ainda não falamos?"
+
+### Fase 3 — Clarificar e Estruturar
+Cada item capturado vira uma de quatro coisas: **lixo** (descarte), **referência** (informação, vai para nota), **ação** (alguém faz) ou **marco** (resultado intermediário verificável).
+
+Estruture em três (ou quatro) níveis:
+
+```
+Objetivo (1 frase + indicador + prazo)
+└── Fase ativa (só em plano grande/programa)
+    └── Marco 1 (resultado verificável, não tarefa)
+        ├── Ação 1.1 (5W2H completo)
+        └── Ação 1.2
+└── Fases futuras → roadmap (nome, resultado, período, marcos previstos — sem 5W2H)
+```
+
+Um marco é um **estado do mundo**, não um esforço: "Fluxo de cobrança automatizado rodando em produção" é marco; "Trabalhar na automação" não é.
+
+Cada ação **da fase ativa** carrega o 5W2H completo — *o quê, por quê, quem, quando, onde, como, quanto* — mais um **critério de conclusão** (como saber, sem discussão, que acabou).
+
+### Portão — Confirmar os marcos (obrigatório antes da fase 4)
+
+Estruturar marcos é a decisão mais cara do plano: é onde o objetivo vira arquitetura. **Não detalhe ações (fase 4) sobre marcos que o usuário ainda não confirmou** — detalhar um marco errado é o retrabalho mais caro de desfazer.
+
+Volte ao usuário com os marcos propostos e confirme, via `AskUserQuestion`, em uma rodada dedicada:
+
+1. **O conjunto está certo?** Apresente os marcos como lista curta (estado do mundo, não tarefa). Falta algum? Sobra algum? Deixe o usuário adicionar/remover.
+2. **A sequência e o corte de fase.** Qual marco vem primeiro? Onde termina a fase que começa agora e onde começa a próxima? (é o que separa **fase ativa** de **roadmap**). Confirme aqui também o **porte** inferido.
+3. **Cada marco de peso vale o esforço?** Para os marcos maiores, confirme o `resultado_verificavel` e o `prazo` — é aqui que "estudar concorrentes" é flagrado como não-marco antes de custar caro.
+
+Quantas perguntas: uma por eixo acima, mais uma confirmação por marco de peso. Plano pequeno: 1-2 perguntas. Programa: 4-6 — e está certo gastar aqui. Só avance para a fase 4 quando o usuário validar a lista.
+
+### Fase 4 — Destravar
+Para cada marco **da fase ativa**, defina a **ação de 48h**: a menor ação física que pode ser feita nas próximas 48 horas e que quebra a inércia.
+
+Não é motivação, é engenharia de arranque. Planos não morrem por falta de ambição; morrem porque a primeira ação é grande demais para caber numa terça-feira. Se a ação de 48h não couber em ~2 horas de trabalho de uma pessoa, ainda está grande demais. Marcos de fases futuras (roadmap) **não** recebem ação de 48h — só ganham detalhe quando viram fase ativa.
+
+### Fase 5 — Ciclar (PDCA)
+O plano precisa conter as condições da própria revisão:
+
+- **Indicador por marco** (como medir progresso, não só conclusão)
+- **Cadência de revisão** e a **data da próxima revisão** (data exata, dentro do documento)
+- **Gatilhos de ajuste**: o que precisa acontecer para replanejar, cortar ou abortar um marco — ou para **promover a próxima fase** do roadmap
+- **Premissas e riscos**: o que estamos assumindo sem prova, e o que fazer se cair
+
+Na v2+, esta fase produz a seção **Check / Act**: o que foi entregue, o que não foi e por quê, o que aprendemos, o que muda no próximo ciclo. Em programa, o Act fecha a fase ativa e promove a próxima.
+
+## Guardrails — aplique antes de gerar o PDF
+
+Rode esta checagem no plano montado. Os três primeiros você **corrige direto** (reescreva, não peça permissão para melhorar). O quarto você **sinaliza sem bloquear**.
+
+**1. Ação vaga → reescreva.** Toda ação precisa de verbo físico e observável. Se um estranho não consegue dizer "isso foi feito" olhando para o resultado, não está pronta.
+
+| Vago | Afiado |
+|---|---|
+| Melhorar o processo de onboarding | Reescrever o roteiro de onboarding em 1 doc de 2 páginas e validar com 2 clientes novos |
+| Alinhar com o time comercial | Rodar reunião de 45min com Marina e Caio e sair com a lista de objeções priorizada |
+| Acompanhar os indicadores | Montar planilha de churn semanal e enviar o número toda segunda 9h |
+
+Verbos suspeitos: melhorar, otimizar, alinhar, acompanhar, revisar, estruturar, trabalhar em, dar atenção a. Não são proibidos — são sinal de que falta o objeto verificável.
+
+**2. Dono e data → nunca coletivos, nunca aproximados.** Um nome próprio por ação (responsabilidade que se divide se dissolve) e uma data exata (DD/MM/AAAA). Se o usuário não souber o dono, não invente e não escreva "a equipe": escreva `DONO A DEFINIR` e registre isso como bloqueio na seção de riscos. Um bloqueio visível é infinitamente melhor que um responsável fictício.
+
+**3. Cadência de revisão → obrigatória.** O plano só está pronto quando tem data da próxima revisão. Sem isso é um documento, não um ciclo.
+
+**4. Inflação → contenha a fase ativa, não o plano inteiro.** A disciplina não é "poucos marcos", é "poucos marcos *detalhados de uma vez*". A **fase ativa** cabe em: 3 a 5 marcos, ~3 ações ativas por marco, e uma semana de trabalho real de arranque. O que não cabe na fase ativa não vai para o limbo: vira **fase futura** no roadmap (se é sequência natural do objetivo) ou **backlog** (se é item solto), sempre com o motivo. Plano grande é legítimo; plano grande *todo detalhado agora* é o erro. Avise o corte em uma frase e siga — o usuário pode puxar de volta se quiser.
+
+## Como conduzir a entrevista
+
+Use `AskUserQuestion` com opções concretas — o usuário responde clicando, e opções bem-formadas já fazem metade do trabalho de decomposição.
+
+**Orçamento de perguntas, em duas etapas — não as misture:**
+
+- **Descoberta (fases 1-2): 5 a 8 perguntas**, em 2 ou 3 rodadas. Cubra, nesta ordem de prioridade: resultado real e indicador → prazo/ciclo → quem está envolvido (nomes) → restrições (orçamento, time, sistemas, legal) → o que já foi tentado → o que já existe pendente (captura). Passar disso na descoberta e o usuário abandona exatamente na fase mais valiosa.
+- **Confirmação dos marcos (portão, fase 3→4): 1 a 6 perguntas**, conforme o porte. Aqui gastar é investimento: é a única etapa em que você trava a arquitetura antes de detalhá-la, e marco errado confirmado cedo é o erro mais caro. Pequeno: 1-2. Programa: 4-6 (uma por fase mais os marcos de peso).
+
+Descubra e estruture primeiro; confirme os marcos depois. Confirmar marcos antes de ter capturado é confirmar um palpite.
+
+Se o usuário já trouxe contexto rico (briefing, ata, diagnóstico), **não pergunte o que já está escrito** — extraia, confirme num resumo curto e gaste as perguntas só nas lacunas e no portão de marcos.
+
+O que não ficar claro vira **premissa explícita** no documento, não silêncio. Marque como `Premissa (não validada)` e siga: um plano com premissas declaradas é honesto; um plano com buracos escondidos é armadilha.
+
+## Gerando o PDF
+
+Monte o plano num `plano.json` e rode o script — ele já produz layout, tabelas 5W2H, roadmap de fases e paginação, e evita que cada execução reinvente a formatação:
+
+```bash
+python3 "<skill-dir>/scripts/build_plan_pdf.py" plano.json plano_v1.pdf
+```
+
+O script fica no diretório da skill, não no diretório de trabalho — use o caminho absoluto da pasta da skill (em Claude Code, `${CLAUDE_SKILL_DIR}`; em outros ambientes, o caminho da pasta). Ele depende de `reportlab`: se faltar, `pip install reportlab` (ou `pip install --break-system-packages reportlab`).
+
+O schema completo está em `references/schema.md`. Estrutura mínima (os campos `escopo` e `fases_futuras` só aparecem em plano grande/programa):
+
+```json
+{
+  "titulo": "Reduzir churn de clientes PME",
+  "versao": 1,
+  "escopo": {"porte": "grande", "fase_ativa": "Fase 1 — Diagnóstico e primeiros 45 dias"},
+  "objetivo": {"frase": "...", "indicador": "...", "meta": "...", "prazo": "30/09/2026", "por_que_agora": "...", "custo_da_inacao": "..."},
+  "ciclo": {"inicio": "14/07/2026", "fim": "30/09/2026", "cadencia_revisao": "Quinzenal, terças 10h", "proxima_revisao": "28/07/2026"},
+  "marcos": [{"nome": "...", "resultado_verificavel": "...", "indicador": "...", "prazo": "...", "acao_48h": "...", "acoes": [{"o_que": "...", "por_que": "...", "quem": "...", "quando": "...", "onde": "...", "como": "...", "quanto": "...", "criterio_conclusao": "..."}]}],
+  "fases_futuras": [{"nome": "Fase 2 — ...", "resultado": "...", "periodo": "out–nov/2026", "marcos_previstos": [{"nome": "...", "resultado_verificavel": "...", "prazo": "..."}]}],
+  "riscos": [...], "premissas": [...], "gatilhos_ajuste": [...], "backlog": [...]
+}
+```
+
+Nomeie o arquivo `plano_<slug-do-objetivo>_v<N>.pdf` — a versão no nome é o que torna o ciclo PDCA rastreável quando existirem v1, v2 e v3 na mesma pasta.
+
+Entregue o PDF ao usuário e feche com **uma frase**: objetivo, porte, número de marcos ativos e data da próxima revisão. Não narre o método de volta ao usuário — ele acabou de participar dele.
+
+## Bundled
+
+- `references/method.md` — banco de Perguntas Poderosas, campos 5W2H, portão de confirmação dos marcos, fases/roadmap, PDCA na prática. **Leia antes da fase 1.**
+- `references/schema.md` — schema completo do `plano.json`, incluindo `escopo` e `fases_futuras`.
+- `scripts/build_plan_pdf.py` — gera o PDF a partir do `plano.json`.
