@@ -160,6 +160,8 @@ Uma por marco **da fase ativa**. Regras:
 
 Marco sem ação de 48h plausível é sinal de marco grande demais — quebre-o. Marcos de fases futuras não recebem ação de 48h: eles ainda não são para agora.
 
+"Ação de 48h" é vocabulário **interno**: no PDF ela aparece como *Primeira ação*, redigida no registro executivo (ver "Público e registro do documento" em `SKILL.md`). O mesmo vale para o campo *O quê* e todo texto que a gerência lê — mantenha o físico e verificável, mas escreva como documento de gestão, não como bilhete de bastidor.
+
 ---
 
 ## Fase 5 — Ciclar (PDCA na prática)

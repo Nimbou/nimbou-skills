@@ -190,7 +190,7 @@ def build(plan, out_path):
         head = []
         for k, label in (("resultado_verificavel", "Resultado verificável"),
                          ("indicador", "Indicador"), ("prazo", "Prazo"),
-                         ("acao_48h", "Ação de 48h")):
+                         ("acao_48h", "Primeira ação (48h)")):
             if m.get(k):
                 head.append([cell(label, True), cell(m[k])])
         if head:

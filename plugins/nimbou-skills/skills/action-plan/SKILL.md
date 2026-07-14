@@ -157,6 +157,25 @@ Se o usuário já trouxe contexto rico (briefing, ata, diagnóstico), **não per
 
 O que não ficar claro vira **premissa explícita** no documento, não silêncio. Marque como `Premissa (não validada)` e siga: um plano com premissas declaradas é honesto; um plano com buracos escondidos é armadilha.
 
+## Público e registro do documento
+
+Separe as duas vozes: **a entrevista é com quem planeja; o PDF é para quem patrocina.** O documento gerado será lido por um **stakeholder ou pela gerência geral** — escreva-o nesse registro desde a v1. A conversa pode ser informal; o documento, não.
+
+- **Português de negócio, claro e direto.** Frases curtas e afirmativas. Nada de gíria e, principalmente, **nada de linguagem de método vazando para o conteúdo**: "quebrar a inércia", "despejar na captura", "engenharia de arranque", "ação de 48h" são vocabulário interno da skill — não aparecem no PDF.
+- **Resultado antes de esforço.** Cada seção abre pelo que muda para o negócio — indicador, receita, risco, prazo — não pela atividade. O gestor quer o *quê* e o *porquê* antes do *como*.
+- **Rigor é linguagem de gestão, não o oposto dela.** Dono nominal, data exata, critério de conclusão e custo são o que dão credibilidade ao plano diante da gerência; mantenha tudo. Muda o tom, não a exigência — a ação continua física e verificável, só que redigida com profissionalismo:
+
+| Voz interna (não vai ao PDF) | Registro do documento |
+|---|---|
+| "Ana abre a planilha e cruza os cancelamentos" | "Ana consolida a análise de cancelamentos por coorte (base de CS); entrega em 22/07" |
+| "Ação de 48h: mandar mensagem pro Rafael" | "Primeira ação: alinhar com Rafael (Comercial) a lista de objeções — até 16/07" |
+
+- **Detalhe operacional cru fica contido no campo *Como*, em uma linha** — não vira narrativa. O gestor lê o marco e o resultado; o executor lê o *Como*.
+- **Números e dinheiro sempre que existirem.** "R$ 90 mil de MRR em risco por mês" comunica a um diretor mais do que "muitos cancelamentos".
+- **Honestidade preservada.** `DONO A DEFINIR`, `Premissa (não validada)` e riscos continuam visíveis — gestor confia mais no plano que expõe as lacunas do que no que as maquia. Não esconda para "ficar bonito".
+
+Vale para todo campo que o gestor lê: `objetivo`, `marcos` (nome e resultado verificável), `riscos`, `premissas`, `backlog` e a seção Check/Act. Antes de gerar o PDF, releia o `plano.json` com os olhos da gerência: se alguma frase soa como bilhete interno, reescreva.
+
 ## Gerando o PDF
 
 Monte o plano num `plano.json` e rode o script — ele já produz layout, tabelas 5W2H, roadmap de fases e paginação, e evita que cada execução reinvente a formatação:
