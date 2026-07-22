@@ -30,7 +30,7 @@ Do not stop questioning just because the idea seems simple. Simple ideas often h
 
 ### How to use it in this skill
 
-- Send **1 question per call** by default. Up to 4 questions per call only when they are tightly related and the user genuinely benefits from answering them in one screen (e.g. audience + outcome + constraint as a single framing pass). Never bundle unrelated questions just to save round-trips.
+- **Batch independent questions in a single call.** The deciding test is dependency, not relatedness: if a question's options can be shaped **without knowing the answers to the others**, the questions are independent and should be sent together — up to the 4-question limit per call. Ask sequentially, one call at a time, only when a question is **dependent** — its framing or options can't be built until a previous answer is known (branching follow-ups). Prefer fewer round-trips: whenever 2-4 independent doubts are open at once (e.g. audience + outcome + constraint), send them in one call instead of drip-feeding them.
 - Each question must have **2 to 4 options**. Options must be mutually exclusive (unless `multiSelect: true`) and shaped as concrete, distinct directions — not vague ("Yes/No/Maybe").
 - Fill `description` for every option with the **trade-off or implication**, not a restatement of the label. The description is where the user reads the consequence of each choice.
 - Use `multiSelect: true` when the dimension is genuinely additive (e.g. "Which constraints apply?", "Which audiences are in scope?"). Default is single-select.
@@ -52,7 +52,8 @@ In all other cases — clarifying, scoping, choosing trade-offs, picking audienc
 ### Anti-patterns
 
 - Asking a free-text question when 2-4 plausible directions are obvious.
-- Cramming 4 unrelated questions into one AskUserQuestion call to look efficient.
+- Drip-feeding independent questions one call at a time when they could have been batched into a single call.
+- Batching **dependent** questions whose options only make sense after a previous answer (ask those sequentially).
 - Options that are not mutually exclusive in a single-select question.
 - Descriptions that just rephrase the label instead of stating the trade-off.
 - Adding an explicit "Outro" option — it is auto-injected by the tool.
@@ -82,8 +83,8 @@ Do not:
 - Scaffold a project
 - Produce a polished final deliverable too early
 - Assume the user's idea is already clear
-- Ask multiple unrelated questions at once
-- Overwhelm the user with a long questionnaire in a single message
+- Ask dependent questions in the same call before their prerequisite answer exists
+- Overwhelm the user with a long questionnaire (never exceed 4 questions per call)
 
 The output of this skill is a refined understanding of the idea, not a document.
 
@@ -93,7 +94,7 @@ Work as a critical but helpful thinking partner.
 
 Your role is to improve the idea, not merely agree with it. Be supportive, but challenge weak assumptions. Point out ambiguity, risks, contradictions, and missing information.
 
-Prefer short, focused interactions. One main question at a time, delivered through `AskUserQuestion` with well-shaped options.
+Prefer short, focused interactions. Group the independent open doubts into a single `AskUserQuestion` call (up to 4) with well-shaped options; keep dependent, branching follow-ups for later calls once their prerequisite answers arrive.
 
 ## Process
 
@@ -109,7 +110,7 @@ Your restatement should include:
 - The expected outcome, if known
 - Any assumptions you are already making
 
-Then ask the first clarifying question via `AskUserQuestion`.
+Then open with the first clarifying round via `AskUserQuestion` — batch the independent doubts you already have (up to 4) into that single call.
 
 ### 2. Identify the Type of Idea
 
@@ -284,7 +285,7 @@ Do not create a document unless the user explicitly asks for one after the refin
 ## Key Principles
 
 - Ask before solving
-- One question at a time, delivered via `AskUserQuestion` whenever the option space is bounded
+- Batch independent questions in one `AskUserQuestion` call (up to 4); ask dependent ones sequentially, whenever the option space is bounded
 - Each option carries its trade-off in the description, not just a restatement of the label
 - Challenge assumptions respectfully
 - Prefer clarity over speed
