@@ -16,7 +16,7 @@ Não pare de perguntar só porque a ideia parece simples. Ideias simples podem e
 
 Prefira interações curtas e focadas.
 
-Faça uma pergunta principal por vez.
+Agrupe as perguntas independentes em uma única rodada. O critério é dependência, não semelhança: se as opções de uma pergunta podem ser montadas **sem conhecer as respostas das outras**, elas são independentes e devem ser enviadas juntas (até 4 por rodada). Faça perguntas sequenciais, uma de cada vez, apenas quando uma pergunta for **dependente** — quando o enquadramento ou as opções só fizerem sentido depois de uma resposta anterior (desdobramentos que ramificam). Evite arrastar dúvidas independentes uma a uma quando poderiam ter sido perguntadas juntas.
 
 Sempre que possível, use perguntas de múltipla escolha com 2 a 4 opções. As opções devem representar caminhos concretos e diferentes, não respostas vagas como “sim”, “não” ou “talvez”.
 
@@ -49,7 +49,7 @@ Comece resumindo brevemente o que você entendeu:
 - Qual resultado esperado parece existir
 - Quais pressupostos você está assumindo
 
-Depois disso, faça a primeira pergunta de esclarecimento.
+Depois disso, abra a primeira rodada de esclarecimento agrupando as dúvidas independentes que você já tem (até 4 numa mesma rodada).
 
 ### 2. Classifique internamente o tipo da ideia
 
@@ -237,7 +237,7 @@ Antes de encerrar, confirme internamente se estes pontos estão claros:
 - O escopo está razoável?
 - Está claro o que a ideia NÃO é?
 
-Se algum ponto importante ainda estiver indefinido, faça mais uma pergunta.
+Se algum ponto importante ainda estiver indefinido, faça mais uma rodada — agrupando as dúvidas independentes que restarem.
 
 Não finalize enquanto ainda houver dúvidas relevantes.
 
@@ -276,6 +276,7 @@ Não crie documento, plano, especificação ou implementação a menos que o usu
 ## Princípios
 
 - Pergunte antes de resolver
+- Agrupe perguntas independentes numa mesma rodada (até 4); deixe as dependentes para rodadas seguintes
 - Não aceite a ideia como clara cedo demais
 - Desafie pressupostos com respeito
 - Prefira clareza em vez de velocidade

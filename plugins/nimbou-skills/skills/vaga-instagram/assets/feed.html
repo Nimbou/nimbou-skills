@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1350px; overflow:hidden; }
+  body {
+    font-family:'Raleway',sans-serif; color:#fff;
+    background:
+      radial-gradient(900px 700px at 85% 8%, rgba(102,178,123,.28), transparent 60%),
+      radial-gradient(1000px 800px at 0% 100%, rgba(76,171,103,.20), transparent 60%),
+      linear-gradient(160deg, #173525 0%, #1c4a2e 48%, #1f6933 100%);
+    display:flex; flex-direction:column; align-items:center;
+    padding:48px 84px 44px;
+    position:relative;
+  }
+  .deco { position:absolute; border-radius:50%; border:2px solid rgba(255,255,255,.10); }
+  .d1 { width:420px; height:420px; top:-160px; left:-170px; }
+  .d2 { width:280px; height:280px; bottom:-100px; right:-90px; }
+  .logo { width:290px; margin-bottom:20px; }
+  .chip {
+    font-family:'Montserrat',sans-serif; font-weight:700; letter-spacing:4px;
+    font-size:24px; text-transform:uppercase; color:#d9f0e0;
+    border:2px solid rgba(255,255,255,.35); border-radius:999px;
+    padding:12px 32px; background:rgba(255,255,255,.08);
+    margin-bottom:24px;
+  }
+  h1 {
+    font-family:'Montserrat',sans-serif; font-weight:800; text-transform:uppercase;
+    font-size:66px; line-height:1.05; text-align:center; letter-spacing:1px;
+    margin-bottom:12px;
+  }
+  h1 .thin { display:block; font-weight:600; font-size:40px; letter-spacing:5px; color:#bfe3cb; margin-top:10px; }
+  .empresa { font-size:36px; font-weight:600; color:#eaf6ee; text-align:center; margin-bottom:6px; }
+  .local { font-size:30px; font-weight:500; color:#a9d7b7; margin-bottom:24px; }
+  .card {
+    width:100%; background:#f7fbf8; color:#173525;
+    border-radius:32px; padding:36px 48px;
+    display:flex; flex-direction:column; gap:22px;
+    box-shadow:0 24px 50px rgba(0,0,0,.28);
+  }
+  .item { display:flex; align-items:flex-start; gap:26px; }
+  .ico {
+    flex:0 0 64px; height:64px; border-radius:18px;
+    background:rgba(31,105,51,.12); color:#1f6933;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ico svg { width:34px; height:34px; }
+  .item b {
+    display:block; font-family:'Montserrat',sans-serif; font-weight:700;
+    font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#1f6933;
+    margin-bottom:6px; margin-top:3px;
+  }
+  .item span { font-size:32px; font-weight:600; line-height:1.3; color:#173525; }
+  .cta { margin-top:auto; width:100%; text-align:center; }
+  .btn {
+    display:inline-block; background:#fff; color:#1f6933;
+    font-family:'Montserrat',sans-serif; font-weight:800; font-size:34px;
+    padding:26px 60px; border-radius:999px; letter-spacing:1px;
+    box-shadow:0 16px 34px rgba(0,0,0,.3);
+    margin-bottom:18px;
+  }
+  .site { font-size:30px; font-weight:600; color:#d9f0e0; letter-spacing:1px; }
+  .handle { margin-top:12px; font-size:28px; font-weight:500; color:#a9d7b7; }
+</style>
+</head>
+<body>
+  <div class="deco d1"></div><div class="deco d2"></div>
+  <img class="logo" src="faepen-logo.png" alt="Fundação FAEPEN">
+  <div class="chip">Programa de Estágio</div>
+  <h1>Vaga de Estágio<span class="thin">{{SETOR}}</span></h1>
+  <div class="empresa">{{EMPRESA}}</div>
+  <div class="local">{{LOCAL}}</div>
+  <div class="card">
+    <div class="item">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
+      <div><b>Cursos</b><span>{{CURSOS}}</span></div>
+    </div>
+    <div class="item">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1H6.32c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
+      <div><b>Bolsa</b><span>{{BOLSA}}</span></div>
+    </div>
+    <div class="item">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></div>
+      <div><b>Horário</b><span>{{HORARIO}}</span></div>
+    </div>
+  </div>
+  <div class="cta">
+    <div class="btn">Inscreva-se pelo site</div>
+    <div class="site">faepen.org.br/vagas · link na bio · @faepenmt</div>
+  </div>
+</body>
+</html>
