@@ -3,9 +3,8 @@
 #
 # Usage: html_to_png.sh <input.html> <output.png> <width> <height>
 #
-# Requires headless Chrome/Chromium. The flag set below captures the page at
-# the exact requested size (no footer clipping, no scrollbars, scale 1) and
-# waits for web fonts via a virtual-time budget. Validates the output size.
+# Requires headless Chrome/Chromium. On Windows (Git Bash) it also looks for
+# chrome.exe in the usual install paths — `command -v chrome` does not find it.
 set -euo pipefail
 
 IN="${1:?usage: html_to_png.sh <input.html> <output.png> <width> <height>}"
@@ -16,38 +15,70 @@ H="${4:?height required}"
 [ -f "$IN" ] || { echo "error: input HTML not found: $IN" >&2; exit 1; }
 mkdir -p "$(dirname "$OUT")"
 
-abspath() { case "$1" in /*) printf '%s' "$1";; *) printf '%s/%s' "$PWD" "$1";; esac; }
+# Absolute = POSIX (/x) or Windows drive-letter (C:/x, C:\x).
+abspath() { case "$1" in /* | [A-Za-z]:[/\\]*) printf '%s' "$1";; *) printf '%s/%s' "$PWD" "$1";; esac; }
 IN_ABS="$(abspath "$IN")"
+OUT_ABS="$(abspath "$OUT")"
 
 find_bin() { for b in "$@"; do command -v "$b" >/dev/null 2>&1 && { printf '%s' "$b"; return 0; }; done; return 1; }
-CHROME="$(find_bin google-chrome google-chrome-stable chromium chromium-browser chrome)" \
-  || { echo "error: headless Chrome/Chromium not found" >&2; exit 1; }
+CHROME="$(find_bin google-chrome google-chrome-stable chromium chromium-browser chrome || true)"
+if [ -z "$CHROME" ]; then
+  # Windows: chrome.exe is not on PATH.
+  for c in \
+    "/c/Program Files/Google/Chrome/Application/chrome.exe" \
+    "/c/Program Files (x86)/Google/Chrome/Application/chrome.exe" \
+    "${LOCALAPPDATA:-}/Google/Chrome/Application/chrome.exe" \
+    "/c/Program Files/Microsoft/Edge/Application/msedge.exe"; do
+    [ -x "$c" ] && { CHROME="$c"; break; }
+  done
+fi
+[ -n "$CHROME" ] || { echo "error: headless Chrome/Chromium not found" >&2; exit 1; }
 
-# Headless Chrome shrinks the real viewport when --window-size matches the art
-# exactly (window chrome is subtracted), which reflows the layout and clips the
-# footer. Render with generous extra height, then crop to the exact size — the
-# template body has a fixed CSS size with overflow:hidden, so cropping is safe.
-RAW="$(mktemp --suffix=.png)"
-trap 'rm -f "$RAW"' EXIT
+# chrome.exe (Windows build) does not understand MSYS paths like /c/www/... —
+# it writes a file with the literal name. Convert both paths when possible.
+IS_EXE=false; case "$CHROME" in *.exe) IS_EXE=true;; esac
+if $IS_EXE && command -v cygpath >/dev/null 2>&1; then
+  IN_ABS="$(cygpath -m "$IN_ABS")"
+  OUT_ABS="$(cygpath -m "$OUT_ABS")"
+fi
 
-"$CHROME" --headless=new --disable-gpu --no-sandbox \
-  --hide-scrollbars --force-device-scale-factor=1 \
-  --window-size="$W,$((H + 400))" --virtual-time-budget=8000 \
-  --screenshot="$RAW" "file://$IN_ABS" 2>&1 \
-  | grep -v -i 'shared_memory' || true
+# Two render modes:
+#  A) python3 + Pillow available → render taller and CROP to the exact size.
+#     Some headless builds subtract window chrome from --window-size, which
+#     reflows the page and clips the footer; the crop immunizes against that.
+#  B) no Pillow (typical on Windows) → render at the exact --window-size. Works
+#     on Chrome 120+ with --headless=new. The mandatory visual check in step 5
+#     of SKILL.md is what catches a clipped footer in this mode.
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import PIL' >/dev/null 2>&1; then
+  RAW="$(mktemp --suffix=.png)"
+  trap 'rm -f "$RAW"' EXIT
+  RAW_ARG="$RAW"
+  $IS_EXE && command -v cygpath >/dev/null 2>&1 && RAW_ARG="$(cygpath -m "$RAW")"
 
-[ -s "$RAW" ] || { echo "error: Chrome produced no screenshot for $IN" >&2; exit 1; }
+  "$CHROME" --headless=new --disable-gpu --no-sandbox \
+    --hide-scrollbars --force-device-scale-factor=1 \
+    --window-size="$W,$((H + 400))" --virtual-time-budget=8000 \
+    --screenshot="$RAW_ARG" "file:///$IN_ABS" 2>&1 \
+    | grep -v -i 'shared_memory' || true
 
-python3 - "$RAW" "$OUT" "$W" "$H" <<'EOF'
+  [ -s "$RAW" ] || { echo "error: Chrome produced no screenshot for $IN" >&2; exit 1; }
+
+  python3 - "$RAW" "$OUT" "$W" "$H" <<'EOF'
 import sys
+from PIL import Image
 raw, out, w, h = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
-try:
-    from PIL import Image
-except ImportError:
-    sys.exit("error: python3-pillow is required to crop the render (pip install pillow)")
 im = Image.open(raw)
 if im.width < w or im.height < h:
     sys.exit(f"error: render {im.width}x{im.height} smaller than requested {w}x{h}")
 im.crop((0, 0, w, h)).save(out)
 print(f"ok: {out} {w}x{h}")
 EOF
+else
+  "$CHROME" --headless=new --disable-gpu --no-sandbox \
+    --hide-scrollbars --force-device-scale-factor=1 \
+    --window-size="$W,$H" --virtual-time-budget=8000 \
+    --screenshot="$OUT_ABS" "file:///$IN_ABS" 2>&1 \
+    | grep -v -i 'shared_memory' || true
+  [ -s "$OUT" ] || { echo "error: Chrome produced no screenshot for $IN" >&2; exit 1; }
+  echo "ok: $OUT ${W}x${H} (sem crop — confira o rodapé no passo de verificação)"
+fi

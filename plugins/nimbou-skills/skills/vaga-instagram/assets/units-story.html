@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1920px; overflow:hidden; }
+  body {
+    font-family:'Raleway',sans-serif; color:#fff;
+    background:
+      radial-gradient(900px 700px at 85% 8%, rgba(102,178,123,.28), transparent 60%),
+      radial-gradient(1000px 800px at 0% 100%, rgba(76,171,103,.20), transparent 60%),
+      linear-gradient(160deg, #173525 0%, #1c4a2e 48%, #1f6933 100%);
+    display:flex; flex-direction:column; align-items:center;
+    padding:96px 84px 88px;
+    position:relative;
+  }
+  .deco { position:absolute; border-radius:50%; border:2px solid rgba(255,255,255,.10); }
+  .d1 { width:520px; height:520px; top:-180px; left:-200px; }
+  .d2 { width:340px; height:340px; bottom:-120px; right:-110px; }
+  .logo { width:430px; margin-bottom:56px; }
+  /* Tag de contexto: quem cai direto nesta peça precisa saber de que vaga se
+     trata. NÃO é o antigo selo "Programa de Estágio". Ex.: "Auxiliar de Sala · Sinop" */
+  .chip {
+    font-family:'Montserrat',sans-serif; font-weight:700; letter-spacing:5px;
+    font-size:30px; text-transform:uppercase; color:#d9f0e0;
+    border:2px solid rgba(255,255,255,.35); border-radius:999px;
+    padding:18px 44px; background:rgba(255,255,255,.08);
+    margin-bottom:44px;
+  }
+  h1 {
+    font-family:'Montserrat',sans-serif; font-weight:800; text-transform:uppercase;
+    font-size:76px; line-height:1.04; text-align:center; letter-spacing:1px;
+    margin-bottom:14px;
+  }
+  .sub {
+    font-family:'Montserrat',sans-serif; font-size:34px; font-weight:600;
+    text-transform:uppercase; letter-spacing:5px; color:#d9f0e0;
+    margin-bottom:48px;
+  }
+  .card {
+    width:100%; background:#f7fbf8; color:#173525;
+    border-radius:36px; padding:44px 54px;
+    display:flex; flex-direction:column; gap:20px;
+    box-shadow:0 30px 60px rgba(0,0,0,.28);
+  }
+  .unit { display:flex; align-items:baseline; justify-content:space-between; gap:24px; }
+  .unit + .unit { border-top:1px solid rgba(23,53,37,.10); padding-top:20px; }
+  .unit .nome { font-size:36px; font-weight:600; color:#173525; }
+  .unit .hora {
+    font-family:'Montserrat',sans-serif; font-weight:700; font-size:30px;
+    color:#1f6933; white-space:nowrap;
+  }
+  /* Sem botão: o vão entre o card e o rodapé é onde entra o STICKER DE LINK. */
+  .cta { margin-top:auto; width:100%; text-align:center; }
+  .site { font-size:36px; font-weight:600; color:#d9f0e0; letter-spacing:1px; }
+  .handle { margin-top:16px; font-size:32px; font-weight:500; color:#a9d7b7; }
+</style>
+</head>
+<body>
+  <div class="deco d1"></div><div class="deco d2"></div>
+  <img class="logo" src="faepen-logo.png" alt="Fundação FAEPEN">
+  <div class="chip">{{CONTEXTO}}</div>
+  <h1>{{TITULO_LISTA}}</h1>
+  <div class="sub">{{SUBTITULO}}</div>
+  <div class="card">
+    <!-- Repita .unit por linha. Até ~11 linhas cabem neste corpo; acima disso,
+         reduza .nome/.hora ou divida em duas peças. -->
+    <div class="unit"><span class="nome">{{NOME}}</span><span class="hora">{{HORA}}</span></div>
+  </div>
+  <div class="cta">
+    <div class="site">faepen.org.br/vagas</div>
+    <div class="handle">@faepenmt</div>
+  </div>
+</body>
+</html>
