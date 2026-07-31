@@ -83,8 +83,17 @@
     </div>
     <div class="item">
       <div class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></div>
-      <!-- .nota é OPCIONAL: apague o <span class="nota"> inteiro quando não houver peça de unidades -->
+      <!-- .nota aqui é OPCIONAL e serve só para apontar pra 2ª peça (>3 unidades,
+           ver units-story.html). Apague o <span class="nota"> quando não houver 2ª peça. -->
       <div><b>Horário</b><span>{{HORARIO}}<span class="nota">{{NOTA}}</span></span></div>
+    </div>
+    <!-- Item UNIDADES é OPCIONAL: use quando a vaga tiver 2–3 unidades/locais com
+         o mesmo horário base (cabe no card, sem precisar da 2ª peça units-*.html,
+         reservada a >3 unidades). Apague o bloco <div class="item"> inteiro quando
+         a vaga tiver só 1 local (já coberto por {{CIDADE}}) ou mais de 3 unidades. -->
+    <div class="item">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 1 8l11 6 11-6-11-6zm0 8.5L3.5 8 12 3.5 20.5 8 12 10.5zM1 12l11 6 11-6-2-1.09L12 15.82 3 10.91 1 12zm0 4l11 6 11-6-2-1.09L12 19.82 3 14.91 1 16z"/></svg></div>
+      <div><b>Unidades</b><span><span class="nota">• {{UNIDADE_1}}</span><span class="nota">• {{UNIDADE_2}}</span></span></div>
     </div>
   </div>
   <div class="cta">

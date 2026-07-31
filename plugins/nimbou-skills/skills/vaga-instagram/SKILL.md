@@ -45,7 +45,8 @@ Fill this table from the vacancy text. Normalize informal wording (e.g.
 | `{{CURSOS}}` | Accepted courses (e.g. `Administração ou Ciências Contábeis`) | ≤ 70 chars |
 | `{{BOLSA}}` | Value + benefits (e.g. `R$ 1.000,00 + vale-transporte`) | ≤ 70 chars |
 | `{{HORARIO}}` | Days + hours (e.g. `Seg. a sex. · 07h às 11h`) | ≤ 44 chars |
-| `{{NOTA}}` | Optional 2nd line under Horário. Only when there is a units piece (e.g. `11 unidades — veja a lista no próximo story`). Otherwise delete the whole `<span class="nota">` | ≤ 50 chars |
+| `{{NOTA}}` | Optional 2nd line under Horário. Only when there is a **second piece** (>3 units, e.g. `11 unidades — veja a lista no próximo story`). Otherwise delete the whole `<span class="nota">` inside the Horário item | ≤ 50 chars |
+| `{{UNIDADE_1..3}}` | Optional 4th card item **Unidades** (own icon + label, same tier as Cursos/Bolsa/Horário). Only for **2–3 units** with the same base schedule — one full unit name per line, no char limit per line since it doesn't need to fit one line. Delete the whole item `<div>` for 1 unit (already covered by `{{CIDADE}}`) or >3 units (use the second piece instead) | 2–3 lines |
 | link | Vacancy URL on faepen.org.br (caption + story sticker) | — |
 
 `{{TITULO}}` sizing: at 80px the story fits `Vagas de Estágio Remunerado` in two
@@ -78,8 +79,19 @@ hyphens — e.g. `estagio-auxiliar-sala-sinop`), unless the user names another.
 
 ### 3b. Vacancy with several units/locations
 
-A list of schools/branches does **not** fit the 3-item card. When the vacancy
-names more than ~3 units, add a second piece:
+Scale the treatment to the unit count — never cram a list into a single line
+or nest it inside another item:
+
+- **1 unit** — nothing extra; `{{CIDADE}}` already covers it.
+- **2–3 units with the same base schedule** — use the optional **Unidades**
+  item already in `story.html`/`feed.html` (own icon + `UNIDADES` label, same
+  tier as Cursos/Bolsa/Horário — see the placeholder table above). Fill
+  `{{UNIDADE_1}}`/`{{UNIDADE_2}}`(/`{{UNIDADE_3}}`) with the full unit names,
+  one per line, and delete the `.nota` lines you don't use. If a unit's hours
+  differ from the majority, put the diverging hours inline in that unit's
+  line (e.g. `E.M. Costa e Silva — 07h às 13h`) instead of just the name.
+- **More than ~3 units** — a list that size doesn't fit the main card even as
+  its own item. Add a second piece instead:
 
 1. Copy `assets/units-story.html` → `story2.html` and `assets/units-feed.html`
    → `feed2.html`.
@@ -90,8 +102,9 @@ names more than ~3 units, add a second piece:
    that differ from the majority (a second shift, another day range) carry the
    full text in their own row; do not footnote them.
 4. In `story.html`, keep `{{HORARIO}}` as the majority schedule and use
-   `{{NOTA}}` to point to the next story. In `feed.html`, `{{HORARIO}}` ends with
-   `(ver unidades)`.
+   `{{NOTA}}` (inside the Horário item) to point to the next story. In
+   `feed.html`, `{{HORARIO}}` ends with `(ver unidades)`. Do **not** also fill
+   the Unidades item in this case — the second piece replaces it.
 5. Publishing: **2 stories in sequence** + **2-slide carousel** in the feed.
 
 Above ~11 rows the card overflows: shrink `.nome`/`.hora` or split into two
@@ -133,13 +146,13 @@ A Fundação FAEPEN está com vagas de estágio remunerado abertas na {EMPRESA},
 🕐 Horário: {HORARIO}
 📍 {Cidade}
 
-🏫 Unidades ({período}):        ← só quando houver peça de unidades
+🏫 Unidades:                    ← sempre que houver 2+ unidades, com ou sem 2ª peça
 • {Unidade} — {horário}
 ...
 
 👉 Inscreva-se: {LINK ou [INSERIR LINK DA VAGA NA PUBLICAÇÃO]}
 O link também está no sticker do story.
-A lista completa das unidades está no 2º story e no 2º slide do post.
+A lista completa das unidades está no 2º story e no 2º slide do post.   ← só quando houver 2ª peça (>3 unidades)
 
 Compartilhe com quem está procurando estágio!
 
@@ -162,7 +175,8 @@ adicionar o **sticker de link** no espaço livre acima do rodapé.
 | Redesigning the layout "to fit better" | Breaks brand consistency — abbreviate the field or drop the font-size instead |
 | Rebuilding the art from scratch instead of the templates | Different visual every week; wasted tokens |
 | Reintroducing the CTA button or the "Programa de Estágio" chip | Both were removed on purpose; the button covers the sticker area |
-| Cramming a list of units into the 3-item card | The list becomes the smallest text on the piece — use `units-*.html` |
+| Cramming a list of >3 units into the card | The list becomes the smallest text on the piece — use `units-*.html` instead |
+| Nesting 2–3 units as a note under Horário (`{{NOTA}}` or extra `.nota` lines) instead of their own Unidades item | Reads as a subordinate afterthought, not real card content — same visual tier as Cursos/Bolsa/Horário is the point |
 | Inventing bolsa/horário/modalidade not present in the text | Wrong public information under FAEPEN's name |
 | Printing modalidade or the vacancy URL on the art | Modalidade lives in the caption; the link lives in the sticker |
 | Letting the title wrap to 3 lines | Squeezes the card and the footer |
