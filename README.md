@@ -57,6 +57,7 @@ This fork consolidates:
 - `plugins/nimbou-skills/skills/` — shared skill library
 - `plugins/nimbou-skills/agents/` — auxiliary review and auditing agents
 - `plugins/nimbou-skills/commands/` — Claude command entrypoints such as `/design-md` and `/merge-pr`
+- `plugins/nimbou-skills/workflows/` — Claude Code dynamic workflows such as `/nimbou-skills:execute-plan` (Claude Code only; Codex does not run these)
 - `~/.codex/skills/` — Codex skill links installed from the shared library and command mirrors
 - `.codex/skills/` — Codex-only mirrors for the Claude command workflows
 - `.agents/plugins/marketplace.json` — repo-scoped Codex marketplace catalog
@@ -151,7 +152,8 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `nestjs-test` handles Gherkin-driven backend coverage, audit routing, and backend test stabilization.
 - `nestjs-debug` handles NestJS, Prisma, and boundary failures across controller, use-case, repository, and transaction layers.
 - `nuxt-debug` is the Codex browser-debugging flow; `nuxt-test` turns the result into bounded coverage.
-- `nuxt-audit` is the single frontend review pass; `executing-plans` runs wave-structured plans inline with a per-task spec gate, per-wave review and commit, and an end-of-plan follow-ups artifact.
+- `nuxt-audit` is the single frontend review pass; `executing-plans` runs wave-structured plans by fanning each wave's tasks out to parallel implementer subagents, committing once per wave, and collecting non-blocking review findings into an end-of-plan follow-ups artifact.
+- `/nimbou-skills:execute-plan` packages Steps 2-4 of `executing-plans` as a Claude Code dynamic workflow: same contract, but task results stay out of the controller's context and a stopped run resumes without re-running completed tasks. Step 1 stays in conversation, since a workflow takes no user input mid-run. The prose path in the skill remains normative and is what Codex follows.
 - `e2e-test-quality` covers broader end-to-end reliability beyond one Nuxt module slice.
 - This fork intentionally removed upstream bootstrap hooks and unsupported harness integrations.
 

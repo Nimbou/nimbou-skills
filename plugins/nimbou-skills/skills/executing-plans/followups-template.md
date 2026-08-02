@@ -11,7 +11,7 @@ Skeleton for the `<plan>.followups.md` artifact that `nimbou-skills:executing-pl
 - `review-critical` — Critical findings from the per-wave `nimbou-skills:code-reviewer` subagent in `executing-plans` (advisory). The user must triage these before merging.
 - `review-important` — Important findings from a per-wave `nimbou-skills:code-reviewer` / `nimbou-skills:request-review` that were not treated as blockers.
 - `review-minor` — Minor findings from a per-wave `nimbou-skills:code-reviewer` / `nimbou-skills:request-review`.
-- `concern` — Controller-reported concerns during execution (architectural doubt, file growing too large, refactor suggestion, etc.).
+- `concern` — Concerns raised during execution, by an implementer subagent in its report or by the controller itself (architectural doubt, file growing too large, write-set collision, refactor suggestion, etc.).
 - `pos-execucao` — Items inherited from the original plan's `## Pos-execucao` section (typical for `nuxt-plan` outputs).
 
 ---
