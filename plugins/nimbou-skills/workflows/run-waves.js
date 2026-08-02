@@ -1,6 +1,6 @@
 export const meta = {
-  name: 'execute-plan',
-  description: 'Execute an approved wave-structured plan: tasks in parallel per wave, one commit per wave, non-blocking reviews, follow-ups at the end',
+  name: 'run-waves',
+  description: 'Run an approved wave-structured plan wave by wave: tasks in parallel per wave, one commit per wave, non-blocking reviews, follow-ups at the end',
   whenToUse:
     'After nimbou-skills:executing-plans Step 1 has loaded and approved a wave-structured plan. Pass the plan path as args. Step 1 stays in conversation — this script cannot ask the user anything mid-run.',
   phases: [

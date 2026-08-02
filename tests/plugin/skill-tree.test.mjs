@@ -379,7 +379,7 @@ test('planners and executing-plans wire the Role: routing contract', () => {
   const nestjsPlan = read('plugins/nimbou-skills/skills/nestjs-plan/SKILL.md')
   const nuxtPlan = read('plugins/nimbou-skills/skills/nuxt-plan/SKILL.md')
   const nuxtPlanFormat = read('plugins/nimbou-skills/skills/nuxt-plan/reference/plan-format.md')
-  const execute = read('plugins/nimbou-skills/skills/executing-plans/SKILL.md')
+  const execute = read('plugins/nimbou-skills/skills/executing-plans/prose-execution.md')
   const executeImplementer = read('plugins/nimbou-skills/skills/executing-plans/implementer-prompt.md')
   const executeSpec = read('plugins/nimbou-skills/skills/executing-plans/spec-reviewer-prompt.md')
 
@@ -411,7 +411,7 @@ test('planners and executing-plans wire the Role: routing contract', () => {
     'nuxt-composable-author',
     'nuxt-page-author',
   ]) {
-    assert.match(execute, new RegExp(slug), `executing-plans should list ${slug} in Role Routing`)
+    assert.match(execute, new RegExp(slug), `executing-plans prose path should list ${slug} in Role Routing`)
   }
   assert.match(execute, /Fallback:.*general-purpose/i)
   assert.match(execute, /Never infer a role from the file path/i)

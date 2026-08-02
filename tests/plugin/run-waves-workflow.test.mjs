@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const workflowPath = resolve(root, 'plugins/nimbou-skills/workflows/execute-plan.js')
+const workflowPath = resolve(root, 'plugins/nimbou-skills/workflows/run-waves.js')
 const source = readFileSync(workflowPath, 'utf8')
 
 // The workflow runtime executes the script body with top-level `await` and
@@ -30,7 +30,7 @@ async function runWorkflow(args, handlers) {
 
   const parallel = (thunks) => Promise.all(thunks.map((thunk) => thunk().catch(() => null)))
   const pipeline = async () => {
-    throw new Error('pipeline() is not used by execute-plan')
+    throw new Error('pipeline() is not used by run-waves')
   }
 
   const run = new Function(
@@ -83,9 +83,9 @@ const WRITE_FOLLOWUPS = /Write the follow-ups artifact/
 const doneImplementer = { status: 'DONE', filesTouched: ['src/a.ts'], verification: 'pass' }
 const okCommit = { sha: 'sha', message: 'm' }
 
-test('execute-plan declares the meta block the workflow runtime requires', () => {
+test('run-waves declares the meta block the workflow runtime requires', () => {
   assert.match(source, /^export const meta = \{/m)
-  assert.match(source, /name: 'execute-plan'/)
+  assert.match(source, /name: 'run-waves'/)
   assert.match(source, /description:/)
   assert.match(source, /whenToUse:/)
 
@@ -95,18 +95,18 @@ test('execute-plan declares the meta block the workflow runtime requires', () =>
   }
 })
 
-test('execute-plan refuses to run without a plan path', async () => {
+test('run-waves refuses to run without a plan path', async () => {
   const { result } = await runWorkflow(undefined, [])
   assert.match(result.error, /No plan path/)
 })
 
-test('execute-plan refuses a plan that is not wave-structured', async () => {
+test('run-waves refuses a plan that is not wave-structured', async () => {
   const { result } = await runWorkflow('docs/plans/x.md', [[PARSE, { waveStructured: false, waves: [] }]])
   assert.match(result.error, /Ondas de Execução/)
   assert.match(result.error, /nestjs-plan or nimbou-skills:nuxt-plan/)
 })
 
-test('execute-plan fans out one implementer per task and commits once per wave', async () => {
+test('run-waves fans out one implementer per task and commits once per wave', async () => {
   const { result, calls } = await runWorkflow('docs/plans/x.md', [
     [PARSE, twoWavePlan],
     ['commit Onda', (prompt) => ({ sha: prompt.includes('Contratos') ? 'sha1' : 'sha2', message: 'm' })],
@@ -133,7 +133,7 @@ test('execute-plan fans out one implementer per task and commits once per wave',
   )
 })
 
-test('execute-plan routes each implementer to the Role the plan declared', async () => {
+test('run-waves routes each implementer to the Role the plan declared', async () => {
   const { calls } = await runWorkflow('docs/plans/x.md', [
     [PARSE, twoWavePlan],
     ['commit Onda', okCommit],
@@ -154,7 +154,7 @@ test('execute-plan routes each implementer to the Role the plan declared', async
   ])
 })
 
-test('execute-plan falls back to general-purpose and records a concern when a Role is missing', async () => {
+test('run-waves falls back to general-purpose and records a concern when a Role is missing', async () => {
   const unrouted = JSON.parse(JSON.stringify(twoWavePlan))
   for (const wave of unrouted.waves) for (const task of wave.tasks) delete task.agentType
 
@@ -180,7 +180,7 @@ test('execute-plan falls back to general-purpose and records a concern when a Ro
   assert.ok(result.followups, 'a planning defect always produces a follow-ups artifact')
 })
 
-test('execute-plan adds the nestjs-test wave when a backend plan forgot it', async () => {
+test('run-waves adds the nestjs-test wave when a backend plan forgot it', async () => {
   const noTestWave = JSON.parse(JSON.stringify(twoWavePlan))
   noTestWave.waves = noTestWave.waves.filter((wave) => !wave.isNestjsTestWave)
 
@@ -218,7 +218,7 @@ test('execute-plan adds the nestjs-test wave when a backend plan forgot it', asy
   assert.match(artifactPrompt, /declared no final nestjs-test wave/, 'the planning defect reaches follow-ups')
 })
 
-test('execute-plan does not add a nestjs-test wave to a frontend plan', async () => {
+test('run-waves does not add a nestjs-test wave to a frontend plan', async () => {
   const frontend = JSON.parse(JSON.stringify(twoWavePlan))
   frontend.planOrigin = 'nuxt-plan'
   frontend.waves = frontend.waves.filter((wave) => !wave.isNestjsTestWave)
@@ -238,7 +238,7 @@ test('execute-plan does not add a nestjs-test wave to a frontend plan', async ()
   )
 })
 
-test('execute-plan never lets an implementer commit', async () => {
+test('run-waves never lets an implementer commit', async () => {
   const { calls } = await runWorkflow('docs/plans/x.md', [
     [PARSE, twoWavePlan],
     ['commit Onda', okCommit],
@@ -254,7 +254,7 @@ test('execute-plan never lets an implementer commit', async () => {
   }
 })
 
-test('execute-plan collapses tasks that share a file into one implementer', async () => {
+test('run-waves collapses tasks that share a file into one implementer', async () => {
   const colliding = JSON.parse(JSON.stringify(twoWavePlan))
   colliding.waves[0].tasks[1].files = ['src/a.ts']
 
@@ -276,7 +276,7 @@ test('execute-plan collapses tasks that share a file into one implementer', asyn
   assert.ok(result.followups, 'the collision is recorded as a concern, which forces a follow-ups artifact')
 })
 
-test('execute-plan stops downstream waves when an implementer is BLOCKED', async () => {
+test('run-waves stops downstream waves when an implementer is BLOCKED', async () => {
   const { result, calls } = await runWorkflow('docs/plans/x.md', [
     [PARSE, twoWavePlan],
     [
@@ -295,7 +295,7 @@ test('execute-plan stops downstream waves when an implementer is BLOCKED', async
   assert.equal(result.followups, undefined, 'no follow-ups artifact for an incomplete plan')
 })
 
-test('execute-plan groups follow-up fixes by file and keeps manual items out of the artifact', async () => {
+test('run-waves groups follow-up fixes by file and keeps manual items out of the artifact', async () => {
   const { result, calls } = await runWorkflow('docs/plans/x.md', [
     [PARSE, { ...twoWavePlan, posExecucao: ['revisar cache'] }],
     ['commit Onda', okCommit],
@@ -332,7 +332,7 @@ test('execute-plan groups follow-up fixes by file and keeps manual items out of 
   assert.match(result.message, /Ações manuais pendentes/)
 })
 
-test('execute-plan carries `## Pos-execucao` items into the follow-ups artifact', async () => {
+test('run-waves carries `## Pos-execucao` items into the follow-ups artifact', async () => {
   let sawPosExecucao = false
 
   const { result } = await runWorkflow({ planPath: 'docs/plans/x.md' }, [
@@ -356,25 +356,43 @@ test('execute-plan carries `## Pos-execucao` items into the follow-ups artifact'
   assert.equal(result.followups, 'docs/plans/x.followups.md')
 })
 
-test('executing-plans documents the fan-out contract and the workflow fast path', () => {
-  const skill = readFileSync(
-    resolve(root, 'plugins/nimbou-skills/skills/executing-plans/SKILL.md'),
-    'utf8',
-  )
-  const implementer = readFileSync(
-    resolve(root, 'plugins/nimbou-skills/skills/executing-plans/implementer-prompt.md'),
-    'utf8',
-  )
+const skillDir = 'plugins/nimbou-skills/skills/executing-plans'
 
-  assert.match(skill, /implementer-prompt\.md/)
-  assert.match(skill, /one implementer subagent per task/i)
-  assert.match(skill, /commit once per wave/i)
-  assert.match(skill, /check write sets/i)
-  assert.match(skill, /## Role Routing/)
-  assert.match(skill, /Never infer a role from the file path/i)
-  assert.match(skill, /\/nimbou-skills:execute-plan/)
-  assert.match(skill, /The prose path is normative/)
+test('executing-plans routes Steps 2-4 out of the skill and into the two executors', () => {
+  const skill = readFileSync(resolve(root, `${skillDir}/SKILL.md`), 'utf8')
+
+  // The router owns Step 1 and the routing decision. Nothing else executable.
+  assert.match(skill, /## Step 1: Load and Review/)
+  assert.match(skill, /## Routing: where the run actually happens/)
+  assert.match(skill, /\/nimbou-skills:run-waves/)
+  assert.match(skill, /prose-execution\.md/)
+  assert.match(skill, /Codex does not run workflows/)
   assert.doesNotMatch(skill, /task mode/i)
+
+  // The point of the split: the slow path cannot be walked from this file.
+  for (const heading of ['## Step 2', '## Step 3', '## Step 4', '### 2.1', '### 2.2']) {
+    assert.ok(
+      !skill.includes(heading),
+      `${heading} belongs in prose-execution.md, not in the router — otherwise it gets followed by default`,
+    )
+  }
+})
+
+test('prose-execution carries the full executable contract for Codex', () => {
+  const prose = readFileSync(resolve(root, `${skillDir}/prose-execution.md`), 'utf8')
+  const implementer = readFileSync(resolve(root, `${skillDir}/implementer-prompt.md`), 'utf8')
+
+  assert.match(prose, /## Step 2: Execute/)
+  assert.match(prose, /## Step 3: Collect Reviews/)
+  assert.match(prose, /## Step 4: Execute Follow-ups/)
+  assert.match(prose, /one implementer subagent per task/i)
+  assert.match(prose, /commit once per wave/i)
+  assert.match(prose, /check the write sets/i)
+  assert.match(prose, /implementer-prompt\.md/)
+  assert.match(prose, /## Role Routing/)
+  assert.match(prose, /Never infer a role from the file path/i)
+  assert.match(prose, /This file is normative/i)
+  assert.match(prose, /Step 1 lives in `SKILL\.md`/)
 
   assert.match(implementer, /One dispatch per task/)
   assert.match(implementer, /Files You Own/)
