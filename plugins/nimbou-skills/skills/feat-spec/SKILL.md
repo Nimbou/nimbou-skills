@@ -70,6 +70,7 @@ Do not use this skill to finish NestJS module design, Prisma boundaries, or use-
 5. write the shared feature design and ownership boundary in a way both sides can consume
 6. route the next contract step to `nestjs-think`
 7. do not route to `doc-openapi`, `nuxt-think`, `nuxt-plan`, or `nestjs-plan` directly from this skill
+8. state that planning ends in `fullstack-plan`, not in the platform planners: this feature spans both stacks, so it gets one joint plan whose waves mix backend and frontend work. Two separate plans would queue the frontend behind the whole backend for a dependency it does not have
 
 ## Output
 
@@ -82,3 +83,4 @@ Produce:
 - backend ownership boundary
 - contract-dependent states and error handling
 - required next skill: `nestjs-think`
+- planning skill once `doc-openapi` and `nuxt-think` are closed: `fullstack-plan` (one joint plan, not `nestjs-plan` + `nuxt-plan`)

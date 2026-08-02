@@ -28,6 +28,7 @@ Before closing design decisions:
 3. confirm the relevant `docs/domain/<domain>/*.feature` files are approved
 4. for HTTP features, confirm `docs/domain/<domain>/openapi.yaml` is approved and treat it as the canonical transport contract
 5. only after approval, invoke `nuxt-plan`
+- when the work spans both stacks, that planning step is `fullstack-plan`, not `nuxt-plan`: one joint plan whose waves mix frontend and backend. Use `nuxt-plan` directly only for frontend-only work
 6. do not advance to `nuxt-plan` with stale domain, Gherkin, or OpenAPI artifacts
 7. do not redefine the HTTP contract inside `nuxt-think`; consume the approved `openapi.yaml`
 

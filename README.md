@@ -26,6 +26,7 @@ This fork consolidates:
 - `nestjs-think`
 - `nestjs-plan`
 - `nestjs-refactor`
+- `fullstack-plan`
 - `executing-plans`
 - `dispatching-parallel-agents`
 - `test-driven-development`
@@ -148,6 +149,7 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `doc-openapi` publishes the canonical HTTP transport artifact beside `domain.md` and the approved `.feature` files after `nestjs-think` and before `nuxt-think`.
 - `doc-approval` turns a domain spec (`domain.md` + `*.feature`) into a non-technical approval PDF for a business sponsor, translating the Gherkin scenarios into plain business language and keeping the source HTML beside the spec for re-generation.
 - `nestjs-think` and `nestjs-plan` stay backend-first; `nuxt-think` and `nuxt-plan` cover Nuxt planning.
+- `fullstack-plan` produces ONE wave-structured plan for work spanning both stacks, so frontend tasks run in the same waves as backend tasks instead of queueing behind them. A frontend task depends on the approved `openapi.yaml`, never on a backend task; two separate plans serialize work that has no dependency between it. It composes rather than duplicates — platform rules stay in `nestjs-plan` and `nuxt-plan`, and this skill owns only the wave topology across the two.
 - `nestjs-refactor` is the structural cleanup workflow for existing NestJS backends that need SOLID and Clean Architecture restoration in bounded batches.
 - `nestjs-test` handles Gherkin-driven backend coverage, audit routing, and backend test stabilization.
 - `nestjs-debug` handles NestJS, Prisma, and boundary failures across controller, use-case, repository, and transaction layers.

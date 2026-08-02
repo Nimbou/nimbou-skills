@@ -70,4 +70,6 @@ Inside `## Arquivos/Areas`, list exact paths or bounded areas, the action, the w
 
 Inside `## Ondas de Execução`, mix frontend and backend work in the same wave whenever they are parallel-safe. Split waves only on real dependency.
 
+**When the change is large enough to need a real execution plan, hand the wave structure to `nimbou-skills:fullstack-plan` instead of detailing it here.** This skill closes decisions and impact; it is deliberately light and does not carry the Execution Contract fields, Role Mapping, or the scoped `nestjs-test` final wave that `executing-plans` needs. Keep the inline `## Ondas de Execução` only for changes small enough to execute straight from this response.
+
 `## Pos-execucao` may recommend `executing-plans` for implementation. Do not recommend `finishing-a-development-branch` here — the primary deliverable of this skill is the unified plan itself.

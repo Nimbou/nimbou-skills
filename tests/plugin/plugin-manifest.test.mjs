@@ -22,6 +22,7 @@ test('skills tree ships the unified skill set directly', () => {
   assert.ok(shippedSkills.includes('nestjs-plan'))
   assert.ok(shippedSkills.includes('nestjs-refactor'))
   assert.ok(shippedSkills.includes('executing-plans'))
+  assert.ok(shippedSkills.includes('fullstack-plan'))
   assert.ok(shippedSkills.includes('e2e-test-quality'))
   assert.ok(shippedSkills.includes('change-spec'))
   assert.ok(shippedSkills.includes('feat-spec'))

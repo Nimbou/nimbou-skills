@@ -36,6 +36,7 @@ Before writing the implementation plan:
 9. for HTTP features, close the backend-viable transport contract before handing off to `doc-openapi`
 10. close persistence viability for the approved backend shape: repositories, transactions, Prisma boundaries, constraints, and schema impact when relevant
 11. only after `doc-openapi` and `nuxt-think` are approved, invoke `nestjs-plan`
+- when the work spans both stacks, that planning step is `fullstack-plan`, not `nestjs-plan`: one joint plan whose waves mix backend and frontend, so frontend tasks consuming the approved `openapi.yaml` do not queue behind backend implementation. Use `nestjs-plan` directly only for backend-only work
 
 Treat the domain directory as the approved specification bundle for backend planning, route coverage, and later test generation. `doc-openapi` publishes the canonical transport contract after this skill closes the backend-viable shape.
 

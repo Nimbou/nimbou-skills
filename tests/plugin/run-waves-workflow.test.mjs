@@ -572,3 +572,47 @@ test('the prose path treats an empty Consome in a later wave as a planning bug',
   assert.match(prose, /is a planning bug, not an empty dependency/)
   assert.match(prose, /reconstruct\s*\n?the contract from the earlier wave's committed diff/)
 })
+
+test('fullstack-plan composes the platform planners instead of duplicating them', () => {
+  const plan = readFileSync(resolve(root, 'plugins/nimbou-skills/skills/fullstack-plan/SKILL.md'), 'utf8')
+
+  assert.match(plan, /^---\nname: fullstack-plan/m)
+
+  // The reason the skill exists: the frontend waits on the contract, not on the backend.
+  assert.match(plan, /a frontend task depends on the \*\*approved contract\*\*, never on a backend task/i)
+  assert.match(plan, /## The Dependency Rule/)
+  assert.match(plan, /openapi\.yaml/)
+  assert.match(plan, /end-to-end verification/i, 'the one real cross-stack dependency must be named')
+  assert.match(plan, /Unbalanced sides are normal and correct/)
+
+  // It must emit what the executor extracts.
+  for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
+    assert.match(plan, new RegExp(field), `fullstack-plan should carry ${field}`)
+  }
+  assert.match(plan, /No task declares a commit step/)
+
+  // Composition, not a third copy: it defers platform rules and says so.
+  assert.match(plan, /It does \*\*not\*\* restate platform rules/)
+  assert.match(plan, /the platform planner wins/)
+  assert.doesNotMatch(plan, /\| `nimbou-skills:prisma-schema-author` \|/, 'Role tables belong to the platform planners')
+  assert.doesNotMatch(plan, /\| `nimbou-skills:vue-component-author` \|/, 'Role tables belong to the platform planners')
+})
+
+test('the pipeline routes cross-stack work to fullstack-plan', () => {
+  const read = (p) => readFileSync(resolve(root, `plugins/nimbou-skills/skills/${p}/SKILL.md`), 'utf8')
+
+  assert.match(read('feat-spec'), /planning ends in `fullstack-plan`, not in the platform planners/)
+  assert.match(read('change-spec'), /hand the wave structure to `nimbou-skills:fullstack-plan`/)
+
+  for (const skill of ['nestjs-think', 'nuxt-think']) {
+    assert.match(
+      read(skill),
+      /when the work spans both stacks, that planning step is `fullstack-plan`/,
+      `${skill} should branch to the joint planner`,
+    )
+  }
+
+  // Single-platform routing must survive untouched.
+  assert.match(read('nestjs-think'), /invoke `nestjs-plan`/)
+  assert.match(read('nuxt-think'), /invoke `nuxt-plan`/)
+})
