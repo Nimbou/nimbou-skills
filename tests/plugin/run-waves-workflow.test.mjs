@@ -22,7 +22,9 @@ async function runWorkflow(args, handlers) {
   const agent = async (prompt, opts = {}) => {
     calls.push({ prompt, opts })
     for (const [match, value] of handlers) {
-      const hit = typeof match === 'string' ? (opts.label ?? '').includes(match) : match.test(prompt)
+      // startsWith, not includes: a generic 'Onda' matcher would otherwise swallow
+      // 'spec review Onda 1 — ...' and silently kill the reviewer handlers.
+      const hit = typeof match === 'string' ? (opts.label ?? '').startsWith(match) : match.test(prompt)
       if (hit) return typeof value === 'function' ? value(prompt, opts) : value
     }
     return 'ok'
@@ -315,6 +317,7 @@ test('run-waves groups follow-up fixes by file and keeps manual items out of the
         manual: ['rodar migration em produção'],
       },
     ],
+    ['fix ', { filesTouched: ['src/a.ts'], fixed: ['done'], skipped: [] }],
     ['commit follow-ups', { sha: 'shaF', message: 'docs' }],
     ['review follow-ups', { findings: [] }],
   ])
@@ -330,6 +333,63 @@ test('run-waves groups follow-up fixes by file and keeps manual items out of the
 
   assert.deepEqual(result.manualActions, ['rodar migration em produção'])
   assert.match(result.message, /Ações manuais pendentes/)
+  assert.equal(result.followupCommit.sha, 'shaF', 'fixes that touched files must be committed')
+
+  const commit = calls.find((call) => (call.opts.label ?? '') === 'commit follow-ups')
+  assert.match(commit.prompt, /src\/a\.ts/, 'the commit agent gets the file list, not the fixers transcript')
+  assert.doesNotMatch(commit.prompt, /verification output/i, 'raw fixer output must not be paid for here')
+})
+
+test('run-waves skips the follow-up commit and review when nothing was automatable', async () => {
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    // one finding, so the artifact is written at all; it resolves to manual-only below
+    [SPEC_REVIEW, { findings: [{ tipo: 'spec-deferred', descricao: 'nit', ref: 'src/a.ts:3' }] }],
+    [CODE_REVIEW, { findings: [] }],
+    [
+      WRITE_FOLLOWUPS,
+      { path: 'docs/plans/x.followups.md', automatable: [], manual: ['rodar migration em produção'] },
+    ],
+  ])
+
+  assert.equal(result.followupCommit, null)
+  assert.deepEqual(result.followUpRoundFindings, [])
+  assert.deepEqual(result.manualActions, ['rodar migration em produção'])
+
+  for (const label of ['commit follow-ups', 'review follow-ups', 'fix ']) {
+    assert.equal(
+      calls.filter((call) => (call.opts.label ?? '').startsWith(label)).length,
+      0,
+      `${label} must not spawn when there is nothing staged`,
+    )
+  }
+})
+
+test('run-waves keeps raw verification output out of the spec reviewer prompt', async () => {
+  const noisy = {
+    status: 'DONE',
+    filesTouched: ['src/a.ts'],
+    behaviorChanged: 'endpoint responds 201',
+    verification: 'PASS src/a.spec.ts\n'.repeat(200),
+    concerns: ['arquivo crescendo demais — src/a.ts:1'],
+  }
+
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda', noisy],
+    [SPEC_REVIEW, { findings: [] }],
+    [CODE_REVIEW, { findings: [] }],
+    [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
+  ])
+
+  const review = calls.find((call) => (call.opts.label ?? '').startsWith('spec review'))
+  assert.doesNotMatch(review.prompt, /PASS src\/a\.spec\.ts/, 'runner transcript must not be pasted in')
+  assert.match(review.prompt, /endpoint responds 201/, 'the claim itself still reaches the reviewer')
+  assert.match(review.prompt, /arquivo crescendo demais/, 'concerns still reach the reviewer')
+  assert.match(review.prompt, /status: DONE/)
 })
 
 test('run-waves carries `## Pos-execucao` items into the follow-ups artifact', async () => {

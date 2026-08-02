@@ -258,7 +258,7 @@ ${tasks.map(t => `   - ${t.verification}`).join('\n')}
 5. Commit, then return the resulting SHA and the message you used.
 
 Do not push. Do not commit anything outside this wave.`,
-    { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA },
+    { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA, effort: 'low' },
   )
 
   if (!commit) {
@@ -276,12 +276,24 @@ Do not push. Do not commit anything outside this wave.`,
 
   // Step 2.5: reviewers are advisory and must not gate the next wave. Start them
   // without awaiting — they run alongside wave w+1 and are collected at the end.
+  // The reviewer is told to distrust these reports and read the diff instead, so
+  // pasting each implementer's raw verification output would be paying for tokens
+  // we instruct the model to ignore. Send the claims, not the transcript.
   dispatchReviewers(
     label,
     commit.sha,
     tasks.map((t, i) => `### Task ${i + 1} — ${t.title}\n\n${t.spec}`).join('\n\n'),
     reports
-      .map((r, i) => `### ${groups[i].map(t => t.title).join(' + ')}\n${JSON.stringify(r, null, 2)}`)
+      .map((r, i) => {
+        const who = groups[i].map(t => t.title).join(' + ')
+        const claims = [
+          `status: ${r.status}`,
+          `files: ${(r.filesTouched ?? []).join(', ') || 'none reported'}`,
+          r.behaviorChanged ? `behavior: ${r.behaviorChanged}` : null,
+          (r.concerns ?? []).length ? `concerns: ${r.concerns.join('; ')}` : null,
+        ].filter(Boolean)
+        return `### ${who}\n${claims.join('\n')}`
+      })
       .join('\n\n'),
   )
 }
@@ -343,7 +355,7 @@ ${testFiles.map(f => `- ${f}`).join('\n')}
 
 Stage them EXPLICITLY by path — never \`git add -A\`. Mirror the repo's commit
 style from \`git log\`. Do not push. Return the SHA and message.`,
-          { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA },
+          { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA, effort: 'low' },
         )
       : null
 
@@ -478,6 +490,7 @@ Commit the artifact on its own as a docs commit. Stage it explicitly.`,
   {
     label: 'write followups',
     phase: 'Follow-ups',
+    effort: 'low',
     schema: {
       type: 'object',
       required: ['path', 'automatable', 'manual'],
@@ -536,20 +549,51 @@ rather than guessing.
 Do not commit; the caller commits all follow-up fixes together. Do not touch files
 outside the ones listed in your findings.
 
-Return what you fixed, what you skipped and why, and the verification output.`,
-      { label: `fix ${group[0]?.files?.[0] ?? 'follow-ups'}`, phase: 'Follow-ups' },
+Return the files you touched, what you fixed, and what you skipped and why.`,
+      {
+        label: `fix ${group[0]?.files?.[0] ?? 'follow-ups'}`,
+        phase: 'Follow-ups',
+        schema: {
+          type: 'object',
+          required: ['filesTouched'],
+          properties: {
+            filesTouched: { type: 'array', items: { type: 'string' } },
+            fixed: { type: 'array', items: { type: 'string' } },
+            skipped: { type: 'array', items: { type: 'string' } },
+          },
+        },
+      },
     ),
   ),
 )
 
+const fixedFiles = [...new Set(fixes.filter(Boolean).flatMap(f => f.filesTouched ?? []))]
+
+// Every item was manual, or every fixer skipped: there is nothing staged. Spawning a
+// commit agent and a reviewer over an empty diff burns two agents for no work.
+if (!fixedFiles.length) {
+  log('No automatable follow-up produced a change — skipping the follow-up commit and its review.')
+  return {
+    wavesCommitted: executed,
+    followups: artifact.path,
+    followupCommit: null,
+    followUpRoundFindings: [],
+    manualActions: artifact.manual ?? [],
+    skipped: fixes.filter(Boolean).flatMap(f => f.skipped ?? []),
+    message: (artifact.manual ?? []).length
+      ? 'Plano executado. Nenhum follow-up automatizável rendeu mudança. Ações manuais pendentes — ver manualActions.'
+      : 'Plano executado. Nenhum follow-up automatizável rendeu mudança.',
+  }
+}
+
 const followupCommit = await agent(
   `Commit the follow-up fixes just applied for the plan at \`${planPath}\`.
 
-What the fixers reported:
-${fixes.filter(Boolean).join('\n\n---\n\n')}
+Files the fixers reported touching:
+${fixedFiles.map(f => `- ${f}`).join('\n')}
 
 Do this:
-1. Stage the fixed files EXPLICITLY by path. Never \`git add -A\`.
+1. Stage exactly the files listed above, by path. Never \`git add -A\`.
 2. Commit them together, mirroring the repo's commit style. One commit, unless the
    fixes are genuinely unrelated — then one per logical group.
 3. Update \`${artifact.path}\`: mark each resolved entry with a one-line resolution
