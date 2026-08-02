@@ -60,7 +60,7 @@ Before dispatching anything, list the files each task in the wave declares it wi
 
 ### 2.2 Fan the wave's tasks out to implementer subagents
 
-Dispatch **one implementer subagent per task**, all in a **single message with multiple parallel `Agent` calls**. Use `subagent_type: general-purpose` unless the plan names a role-specialized agent for the task (`nestjs-usecase-author`, `prisma-repository-author`, `nuxt-page-author`, etc.), in which case use that one.
+Dispatch **one implementer subagent per task**, all in a **single message with multiple parallel `Agent` calls**.
 
 Build each prompt from `./implementer-prompt.md`. Each implementer gets:
 
@@ -71,6 +71,27 @@ Build each prompt from `./implementer-prompt.md`. Each implementer gets:
 - the required report shape: files touched, behavior changed, verification output, concerns
 
 The controller does **not** write implementation code during a fan-out wave. It reads reports, resolves conflicts, and commits.
+
+## Role Routing
+
+`nestjs-plan` declares a `**Role:**` line per task; `nuxt-plan` declares a `Role` column per file row. That slug **is** the implementer's `subagent_type` — the planners write it specifically so this skill can route without guessing.
+
+| Role slug | Owns |
+|---|---|
+| `nimbou-skills:prisma-schema-author` | `schema.prisma` and migrations. No application code. |
+| `nimbou-skills:prisma-repository-author` | Concrete repositories under `infra/persistence/` against an existing application port. |
+| `nimbou-skills:nestjs-usecase-author` | One application use-case (one business verb) and the ports it consumes. No HTTP wiring, no Prisma. |
+| `nimbou-skills:nestjs-controller-author` | HTTP transport: controller, HTTP DTO, guards, validation pipes, module composition. No business logic. |
+| `nimbou-skills:vue-component-author` | SFCs under `components/` |
+| `nimbou-skills:nuxt-composable-author` | `composables/` and the `utils/` they consume |
+| `nimbou-skills:nuxt-page-author` | `pages/`, `layouts/`, and route wiring |
+
+Rules:
+
+- **Fallback:** a task with no `Role` gets `general-purpose`, you say so in the wave report, and you record it as a `concern` for Step 3 — same as a write-set collision. Both are planning defects, and follow-ups is where they get triaged. Fix the plan rather than leaning on the fallback.
+- **Never infer a role from the file path.** If the plan did not declare one, the fallback applies — silently picking `prisma-repository-author` because the path contains `infra/` hides a planning bug.
+- Final-wave `nestjs-test` tasks and `## Pos-execucao` items carry no `Role`. They route through the test auditors and follow-ups, not through implementers.
+- One role per task. A task that would fit two roles was mis-planned; record it as a `concern` and dispatch it under the role that owns the larger share.
 
 ### 2.3 Collect and verify
 

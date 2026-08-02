@@ -159,7 +159,7 @@ test('specification skills and think orchestrators document the domain-centered 
   assert.match(changeSpec, /impact checklist/i)
   assert.match(changeSpec, /contracts, UI states, jobs, permissions, tests, migrations, and compatibility/i)
   assert.match(changeSpec, /## Ondas de Execução/i)
-  assert.match(changeSpec, /`executing-plans` or `subagent-driven-development`/i)
+  assert.match(changeSpec, /`executing-plans` for implementation/i)
 
   assert.match(featSpec, /^---\nname: feat-spec/m)
   assert.match(featSpec, /feature changes both frontend and backend/i)

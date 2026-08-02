@@ -6,12 +6,12 @@ Use this template when the controller fans a wave's tasks out under `nimbou-skil
 
 **Precondition:** the controller already checked write sets (Step 2.1). Every implementer in a wave owns a disjoint set of files. If two tasks share a file, they were merged into one dispatch before reaching this template.
 
-**Agent type:** `general-purpose`, unless the plan names a role-specialized agent for the task — `nestjs-usecase-author`, `nestjs-controller-author`, `prisma-repository-author`, `prisma-schema-author`, `nuxt-page-author`, `nuxt-composable-author`, `vue-component-author`. Use the named one when it exists.
+**Agent type:** `[ROLE]` — the slug the plan declared for this task (`**Role:**` line in `nestjs-plan`, `Role` column in `nuxt-plan`). See the Role Routing table in `SKILL.md`. When the plan declared none, `[ROLE]` is `general-purpose` and the controller says so in the wave report.
 
 **Isolation:** the implementer never inherits the controller's session history. Everything it needs is constructed below.
 
 ```
-Task tool (general-purpose | role-specialized agent):
+Task tool ([ROLE]):
   description: "Onda N — Task M: <short title>"
   prompt: |
     You are implementing exactly one task from an approved implementation plan.
@@ -101,8 +101,9 @@ Task tool (general-purpose | role-specialized agent):
 **Rules for the controller dispatching this:**
 
 1. **One task per dispatch.** Never bundle two plan tasks into one implementer to save an agent — that reintroduces the serialization this step exists to remove. The single exception is the write-set collision handled in Step 2.1.
-2. **Paste, do not reference.** The implementer has no access to your context, the plan file, or earlier waves' reports. A prompt saying "implement Task 3 from the plan" fails.
-3. **Contracts are mandatory for waves 2+.** A wave exists as a separate wave precisely because it consumes something an earlier wave produced. If you cannot name what this task consumes, the wave boundary was wrong.
-4. **Never let an implementer commit.** Commits are wave-level and controller-owned (Step 2.4). Concurrent implementers committing would interleave into unreviewable history.
-5. **Treat `DONE_WITH_CONCERNS` as done.** It does not block the wave. Route the concerns into Step 3's follow-ups collection.
-6. **Treat `BLOCKED` as a wave stop.** Do not commit a partial wave; report which task and file blocked it.
+2. **`[ROLE]` comes from the plan, never from the file path.** Substituting a role you inferred yourself hides a planning bug the fallback would have surfaced.
+3. **Paste, do not reference.** The implementer has no access to your context, the plan file, or earlier waves' reports. A prompt saying "implement Task 3 from the plan" fails.
+4. **Contracts are mandatory for waves 2+.** A wave exists as a separate wave precisely because it consumes something an earlier wave produced. If you cannot name what this task consumes, the wave boundary was wrong.
+5. **Never let an implementer commit.** Commits are wave-level and controller-owned (Step 2.4). Concurrent implementers committing would interleave into unreviewable history.
+6. **Treat `DONE_WITH_CONCERNS` as done.** It does not block the wave. Route the concerns into Step 3's follow-ups collection.
+7. **Treat `BLOCKED` as a wave stop.** Do not commit a partial wave; report which task and file blocked it.

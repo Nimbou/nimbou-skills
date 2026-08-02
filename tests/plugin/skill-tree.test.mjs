@@ -80,14 +80,14 @@ test('nuxt think and plan skills explain catalog-aware design and execution topo
   assert.match(think, /responsive layout shifts/i)
   assert.match(think, /### Direcao visual/)
   assert.match(think, /anti-genericity guardrails/i)
-  assert.match(think, /exact file paths, dependency order, and execution groups/i)
+  assert.match(think, /exact file paths and execution waves/i)
   assert.match(plan, /## Scope Check/)
   assert.match(plan, /## Minimal Clarifications Only/)
   assert.match(plan, /Assume `nuxt-think` already closed product and UI decisions\./)
   assert.match(plan, /exact route or page file path/i)
   assert.match(plan, /Do not reopen settled UX, reuse, state, interaction, or responsive decisions/i)
   assert.match(plan, /## Self-Review/)
-  assert.match(plan, /## Grupos de Execucao/)
+  assert.match(plan, /## Ondas de Execução/)
   assert.match(plan, /DESIGN\.md/)
   assert.match(plan, /GUIDELINES\.md/)
   assert.match(plan, /catalog verification/i)
@@ -266,19 +266,21 @@ test('design, merge, and review agents remain scaffolded', () => {
   assert.match(designSkill, /register/i)
 
   assert.match(mergeCommand, /^---\ndescription:/m)
-  assert.match(mergeCommand, /Single mode/)
-  assert.match(mergeCommand, /Batch mode/)
+  assert.match(mergeCommand, /Merge a single PR/i)
   assert.match(mergeCommand, /Never merge without showing the effective PR state first/)
+  assert.match(mergeCommand, /Never merge a draft PR/)
   assert.match(mergeCommand, /auto-merge/i)
   assert.match(mergeCommand, /gh pr merge/)
-  assert.match(mergeCommand, /Type `merge` to continue/)
+  assert.match(mergeCommand, /1\. Merge now/)
   assert.match(mergeCommand, /merged/)
   assert.match(mergeCommand, /auto-merge enabled/)
   assert.match(mergeCommand, /skipped/)
   assert.match(mergeCommand, /failed/)
+  assert.doesNotMatch(mergeCommand, /batch/i)
   assert.match(mergeSkill, /^---\nname: merge-pr/m)
-  assert.match(mergeSkill, /Choose the mode from the user's request/)
-  assert.match(mergeSkill, /Never batch-merge without explicit confirmation/)
+  assert.match(mergeSkill, /Merge a single PR/i)
+  assert.match(mergeSkill, /Never merge without showing the effective PR state first/)
+  assert.doesNotMatch(mergeSkill, /batch/i)
 
   assert.match(explorer, /^---\nname: code-explorer/m)
   assert.match(explorer, /Key Files To Read/)
@@ -373,14 +375,13 @@ test('role-specialized author agents are scaffolded for SDD routing', () => {
   }
 })
 
-test('planners and SDD wire the Role: routing contract', () => {
+test('planners and executing-plans wire the Role: routing contract', () => {
   const nestjsPlan = read('plugins/nimbou-skills/skills/nestjs-plan/SKILL.md')
   const nuxtPlan = read('plugins/nimbou-skills/skills/nuxt-plan/SKILL.md')
   const nuxtPlanFormat = read('plugins/nimbou-skills/skills/nuxt-plan/reference/plan-format.md')
-  const sdd = read('plugins/nimbou-skills/skills/subagent-driven-development/SKILL.md')
-  const sddImplementer = read('plugins/nimbou-skills/skills/subagent-driven-development/implementer-prompt.md')
-  const sddSpec = read('plugins/nimbou-skills/skills/subagent-driven-development/spec-reviewer-prompt.md')
-  const sddQuality = read('plugins/nimbou-skills/skills/subagent-driven-development/code-quality-reviewer-prompt.md')
+  const execute = read('plugins/nimbou-skills/skills/executing-plans/SKILL.md')
+  const executeImplementer = read('plugins/nimbou-skills/skills/executing-plans/implementer-prompt.md')
+  const executeSpec = read('plugins/nimbou-skills/skills/executing-plans/spec-reviewer-prompt.md')
 
   assert.match(nestjsPlan, /## Role Mapping/)
   assert.match(nestjsPlan, /\*\*Role:\*\*/)
@@ -400,7 +401,7 @@ test('planners and SDD wire the Role: routing contract', () => {
   assert.match(nuxtPlanFormat, /nuxt-composable-author/)
   assert.match(nuxtPlanFormat, /nuxt-page-author/)
 
-  assert.match(sdd, /## Role Routing/)
+  assert.match(execute, /## Role Routing/)
   for (const slug of [
     'prisma-schema-author',
     'prisma-repository-author',
@@ -410,14 +411,13 @@ test('planners and SDD wire the Role: routing contract', () => {
     'nuxt-composable-author',
     'nuxt-page-author',
   ]) {
-    assert.match(sdd, new RegExp(slug), `SDD should list ${slug} in Role Routing`)
+    assert.match(execute, new RegExp(slug), `executing-plans should list ${slug} in Role Routing`)
   }
-  assert.match(sdd, /Fallback:.*general-purpose/i)
+  assert.match(execute, /Fallback:.*general-purpose/i)
+  assert.match(execute, /Never infer a role from the file path/i)
 
-  assert.match(sddImplementer, /\[ROLE\]/)
-  assert.match(sddImplementer, /Task tool \(\[ROLE\]\):/)
-  assert.match(sddSpec, /## Role Under Review/)
-  assert.match(sddSpec, /\[ROLE\]/)
-  assert.match(sddQuality, /Role-specific focus/)
-  assert.match(sddQuality, /\[ROLE\]/)
+  assert.match(executeImplementer, /\[ROLE\]/)
+  assert.match(executeImplementer, /Task tool \(\[ROLE\]\):/)
+  assert.match(executeSpec, /## Role Under Review/)
+  assert.match(executeSpec, /\[ROLE\]/)
 })

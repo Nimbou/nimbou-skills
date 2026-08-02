@@ -27,6 +27,19 @@ Task tool (general-purpose):
       and another quietly re-declared with a different shape
     - a gap between two tasks that each assumed the other would close
 
+    ## Role Under Review
+
+    Each task was implemented by the agent-author the plan routed it to. Review
+    each one against that role's boundary, not a generic one:
+
+    [One line per task: `Task N — [ROLE]`, using the slug the plan declared.
+     Write `Task N — general-purpose (no Role declared)` when the plan had none.]
+
+    A `[ROLE]` that wrote outside its layer is a finding even when the behavior is
+    correct — a `nestjs-usecase-author` reaching into Prisma, a
+    `vue-component-author` wiring a route, a `prisma-repository-author` adding
+    business rules. Report it as a Misunderstanding with the role named.
+
     ## What Was Requested
 
     [FULL TEXT of every task's requirements inside this wave — paste verbatim,

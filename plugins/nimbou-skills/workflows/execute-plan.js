@@ -126,10 +126,11 @@ For every task in every wave, return:
 - consumes: the contracts (types, signatures, routes, DTOs, schema fields) this
   task depends on from earlier waves. For waves after the first, paste the actual
   declarations from the plan, not references to them.
-- agentType: the role-specialized agent the plan names for this task, if any
-  (nestjs-usecase-author, nestjs-controller-author, prisma-repository-author,
-  prisma-schema-author, nuxt-page-author, nuxt-composable-author,
-  vue-component-author). Omit when the plan names none.
+- agentType: the Role slug the plan declared for this task — the \`**Role:**\` line
+  in a nestjs-plan task, or the \`Role\` column of the \`## Arquivos\` row in a
+  nuxt-plan. Copy it verbatim, including the \`nimbou-skills:\` prefix. Omit the
+  field entirely when the plan declared no Role; never infer one from the file
+  path, since the fallback to general-purpose is what surfaces the planning bug.
 
 Also return planOrigin (nestjs-plan / nuxt-plan / other) and posExecucao: the
 verbatim items under \`## Pos-execucao\` when that section exists.
@@ -181,7 +182,14 @@ for (let w = 0; w < waves.length; w++) {
   }
 
   phase('Implement')
-  log(`${label}: ${groups.length} implementer(s) for ${tasks.length} task(s)`)
+  const unrouted = tasks.filter(t => !t.agentType).length
+  log(
+    `${label}: ${groups.length} implementer(s) for ${tasks.length} task(s)` +
+      (unrouted ? ` — ${unrouted} without a declared Role, falling back to general-purpose` : ''),
+  )
+  for (const task of tasks) {
+    if (!task.agentType) concerns.push(`${label}: "${task.title}" declared no Role; dispatched as general-purpose.`)
+  }
 
   const reports = await parallel(
     groups.map(group => () =>

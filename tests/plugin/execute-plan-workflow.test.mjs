@@ -55,14 +55,14 @@ const twoWavePlan = {
     {
       title: 'Contratos',
       tasks: [
-        { title: 'DTO', spec: 'spec a', files: ['src/a.ts'], verification: 'pnpm test -- a' },
-        { title: 'Repo contract', spec: 'spec b', files: ['src/b.ts'], verification: 'pnpm test -- b' },
+        { title: 'DTO', spec: 'spec a', files: ['src/a.ts'], verification: 'pnpm test -- a', agentType: 'nimbou-skills:nestjs-controller-author' },
+        { title: 'Repo contract', spec: 'spec b', files: ['src/b.ts'], verification: 'pnpm test -- b', agentType: 'nimbou-skills:prisma-repository-author' },
       ],
     },
     {
       title: 'Implementação',
       tasks: [
-        { title: 'Use case', spec: 'spec c', files: ['src/c.ts'], verification: 'pnpm test -- c', consumes: 'type A' },
+        { title: 'Use case', spec: 'spec c', files: ['src/c.ts'], verification: 'pnpm test -- c', consumes: 'type A', agentType: 'nimbou-skills:nestjs-usecase-author' },
       ],
     },
   ],
@@ -124,6 +124,52 @@ test('execute-plan fans out one implementer per task and commits once per wave',
     labels.indexOf('commit Onda 1 — Contratos') < labels.findIndex((label) => label.startsWith('Onda 2')),
     'wave 2 must not open before wave 1 is committed',
   )
+})
+
+test('execute-plan routes each implementer to the Role the plan declared', async () => {
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [CODE_REVIEW, { findings: [] }],
+  ])
+
+  const routed = calls
+    .filter((call) => call.opts.phase === 'Implement')
+    .map((call) => call.opts.agentType)
+
+  assert.deepEqual(routed.sort(), [
+    'nimbou-skills:nestjs-controller-author',
+    'nimbou-skills:nestjs-usecase-author',
+    'nimbou-skills:prisma-repository-author',
+  ])
+})
+
+test('execute-plan falls back to general-purpose and records a concern when a Role is missing', async () => {
+  const unrouted = JSON.parse(JSON.stringify(twoWavePlan))
+  for (const wave of unrouted.waves) for (const task of wave.tasks) delete task.agentType
+
+  let collected = []
+  const { result } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, unrouted],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [CODE_REVIEW, { findings: [] }],
+    [
+      WRITE_FOLLOWUPS,
+      (prompt) => {
+        collected = prompt.match(/declared no Role/g) ?? []
+        return { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }
+      },
+    ],
+    ['commit follow-ups', { sha: 'shaF', message: 'docs' }],
+    ['review follow-ups', { findings: [] }],
+  ])
+
+  assert.equal(collected.length, 3, 'every unrouted task is recorded as a concern, not silently defaulted')
+  assert.ok(result.followups, 'a planning defect always produces a follow-ups artifact')
 })
 
 test('execute-plan never lets an implementer commit', async () => {
@@ -258,6 +304,8 @@ test('executing-plans documents the fan-out contract and the workflow fast path'
   assert.match(skill, /one implementer subagent per task/i)
   assert.match(skill, /commit once per wave/i)
   assert.match(skill, /check write sets/i)
+  assert.match(skill, /## Role Routing/)
+  assert.match(skill, /Never infer a role from the file path/i)
   assert.match(skill, /\/nimbou-skills:execute-plan/)
   assert.match(skill, /The prose path is normative/)
   assert.doesNotMatch(skill, /task mode/i)
