@@ -8,7 +8,7 @@ Return it directly in the chat by default. Only turn it into a saved Markdown do
 - `## Contexto` for the concrete frontend slice being implemented
 - `## Decisoes Fechadas` for resolved reuse, ownership, and state decisions
 - `## Arquivos` with exact paths, wave assignment, **and `Role`** (role slug per file)
-- `## Ondas de Execução` with parallel-by-default tasks per wave, each task carrying the five Execution Contract fields (`Role`, `Onda`, `Files`, `Consome`, `Verificação`), and a `nimbou-skills:request-review` checkpoint after each wave
+- `## Ondas de Execução` with parallel-by-default tasks per wave, each task carrying the five Execution Contract fields (`Role`, `Onda`, `Files`, `Consome`, `Verificação`), and a spec-compliance checkpoint after each wave
 - `## Riscos e Validacoes` for responsive, data, or interaction risks
 - `## Pos-execucao` for catalog verification and testing follow-up
 
@@ -64,7 +64,7 @@ commits once per wave.
 - Parallel within a wave is the default. Tasks share a wave when they have no contract dependency on each other.
 - A new wave is justified only when its tasks consume a contract, composable signature, prop API, or shared type produced by an earlier wave.
 - Page integration belongs to the last implementation wave; catalog verification and `/test` suggestions live in `## Pos-execucao`.
-- Every wave ends with an explicit `nimbou-skills:request-review` checkpoint over the wave's diff before the next wave starts.
+- Every wave ends with an explicit spec-compliance checkpoint over the wave's diff. Code review is not per-wave: `/code-review` runs over the branch before merging.
 
 ## Questions to close before planning
 

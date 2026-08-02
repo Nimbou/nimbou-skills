@@ -75,7 +75,7 @@ This file map drives the waves.
   3. **Onda 3 — Integração de página e estados:** page composition, loading/empty/error/success wiring, responsive checks.
   4. **Onda Final — Verificação:** run `/nuxt-catalog` (validate -> generate) and the suggested test scope (e.g., `/test <route>`). Test runs MUST be limited to the routes/components/composables this plan changed — never `/test` over the whole app or unscoped `pnpm test`.
 - Collapse waves when there is no contract dependency between them. Two single-task waves with no dependency should be one wave.
-- After each wave, the executor MUST automatically dispatch `nimbou-skills:request-review` over the wave's diff before opening the next wave. Mark each checkpoint inside the plan; do not leave it implicit.
+- After each wave, the executor MUST automatically dispatch a spec-compliance review over the wave's diff. Mark each checkpoint inside the plan; do not leave it implicit. Code review is not a per-wave step — `/code-review` runs over the branch before merging.
 - Make the handoff between page, components, and composables explicit.
 - Call out any local anti-pattern avoidance that the execution must preserve, such as not duplicating fetch ownership between page and composable or not introducing store state for simple parent-child communication.
 
@@ -158,7 +158,7 @@ Create a project details page using the existing status badge and a new sidebar.
 
 ### Onda 3 — Integração de página (paralelo dentro da onda)
 
-> Checkpoint após cada onda: dispatch `nimbou-skills:request-review` sobre o diff da onda antes de abrir a próxima.
+> Checkpoint após cada onda: revisão de conformidade com a spec sobre o diff da onda. Code review é `/code-review` sobre o branch, antes do merge.
 
 ## Riscos e Validacoes
 - Confirm mobile collapse behavior on the sidebar.
@@ -190,7 +190,7 @@ After writing the complete plan, check:
 1. **Design coverage:** every approved UI requirement maps to files or waves
 2. **Topology clarity:** exact file ownership and dependency order are explicit
 3. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave; tasks inside a wave are genuinely parallel-safe
-4. **Review checkpoints:** every wave ends with an explicit `nimbou-skills:request-review` checkpoint
+4. **Review checkpoints:** every wave ends with an explicit spec-compliance checkpoint
 5. **Boundary clarity:** page, component, and composable responsibilities are clear
 6. **Guideline clarity:** local wrapper reuse, state locality, and hardening obligations are represented where relevant
 7. **Verification clarity:** `/nuxt-catalog` and test suggestions still appear at the end, and every test suggestion is scoped to the routes/components/composables this plan changed (never the full suite)

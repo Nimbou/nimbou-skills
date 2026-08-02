@@ -218,9 +218,11 @@ test('run-waves pins the spec reviewer to general-purpose instead of the default
   for (const review of calls.filter((call) => (call.opts.label ?? '').startsWith('spec review'))) {
     assert.equal(review.opts.agentType, 'general-purpose', 'prose-execution.md declares it explicitly')
   }
-  for (const review of calls.filter((call) => (call.opts.label ?? '').startsWith('code review'))) {
-    assert.equal(review.opts.agentType, 'nimbou-skills:code-reviewer')
-  }
+  assert.equal(
+    calls.filter((call) => (call.opts.label ?? '').startsWith('code review')).length,
+    0,
+    'per-wave code review was removed — /code-review over the branch covers that axis',
+  )
 })
 
 test('run-waves falls back to general-purpose and records a concern when a Role is missing', async () => {
@@ -422,10 +424,9 @@ test('run-waves skips the follow-up commit and review when nothing was automatab
   ])
 
   assert.equal(result.followupCommit, null)
-  assert.deepEqual(result.followUpRoundFindings, [])
   assert.deepEqual(result.manualActions, ['rodar migration em produção'])
 
-  for (const label of ['commit follow-ups', 'review follow-ups', 'fix ']) {
+  for (const label of ['commit follow-ups', 'fix ']) {
     assert.equal(
       calls.filter((call) => (call.opts.label ?? '').startsWith(label)).length,
       0,
@@ -615,4 +616,29 @@ test('the pipeline routes cross-stack work to fullstack-plan', () => {
   // Single-platform routing must survive untouched.
   assert.match(read('nestjs-think'), /invoke `nestjs-plan`/)
   assert.match(read('nuxt-think'), /invoke `nuxt-plan`/)
+})
+
+test('code review is not part of executing-plans on either path', () => {
+  const skillDir = 'plugins/nimbou-skills/skills/executing-plans'
+  const skill = readFileSync(resolve(root, `${skillDir}/SKILL.md`), 'utf8')
+  const prose = readFileSync(resolve(root, `${skillDir}/prose-execution.md`), 'utf8')
+  const followups = readFileSync(resolve(root, `${skillDir}/followups-template.md`), 'utf8')
+
+  // The workflow must spawn no code reviewer at all.
+  assert.doesNotMatch(source, /nimbou-skills:code-reviewer/)
+  assert.doesNotMatch(source, /code review \$\{label\}/)
+  assert.doesNotMatch(source, /review follow-ups/)
+
+  // Both harness paths must say so, and say why the spec reviewer is not the same thing.
+  for (const [name, doc] of [['SKILL.md', skill], ['prose-execution.md', prose]]) {
+    assert.match(doc, /\/code-review/, `${name} should point at the branch-level review`)
+    assert.doesNotMatch(doc, /nimbou-skills:code-reviewer/, `${name} should not dispatch a code reviewer`)
+  }
+  assert.match(prose, /Code review is not part of this skill/)
+  assert.match(prose, /it has no access to the plan/)
+  assert.match(prose, /outside its declared file boundary/)
+
+  // The artifact keeps review-* types, but as something the user appends.
+  assert.match(followups, /`executing-plans` never writes these/)
+  assert.match(prose, /this skill never writes them/)
 })

@@ -96,7 +96,7 @@ Rules specific to a joint plan:
 ```md
 # Plan: [Feature Name]
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Waves mix backend and frontend tasks; each wave ends with a `nimbou-skills:request-review` checkpoint, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites this plan touched.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Waves mix backend and frontend tasks; each wave ends with a spec-compliance checkpoint, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites this plan touched.
 
 **Goal:** [one sentence]
 **Contrato:** `docs/domain/<domain>/openapi.yaml` [approved on <date or commit>]

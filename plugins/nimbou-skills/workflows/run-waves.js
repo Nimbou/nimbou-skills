@@ -7,7 +7,7 @@ export const meta = {
     { title: 'Parse', detail: 'read the plan and extract waves, tasks, file boundaries' },
     { title: 'Implement', detail: 'one implementer per task, parallel inside each wave' },
     { title: 'Commit', detail: 'one commit per wave, staged explicitly' },
-    { title: 'Review', detail: 'spec compliance + code review per wave, non-blocking' },
+    { title: 'Review', detail: 'spec compliance per wave, non-blocking' },
     { title: 'Follow-ups', detail: 'collect findings, write the artifact, fix by file group' },
   ],
 }
@@ -98,7 +98,7 @@ const REVIEW_SCHEMA = {
         properties: {
           tipo: {
             type: 'string',
-            enum: ['spec-issue', 'spec-deferred', 'review-critical', 'review-important', 'review-minor'],
+            enum: ['spec-issue', 'spec-deferred'],
           },
           descricao: { type: 'string' },
           ref: { type: 'string', description: 'file:line when applicable' },
@@ -290,7 +290,7 @@ Do not push. Do not commit anything outside this wave.`,
   // The reviewer is told to distrust these reports and read the diff instead, so
   // pasting each implementer's raw verification output would be paying for tokens
   // we instruct the model to ignore. Send the claims, not the transcript.
-  dispatchReviewers(
+  dispatchSpecReview(
     label,
     commit.sha,
     tasks.map((t, i) => `### Task ${i + 1} — ${t.title}\n\n${t.spec}`).join('\n\n'),
@@ -378,7 +378,7 @@ style from \`git log\`. Do not push. Return the SHA and message.`,
         tasks: ['nestjs-test'],
         files: testFiles,
       })
-      dispatchReviewers(label, testCommit.sha, 'Final verification wave: scoped nestjs-test run.', JSON.stringify(testReport, null, 2))
+      dispatchSpecReview(label, testCommit.sha, 'Final verification wave: scoped nestjs-test run.', JSON.stringify(testReport, null, 2))
     } else {
       log(`${label}: green with no file changes, nothing to commit.`)
     }
@@ -402,7 +402,7 @@ function groupRole(group, waveLabel) {
   return null
 }
 
-function dispatchReviewers(label, sha, requested, reported) {
+function dispatchSpecReview(label, sha, requested, reported) {
   reviews.push(
     agent(
       `You are reviewing whether a wave's implementation matches its specification.
@@ -441,19 +441,6 @@ diff matches the spec. Change nothing.`,
     ).catch(() => null),
   )
 
-  reviews.push(
-    agent(
-      `Review the code in commit ${sha} (${label} of the plan at ${planPath}).
-
-Brief yourself with \`nimbou-skills:request-review\`. Scope strictly to this commit.
-
-Return every finding tagged by severity: \`review-critical\`, \`review-important\`,
-or \`review-minor\`. Each carries a concrete \`file:line\` and a suggested next step.
-Return an empty findings array when the commit is clean. Change nothing — this
-review is advisory and execution has already moved past this wave.`,
-      { label: `code review ${label}`, phase: 'Review', agentType: 'nimbou-skills:code-reviewer', schema: REVIEW_SCHEMA },
-    ).catch(() => null),
-  )
 }
 
 // ── Collect reviews ──────────────────────────────────────────────────────────
@@ -605,7 +592,6 @@ if (!fixedFiles.length) {
     wavesCommitted: executed,
     followups: artifact.path,
     followupCommit: null,
-    followUpRoundFindings: [],
     manualActions: artifact.manual ?? [],
     skipped: fixes.filter(Boolean).flatMap(f => f.skipped ?? []),
     message: (artifact.manual ?? []).length
@@ -632,25 +618,15 @@ Do not push.`,
   { label: 'commit follow-ups', phase: 'Follow-ups', schema: COMMIT_SCHEMA },
 )
 
-const finalReview = await agent(
-  `Review the follow-up fix commit(s) ${followupCommit?.sha ?? 'just created'} for the plan at
-\`${planPath}\`. Confirm the fixes landed correctly and introduced nothing new.
-
-Brief yourself with \`nimbou-skills:request-review\`. Return findings tagged
-\`review-critical\` / \`review-important\` / \`review-minor\`, each with \`file:line\`.
-Return an empty findings array when clean. Change nothing.`,
-  { label: 'review follow-ups', phase: 'Follow-ups', agentType: 'nimbou-skills:code-reviewer', schema: REVIEW_SCHEMA },
-).catch(() => null)
-
 return {
   wavesCommitted: executed,
   followups: artifact.path,
   followupCommit,
-  followUpRoundFindings: finalReview?.findings ?? [],
   manualActions: artifact.manual ?? [],
   message: (artifact.manual ?? []).length
     ? 'Plano executado. Follow-ups automatizáveis resolvidos. Ações manuais pendentes — ver manualActions.'
     : 'Plano executado. Todos os follow-ups automatizáveis resolvidos.',
+  reviewNote: 'Code review is not part of this run — rode `/code-review` sobre o branch antes do merge.',
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────

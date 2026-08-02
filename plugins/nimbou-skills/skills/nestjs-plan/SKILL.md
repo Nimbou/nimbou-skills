@@ -56,7 +56,7 @@ Every plan MUST start with this header:
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Steps use checkbox (`- [ ]`) syntax for tracking. Each wave ends with an automatic `nimbou-skills:request-review` checkpoint, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites/files touched by this plan — never the full backend suite.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Steps use checkbox (`- [ ]`) syntax for tracking. Each wave ends with an automatic spec-compliance checkpoint over the wave's diff, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites/files touched by this plan — never the full backend suite.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -187,7 +187,7 @@ These are plan failures:
   3. **Onda 3 — Wiring NestJS:** controllers, guards, filters, interceptors, module composition. Parallel per module.
   4. **Onda Final — Verificação:** dispatch `nimbou-skills:nestjs-test` with scope covering **only the files this plan changed** — the controllers, use-cases, repositories, Prisma adapters, and migrations introduced or modified across waves 1 through N. The final-wave task list must enumerate the exact suites/files (paths) that need stabilization or expansion, derived from the plan's diff. **Never dispatch the full backend test suite.** The runner command must always carry a scoped path filter (e.g., `pnpm test -- --runInBand <suite-path>`); the unfiltered `pnpm test` is forbidden as a verification step.
 - Collapse or split waves only when a real dependency or its absence justifies it. Two waves with no shared contract should be one wave.
-- After each wave, the executor MUST automatically dispatch `nimbou-skills:request-review` over the wave's diff before opening the next wave. Mark this as a checkpoint inside the plan; do not leave it implicit.
+- After each wave, the executor MUST automatically dispatch a spec-compliance review over the wave's diff. Mark this as a checkpoint inside the plan; do not leave it implicit. Code review is not a per-wave step — `/code-review` runs over the branch before merging.
 - If the request is HTTP-facing, include controller, DTO, guard, filter or interceptor, and route-level verification tasks.
 - If the request is persistence-heavy, include repository contracts, Prisma adapters, fixture strategy, and integration-test tasks.
 - If the request spans both, make dependency direction explicit so application logic does not depend on Prisma or NestJS transport details.
@@ -217,7 +217,7 @@ After writing the complete plan, check:
 7. **Test coverage:** the plan proves behavior at HTTP, application, and persistence levels when relevant
 8. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave; tasks inside a wave are genuinely parallel-safe (no shared file writes, no implicit ordering)
 9. **Execution Contract:** every task carries `Role`, `Onda`, `Files`, `Consome`, and `Verificação`. No task declares a commit step. `Consome` is non-empty for every task outside Onda 1, and holds pasted declarations rather than names
-10. **Review checkpoints:** every wave ends with an explicit `nimbou-skills:request-review` checkpoint
+10. **Review checkpoints:** every wave ends with an explicit spec-compliance checkpoint
 11. **Final wave:** the final wave dispatches `nimbou-skills:nestjs-test` with scope restricted to the files this plan touched — every controller, use-case, repository, and migration introduced anywhere in the plan, **and nothing else**. The verification command must include explicit suite paths; an unfiltered `pnpm test` is a planning failure.
 
 Fix issues inline before handing off the plan.

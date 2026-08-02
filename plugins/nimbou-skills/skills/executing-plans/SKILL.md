@@ -1,13 +1,13 @@
 ---
 name: executing-plans
-description: Use when you have an approved wave-structured plan and want it executed wave by wave, fanning each wave's tasks out to parallel implementer subagents, committing once per wave, and running spec compliance and code review as non-blocking subagents whose findings feed an end-of-plan follow-ups artifact.
+description: Use when you have an approved wave-structured plan and want it executed wave by wave, fanning each wave's tasks out to parallel implementer subagents, committing once per wave, and running spec compliance review as a non-blocking subagent whose findings feed an end-of-plan follow-ups artifact.
 ---
 
 # Executing Plans
 
 ## Overview
 
-Load the plan, review it critically, confirm it is wave-structured, then hand it to an executor. Inside a wave, one implementer subagent runs per task, in parallel — nobody writes the whole wave sequentially. Each wave is committed as soon as its tasks land and verify. The spec compliance review and the code review run as **non-blocking subagents** — their findings never gate task or wave progression; they accumulate into `<plan>.followups.md` at the end.
+Load the plan, review it critically, confirm it is wave-structured, then hand it to an executor. Inside a wave, one implementer subagent runs per task, in parallel — nobody writes the whole wave sequentially. Each wave is committed as soon as its tasks land and verify. The spec compliance review runs as a **non-blocking subagent** — its findings never gate task or wave progression; they accumulate into `<plan>.followups.md` at the end. Code review is deliberately **not** part of this skill: run `/code-review` over the branch before merging.
 
 **This skill owns Step 1 only.** Steps 2 through 4 live in `./prose-execution.md` (Codex, and Claude Code without workflows) and in `/nimbou-skills:run-waves` (Claude Code). Keeping the executable body out of this file is deliberate: with both an old prose path and a workflow in the same document, the prose is what gets followed by default, and the workflow never runs.
 
@@ -93,7 +93,7 @@ Stop immediately when:
 - a verification fails repeatedly
 - a wave encounters a failure that invalidates downstream waves
 
-Reviewer findings — including ❌ from the spec reviewer or Critical from the code reviewer — do **not** stop execution. They go to follow-ups and are surfaced to the user at completion.
+Reviewer findings — including ❌ from the spec reviewer — do **not** stop execution. They go to follow-ups and are surfaced to the user at completion.
 
 Ask for clarification instead of guessing.
 
@@ -113,7 +113,7 @@ Return to Step 1 when:
 - fan each wave's tasks out to parallel implementer subagents; the controller orchestrates and commits, it does not implement
 - check write sets before fanning out — tasks sharing a file go to one implementer, not two
 - commit once per wave, as soon as its tasks land and verify; do not wait for reviewers
-- dispatch the spec reviewer and the code reviewer as background subagents per wave (run_in_background)
+- dispatch the spec reviewer as a background subagent per wave (run_in_background); code review is `/code-review` over the branch, not part of this skill
 - never let reviewer output gate the next wave — findings feed `<plan>.followups.md`
 - run `nestjs-test` as the final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (explicit suite paths only — never an unfiltered `pnpm test`)
 - collect every background reviewer's result before producing follow-ups
@@ -129,7 +129,6 @@ Required workflow skills:
 - `nimbou-skills:using-git-worktrees` — set up an isolated workspace before starting
 - `nimbou-skills:nestjs-plan` — produces wave-structured backend plans for this skill to execute
 - `nimbou-skills:nuxt-plan` — produces wave-structured frontend plans for this skill to execute
-- `nimbou-skills:request-review` — REQUIRED: dispatched as a background subagent after every wave's commit
 - `nimbou-skills:nestjs-test` — REQUIRED final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (no full-suite runs)
 
 Execution body:
@@ -149,6 +148,6 @@ When execution completes or stops, report:
 
 - which waves were executed and committed, and how many implementer subagents ran in each
 - what each per-wave spec reviewer subagent returned (✅ / ❌ / ⚠️ Deferred), per wave
-- what each per-wave code reviewer subagent returned (Critical/Important/Minor counts), per wave
+- that code review was not run here, and `/code-review` over the branch is still owed before merging
 - what failed or remains blocked, and whether the failure belongs to one task, one file, or one wave
-- whether `<plan>.followups.md` was generated, where it lives, and whether it carries `review-critical` or `spec-issue` entries the user should look at
+- whether `<plan>.followups.md` was generated, where it lives, and whether it carries `spec-issue` entries the user should look at
