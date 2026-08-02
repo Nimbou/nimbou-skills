@@ -65,6 +65,13 @@ const twoWavePlan = {
         { title: 'Use case', spec: 'spec c', files: ['src/c.ts'], verification: 'pnpm test -- c', consumes: 'type A', agentType: 'nimbou-skills:nestjs-usecase-author' },
       ],
     },
+    {
+      title: 'Verificação',
+      isNestjsTestWave: true,
+      tasks: [
+        { title: 'nestjs-test', spec: 'run scoped suites', files: ['src/a.spec.ts'], verification: 'pnpm test -- --runInBand src/a.spec.ts' },
+      ],
+    },
   ],
 }
 
@@ -109,12 +116,12 @@ test('execute-plan fans out one implementer per task and commits once per wave',
   ])
 
   const implementers = calls.filter((call) => call.opts.phase === 'Implement')
-  assert.equal(implementers.length, 3, 'three tasks across two waves means three implementers')
+  assert.equal(implementers.length, 4, 'four tasks across three waves means four implementers')
 
   const commits = calls.filter((call) => (call.opts.label ?? '').startsWith('commit Onda'))
-  assert.equal(commits.length, 2, 'one commit per wave, not per task')
+  assert.equal(commits.length, 3, 'one commit per wave, not per task')
 
-  assert.equal(result.wavesCommitted.length, 2)
+  assert.equal(result.wavesCommitted.length, 3)
   assert.equal(result.wavesCommitted[0].sha, 'sha1')
   assert.equal(result.followups, null)
   assert.match(result.message, /sem follow-ups pendentes/)
@@ -143,6 +150,7 @@ test('execute-plan routes each implementer to the Role the plan declared', async
     'nimbou-skills:nestjs-controller-author',
     'nimbou-skills:nestjs-usecase-author',
     'nimbou-skills:prisma-repository-author',
+    undefined, // the declared nestjs-test wave carries no Role, by contract
   ])
 })
 
@@ -168,8 +176,66 @@ test('execute-plan falls back to general-purpose and records a concern when a Ro
     ['review follow-ups', { findings: [] }],
   ])
 
-  assert.equal(collected.length, 3, 'every unrouted task is recorded as a concern, not silently defaulted')
+  assert.equal(collected.length, 3, 'every task that owes a Role is recorded; the nestjs-test wave is exempt')
   assert.ok(result.followups, 'a planning defect always produces a follow-ups artifact')
+})
+
+test('execute-plan adds the nestjs-test wave when a backend plan forgot it', async () => {
+  const noTestWave = JSON.parse(JSON.stringify(twoWavePlan))
+  noTestWave.waves = noTestWave.waves.filter((wave) => !wave.isNestjsTestWave)
+
+  let artifactPrompt = ''
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, noTestWave],
+    ['commit Onda Final', { sha: 'shaT', message: 'test wave' }],
+    ['commit Onda', okCommit],
+    ['Onda Final', { status: 'DONE', filesTouched: ['src/a.spec.ts'], verification: 'pnpm test -- --runInBand src/a.spec.ts' }],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [CODE_REVIEW, { findings: [] }],
+    [
+      WRITE_FOLLOWUPS,
+      (prompt) => {
+        artifactPrompt = prompt
+        return { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }
+      },
+    ],
+    ['commit follow-ups', { sha: 'shaF', message: 'docs' }],
+    ['review follow-ups', { findings: [] }],
+  ])
+
+  const testWave = calls.find((call) => (call.opts.label ?? '').startsWith('Onda Final'))
+  assert.ok(testWave, 'the missing verification wave must be added, not skipped')
+  assert.match(testWave.prompt, /nimbou-skills:nestjs-test/)
+  assert.match(testWave.prompt, /unfiltered `pnpm test` is forbidden/i)
+  assert.match(testWave.prompt, /src\/a\.ts/, 'scope must list the files the plan actually changed')
+  assert.doesNotMatch(testWave.prompt, /^\s*pnpm test\s*$/m, 'never an unscoped runner invocation')
+
+  assert.ok(
+    result.wavesCommitted.some((wave) => wave.wave.startsWith('Onda Final')),
+    'the added wave is committed like any other',
+  )
+  assert.match(artifactPrompt, /declared no final nestjs-test wave/, 'the planning defect reaches follow-ups')
+})
+
+test('execute-plan does not add a nestjs-test wave to a frontend plan', async () => {
+  const frontend = JSON.parse(JSON.stringify(twoWavePlan))
+  frontend.planOrigin = 'nuxt-plan'
+  frontend.waves = frontend.waves.filter((wave) => !wave.isNestjsTestWave)
+
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, frontend],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [CODE_REVIEW, { findings: [] }],
+  ])
+
+  assert.equal(
+    calls.filter((call) => (call.opts.label ?? '').startsWith('Onda Final')).length,
+    0,
+    'the nestjs-test rule belongs to nestjs-plan only',
+  )
 })
 
 test('execute-plan never lets an implementer commit', async () => {

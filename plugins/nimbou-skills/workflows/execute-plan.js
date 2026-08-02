@@ -41,6 +41,10 @@ const PLAN_SCHEMA = {
         required: ['title', 'tasks'],
         properties: {
           title: { type: 'string' },
+          isNestjsTestWave: {
+            type: 'boolean',
+            description: 'true when this wave dispatches nimbou-skills:nestjs-test as the final verification',
+          },
           tasks: {
             type: 'array',
             items: {
@@ -132,6 +136,11 @@ For every task in every wave, return:
   field entirely when the plan declared no Role; never infer one from the file
   path, since the fallback to general-purpose is what surfaces the planning bug.
 
+Set isNestjsTestWave on a wave whose job is to dispatch
+\`nimbou-skills:nestjs-test\` as the plan's final verification. Only the last wave
+can be one. Set it to false everywhere else — a wave that merely contains some
+test tasks is not the final verification wave.
+
 Also return planOrigin (nestjs-plan / nuxt-plan / other) and posExecucao: the
 verbatim items under \`## Pos-execucao\` when that section exists.
 
@@ -181,14 +190,17 @@ for (let w = 0; w < waves.length; w++) {
     for (const f of task.files ?? []) owner.set(f, index)
   }
 
+  // A nestjs-test wave carries no Role by contract — it routes through the test
+  // auditors, not through implementers. Only other waves owe one.
+  const unrouted = wave.isNestjsTestWave ? [] : tasks.filter(t => !t.agentType)
+
   phase('Implement')
-  const unrouted = tasks.filter(t => !t.agentType).length
   log(
     `${label}: ${groups.length} implementer(s) for ${tasks.length} task(s)` +
-      (unrouted ? ` — ${unrouted} without a declared Role, falling back to general-purpose` : ''),
+      (unrouted.length ? ` — ${unrouted.length} without a declared Role, falling back to general-purpose` : ''),
   )
-  for (const task of tasks) {
-    if (!task.agentType) concerns.push(`${label}: "${task.title}" declared no Role; dispatched as general-purpose.`)
+  for (const task of unrouted) {
+    concerns.push(`${label}: "${task.title}" declared no Role; dispatched as general-purpose.`)
   }
 
   const reports = await parallel(
@@ -254,15 +266,103 @@ Do not push. Do not commit anything outside this wave.`,
     break
   }
 
-  executed.push({ wave: label, sha: commit.sha, message: commit.message, tasks: tasks.map(t => t.title) })
+  executed.push({
+    wave: label,
+    sha: commit.sha,
+    message: commit.message,
+    tasks: tasks.map(t => t.title),
+    files,
+  })
 
   // Step 2.5: reviewers are advisory and must not gate the next wave. Start them
   // without awaiting — they run alongside wave w+1 and are collected at the end.
-  const waveSpec = tasks.map((t, i) => `### Task ${i + 1} — ${t.title}\n\n${t.spec}`).join('\n\n')
-  const waveReports = reports
-    .map((r, i) => `### ${groups[i].map(t => t.title).join(' + ')}\n${JSON.stringify(r, null, 2)}`)
-    .join('\n\n')
+  dispatchReviewers(
+    label,
+    commit.sha,
+    tasks.map((t, i) => `### Task ${i + 1} — ${t.title}\n\n${t.spec}`).join('\n\n'),
+    reports
+      .map((r, i) => `### ${groups[i].map(t => t.title).join(' + ')}\n${JSON.stringify(r, null, 2)}`)
+      .join('\n\n'),
+  )
+}
 
+// Step 2.6: a plan from nestjs-plan MUST end with a nestjs-test wave scoped to
+// the files it changed. When the plan author forgot it, the executor adds it —
+// shipping a backend plan without its verification wave is not an option.
+if (!stoppedAt && plan.planOrigin === 'nestjs-plan' && !waves.some(w => w.isNestjsTestWave)) {
+  const label = 'Onda Final — Verificação (nestjs-test)'
+  concerns.push(
+    `${label}: the plan came from nestjs-plan but declared no final nestjs-test wave. The executor added it. Fix the plan.`,
+  )
+  log(`${label}: missing from the plan, adding it.`)
+
+  const touched = [...new Set(executed.flatMap(e => e.files ?? []))]
+
+  phase('Implement')
+  const testReport = await agent(
+    `Run the plan's final verification wave using \`nimbou-skills:nestjs-test\`.
+
+The plan at \`${planPath}\` came from \`nestjs-plan\` but declared no final
+verification wave. You are that wave.
+
+Scope: ONLY what this plan changed across every wave — these files and nothing
+else:
+
+${touched.map(f => `- ${f}`).join('\n')}
+
+Do this:
+1. Derive the explicit suite/file paths that cover those files — the controllers,
+   use-cases, repositories, Prisma adapters, and migrations they contain.
+2. Invoke the runner with those paths and nothing wider, e.g.
+   \`pnpm test -- --runInBand <suite-path>\`.
+3. An unfiltered \`pnpm test\` is forbidden. If you cannot derive a scoped path
+   set, report BLOCKED rather than widening the run.
+4. Stabilize or expand only the suites covering the files above.
+
+Do NOT commit — the caller commits this wave. Report status, the files you touched,
+and the actual runner output.`,
+    { label, phase: 'Implement', schema: IMPL_SCHEMA, agentType: 'general-purpose' },
+  )
+
+  if (!testReport || testReport.status === 'BLOCKED') {
+    stoppedAt = {
+      wave: label,
+      blockers: [{ tasks: ['nestjs-test'], blocker: testReport?.blocker ?? 'nestjs-test wave returned no result' }],
+    }
+  } else {
+    for (const c of testReport.concerns ?? []) concerns.push(`${label}: ${c}`)
+
+    phase('Commit')
+    const testFiles = testReport.filesTouched ?? []
+    const testCommit = testFiles.length
+      ? await agent(
+          `Commit the final verification wave for the plan at \`${planPath}\`.
+
+Files touched by the nestjs-test wave:
+${testFiles.map(f => `- ${f}`).join('\n')}
+
+Stage them EXPLICITLY by path — never \`git add -A\`. Mirror the repo's commit
+style from \`git log\`. Do not push. Return the SHA and message.`,
+          { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA },
+        )
+      : null
+
+    if (testCommit) {
+      executed.push({
+        wave: label,
+        sha: testCommit.sha,
+        message: testCommit.message,
+        tasks: ['nestjs-test'],
+        files: testFiles,
+      })
+      dispatchReviewers(label, testCommit.sha, 'Final verification wave: scoped nestjs-test run.', JSON.stringify(testReport, null, 2))
+    } else {
+      log(`${label}: green with no file changes, nothing to commit.`)
+    }
+  }
+}
+
+function dispatchReviewers(label, sha, requested, reported) {
   reviews.push(
     agent(
       `You are reviewing whether a wave's implementation matches its specification.
@@ -281,15 +381,15 @@ would close.
 
 ## What Was Requested
 
-${waveSpec}
+${requested}
 
 ## What the Implementers Claim Was Changed
 
-${waveReports}
+${reported}
 
 ## Diff Under Review
 
-Run \`git show ${commit.sha}\` and open the touched files at \`file:line\` to confirm
+Run \`git show ${sha}\` and open the touched files at \`file:line\` to confirm
 context. Review only this commit.
 
 Return findings as \`spec-issue\` (Missing / Extra / Misunderstanding) or
@@ -303,7 +403,7 @@ diff matches the spec. Change nothing.`,
 
   reviews.push(
     agent(
-      `Review the code in commit ${commit.sha} (${label} of the plan at ${planPath}).
+      `Review the code in commit ${sha} (${label} of the plan at ${planPath}).
 
 Brief yourself with \`nimbou-skills:request-review\`. Scope strictly to this commit.
 

@@ -34,6 +34,8 @@ Use it like this:
    `/nimbou-skills:execute-plan docs/plans/<plan>.md`
 3. Read the returned report and surface it per the Output Discipline section below.
 
+The workflow enforces the structural guards on its own, so launching it directly still refuses a plan without `## Ondas de Execução` and still adds the final `nestjs-test` wave when a `nestjs-plan` forgot to declare one — recording that as a `concern`. What it cannot do is Step 1's judgement: spotting a missing assumption, a contradiction between two waves, or a requirement the plan never covered. That is why Step 1 stays in conversation.
+
 Fall back to the prose path (Steps 2-4 executed turn by turn) whenever the workflow is unavailable — Codex, workflows disabled, or a plan small enough that the setup is not worth it. **The prose path is normative.** The workflow mirrors it; when the two disagree, this file wins.
 
 ## Step 1: Load and Review
