@@ -79,6 +79,32 @@ This file map drives the waves.
 - Make the handoff between page, components, and composables explicit.
 - Call out any local anti-pattern avoidance that the execution must preserve, such as not duplicating fetch ownership between page and composable or not introducing store state for simple parent-child communication.
 
+## Execution Contract
+
+Every task under `## Ondas de Execução` MUST carry these five fields. They are what
+`nimbou-skills:executing-plans` extracts to dispatch the task — a field the executor has
+to infer is a field it can infer wrong.
+
+| Field | Rule |
+|---|---|
+| `**Role:**` | One slug from Role Mapping below. |
+| `**Onda:**` | The wave number. Must match the `Onda` column of the file's row in `## Arquivos`. |
+| `**Files:**` | Every file this task WRITES, comma-separated — its write set. Two tasks in the same wave must not share a file. |
+| `**Consome:**` | The contracts consumed from earlier waves — composable signatures, prop APIs, shared types — **pasted as actual declarations**, not referenced by name. Write `nada` only for Onda 1. |
+| `**Verificação:**` | The single command that proves the task is done, scoped to the files it changed. Never `/test` over the whole app, never an unscoped `pnpm test`. |
+
+`## Arquivos` stays as the overview table; the per-task fields are what actually drives
+execution. When the two disagree, that is a planning bug — fix the table.
+
+**`Consome` is mandatory from Onda 2 on.** A later wave exists *because* it consumes a
+composable signature, prop API, or shared type from an earlier one. If you cannot name
+what a task consumes, the wave boundary was wrong — merge it into the earlier wave. The
+implementer subagent has none of your context: a task told it consumes nothing will
+redeclare the type it should have imported.
+
+Do **not** add a commit step to a task. `executing-plans` commits once per wave, after
+every task in it lands and verifies.
+
 ## Role Mapping
 
 Every row in `## Arquivos` MUST set a `Role` slug so `executing-plans` can route execution to the correct agent-author:
@@ -113,7 +139,23 @@ Create a project details page using the existing status badge and a new sidebar.
 
 ## Ondas de Execução
 ### Onda 1 — Contratos compartilhados (paralelo)
+
+#### Task 1: useProjectFilters
+**Role:** `nimbou-skills:nuxt-composable-author`
+**Onda:** 1
+**Files:** `composables/useProjectFilters.ts`
+**Consome:** `nada`
+**Verificação:** `pnpm test -- composables/useProjectFilters.spec.ts`
+
 ### Onda 2 — Componentes e configs independentes (paralelo)
+
+#### Task 2: ProjectSidebar
+**Role:** `nimbou-skills:vue-component-author`
+**Onda:** 2
+**Files:** `components/projects/ProjectSidebar.vue`
+**Consome:** `useProjectFilters(): { status: Ref<Status[]>, toggle(s: Status): void }`
+**Verificação:** `pnpm test -- components/projects/ProjectSidebar.spec.ts`
+
 ### Onda 3 — Integração de página (paralelo dentro da onda)
 
 > Checkpoint após cada onda: dispatch `nimbou-skills:request-review` sobre o diff da onda antes de abrir a próxima.

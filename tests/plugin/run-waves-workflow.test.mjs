@@ -527,3 +527,48 @@ test('prose-execution carries the full executable contract for Codex', () => {
   assert.match(implementer, /Files You Own/)
   assert.match(implementer, /Never let an implementer commit/)
 })
+
+test('both planners declare the same Execution Contract the executor extracts', () => {
+  const nestjsPlan = readFileSync(resolve(root, 'plugins/nimbou-skills/skills/nestjs-plan/SKILL.md'), 'utf8')
+  const nuxtPlan = readFileSync(resolve(root, 'plugins/nimbou-skills/skills/nuxt-plan/SKILL.md'), 'utf8')
+  const planFormat = readFileSync(
+    resolve(root, 'plugins/nimbou-skills/skills/nuxt-plan/reference/plan-format.md'),
+    'utf8',
+  )
+
+  for (const [name, plan] of [['nestjs-plan', nestjsPlan], ['nuxt-plan', nuxtPlan]]) {
+    assert.match(plan, /## Execution Contract/, `${name} should declare the contract`)
+    for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
+      assert.match(plan, new RegExp(field), `${name} should declare ${field}`)
+    }
+    assert.match(plan, /`Consome` is mandatory from Onda 2 on/, `${name} should require consumed contracts`)
+    assert.match(plan, /Do \*\*not\*\* add a commit step to a task/, `${name} must not ask tasks to commit`)
+  }
+
+  // The per-task commit contradicted executing-plans, which commits once per wave.
+  assert.doesNotMatch(nestjsPlan, /Step 5: Commit/)
+  assert.doesNotMatch(nestjsPlan, /git add <exact files> && git commit/)
+
+  assert.match(planFormat, /Execution Contract per task/)
+  assert.match(planFormat, /Consome/)
+})
+
+test('the parser reads the contract fields instead of re-deriving them', () => {
+  assert.match(source, /Read those fields; do not\s*\n?re-derive them from the prose/)
+  assert.match(source, /the \\`\*\*Files:\*\*\\` field, split on commas/)
+  assert.match(source, /the \\`\*\*Verificação:\*\*\\` field, verbatim/)
+  assert.match(source, /never return that one/, 'the FAIL-expecting run must be excluded')
+  assert.match(source, /Never\s*\n?invent a \\`consumes\\` value/)
+  assert.match(source, /Assign each task to a wave by its \\`\*\*Onda:\*\*\\` field/)
+})
+
+test('the prose path treats an empty Consome in a later wave as a planning bug', () => {
+  const prose = readFileSync(
+    resolve(root, 'plugins/nimbou-skills/skills/executing-plans/prose-execution.md'),
+    'utf8',
+  )
+
+  assert.match(prose, /Execution Contract/)
+  assert.match(prose, /is a planning bug, not an empty dependency/)
+  assert.match(prose, /reconstruct\s*\n?the contract from the earlier wave's committed diff/)
+})

@@ -31,13 +31,21 @@ Before dispatching anything, list the files each task in the wave declares it wi
 
 Dispatch **one implementer subagent per task**, all in a **single message with multiple parallel `Agent` calls**.
 
-Build each prompt from `./implementer-prompt.md`. Each implementer gets:
+Build each prompt from `./implementer-prompt.md`. Plans from `nestjs-plan` and `nuxt-plan`
+declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `Verificação` —
+directly under the task heading. Read those fields; do not re-derive them from the prose.
+Each implementer gets:
 
-- the task's full text, verbatim from the plan
-- the exact files it owns, and an explicit statement that it must not touch any other file
-- the task's declared verification command, **verbatim** — implementers run it themselves
-- the contracts produced by earlier waves that this task consumes (types, signatures, routes), pasted in
+- the task's full body, verbatim from the plan
+- `Files` as the exact set it owns, and an explicit statement that it must not touch any other file
+- `Verificação` **verbatim** — implementers run it themselves. It is the command expecting PASS; a `nestjs-plan` task also contains a checklist step running the same suite expecting FAIL, and that one is never the verification
+- `Consome` pasted in as actual declarations, not referenced by name
 - the required report shape: files touched, behavior changed, verification output, concerns
+
+**A task in wave 2+ whose `Consome` is empty is a planning bug, not an empty dependency.**
+The wave exists because it consumes something earlier. Record it as a `concern`, and reconstruct
+the contract from the earlier wave's committed diff before dispatching — an implementer told it
+depends on nothing will redeclare the type it should have imported.
 
 The controller does **not** write implementation code during a fan-out wave. It reads reports, resolves conflicts, and commits.
 

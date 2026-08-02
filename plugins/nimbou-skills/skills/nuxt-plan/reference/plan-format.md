@@ -8,7 +8,7 @@ Return it directly in the chat by default. Only turn it into a saved Markdown do
 - `## Contexto` for the concrete frontend slice being implemented
 - `## Decisoes Fechadas` for resolved reuse, ownership, and state decisions
 - `## Arquivos` with exact paths, wave assignment, **and `Role`** (role slug per file)
-- `## Ondas de Execução` with parallel-by-default tasks per wave and a `nimbou-skills:request-review` checkpoint after each wave
+- `## Ondas de Execução` with parallel-by-default tasks per wave, each task carrying the five Execution Contract fields (`Role`, `Onda`, `Files`, `Consome`, `Verificação`), and a `nimbou-skills:request-review` checkpoint after each wave
 - `## Riscos e Validacoes` for responsive, data, or interaction risks
 - `## Pos-execucao` for catalog verification and testing follow-up
 
@@ -41,6 +41,23 @@ A row without `Role` falls back to `general-purpose` in `executing-plans` with a
 - CSS Grid for 2D page sections.
 - Flexbox for 1D alignment.
 - Container queries when local responsiveness matters.
+
+## Execution Contract per task
+
+Each task under `## Ondas de Execução` carries:
+
+```md
+#### Task N: <nome>
+**Role:** `<slug>`
+**Onda:** N
+**Files:** `<arquivos que a task ESCREVE, separados por vírgula>`
+**Consome:** `<declarações coladas das ondas anteriores>` | `nada`
+**Verificação:** `<comando escopado que prova a task pronta>`
+```
+
+`Consome` is mandatory from Onda 2 on — that is what makes it a later wave. A task that
+consumes nothing belongs in Onda 1. Tasks never declare a commit step: `executing-plans`
+commits once per wave.
 
 ## Wave rules
 

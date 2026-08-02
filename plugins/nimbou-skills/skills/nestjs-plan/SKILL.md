@@ -73,11 +73,10 @@ Every plan MUST start with this header:
 ### Task N: [Use-case or Slice Name]
 
 **Role:** `<role-slug>`
-
-**Files:**
-- Create: `src/modules/...`
-- Modify: `src/...`
-- Test: `test/...` or `src/...spec.ts`
+**Onda:** N
+**Files:** `src/modules/.../create-invoice.use-case.ts`, `src/modules/.../create-invoice.spec.ts`
+**Consome:** `nada`
+**Verificação:** `pnpm test -- --runInBand src/modules/.../create-invoice.spec.ts`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -125,10 +124,30 @@ export class CreateInvoiceUseCase {
 Run: `pnpm test -- --runInBand path/to/spec` (same scoped path as Step 2 — do not widen to the full suite)
 Expected: PASS
 
-- [ ] **Step 5: Commit**
-
-Run: `git add <exact files> && git commit -m "feat: implement [task name]"`
 ````
+
+Do **not** add a commit step to a task. `nimbou-skills:executing-plans` commits once per
+wave, after every task in it lands and verifies. Tasks inside a wave run in parallel, so
+per-task commits would interleave into unreviewable history.
+
+## Execution Contract
+
+The five fields above the checklist are what `nimbou-skills:executing-plans` extracts to
+dispatch the task. They exist so the executor performs extraction, not interpretation —
+a field the executor has to infer is a field it can infer wrong.
+
+| Field | Rule |
+|---|---|
+| `**Role:**` | One slug from Role Mapping below. Never omit it outside the final `nestjs-test` wave. |
+| `**Onda:**` | The wave number this task belongs to. Explicit — never leave the executor to infer wave membership from prose. |
+| `**Files:**` | Every file this task WRITES, comma-separated. This is the task's write set: two tasks in the same wave must not share a file. Files the task only reads do not belong here. |
+| `**Consome:**` | The contracts this task consumes from earlier waves — types, signatures, routes, DTOs, schema fields — **pasted as actual declarations**, not referenced by name. Write `nada` only for Onda 1. |
+| `**Verificação:**` | The single command that proves the task is done, expecting PASS. Scoped path always; a bare `pnpm test` is a planning failure. |
+
+Two rules that are easy to get wrong:
+
+- **`Consome` is mandatory from Onda 2 on.** A later wave exists *because* it consumes something an earlier wave produced. If you cannot name what a task consumes, the wave boundary was wrong — merge it into the earlier wave. The implementer subagent has none of your context: a task told it consumes nothing will redeclare the type it should have imported.
+- **`Verificação` is the green command, not the red one.** Step 2 of the checklist runs the same suite expecting FAIL, to prove the test is real. That run is part of the task body, never the `Verificação` field.
 
 ## Role Mapping
 
@@ -197,8 +216,9 @@ After writing the complete plan, check:
 6. **Contract efficiency:** chatty endpoints, per-id validation loops, and full-payload updates are not planned by accident
 7. **Test coverage:** the plan proves behavior at HTTP, application, and persistence levels when relevant
 8. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave; tasks inside a wave are genuinely parallel-safe (no shared file writes, no implicit ordering)
-9. **Review checkpoints:** every wave ends with an explicit `nimbou-skills:request-review` checkpoint
-10. **Final wave:** the final wave dispatches `nimbou-skills:nestjs-test` with scope restricted to the files this plan touched — every controller, use-case, repository, and migration introduced anywhere in the plan, **and nothing else**. The verification command must include explicit suite paths; an unfiltered `pnpm test` is a planning failure.
+9. **Execution Contract:** every task carries `Role`, `Onda`, `Files`, `Consome`, and `Verificação`. No task declares a commit step. `Consome` is non-empty for every task outside Onda 1, and holds pasted declarations rather than names
+10. **Review checkpoints:** every wave ends with an explicit `nimbou-skills:request-review` checkpoint
+11. **Final wave:** the final wave dispatches `nimbou-skills:nestjs-test` with scope restricted to the files this plan touched — every controller, use-case, repository, and migration introduced anywhere in the plan, **and nothing else**. The verification command must include explicit suite paths; an unfiltered `pnpm test` is a planning failure.
 
 Fix issues inline before handing off the plan.
 

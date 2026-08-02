@@ -120,21 +120,32 @@ Waves live under \`## Ondas de Execução\` (or the legacy \`## Grupos de Execuc
 Set waveStructured to false if neither heading exists — do not invent waves from a
 serial task list.
 
-For every task in every wave, return:
-- title
-- spec: the task's FULL text, verbatim. Do not summarize or compress it — an
-  implementer subagent with none of this context will be handed this string as
-  its entire specification.
-- files: every file the task creates or modifies
-- verification: the task's declared verification command, verbatim
-- consumes: the contracts (types, signatures, routes, DTOs, schema fields) this
-  task depends on from earlier waves. For waves after the first, paste the actual
-  declarations from the plan, not references to them.
-- agentType: the Role slug the plan declared for this task — the \`**Role:**\` line
-  in a nestjs-plan task, or the \`Role\` column of the \`## Arquivos\` row in a
-  nuxt-plan. Copy it verbatim, including the \`nimbou-skills:\` prefix. Omit the
-  field entirely when the plan declared no Role; never infer one from the file
-  path, since the fallback to general-purpose is what surfaces the planning bug.
+Assign each task to a wave by its \`**Onda:**\` field, not by where the task text
+happens to sit in the document. When a task has no \`**Onda:**\` field, fall back to
+the heading it sits under.
+
+Plans from \`nestjs-plan\` and \`nuxt-plan\` declare an Execution Contract per task —
+five labelled fields directly under the task heading. **Read those fields; do not
+re-derive them from the prose.** For every task in every wave, return:
+- title: the task heading
+- spec: the task's FULL body, verbatim — everything below the five fields. Do not
+  summarize or compress it; an implementer subagent with none of this context will
+  be handed this string as its entire specification.
+- files: the \`**Files:**\` field, split on commas. This is the write set.
+- verification: the \`**Verificação:**\` field, verbatim. It is the command expecting
+  PASS. A nestjs-plan task also contains a checklist step that runs the same suite
+  expecting FAIL, to prove the test is real — never return that one.
+- consumes: the \`**Consome:**\` field, verbatim. Return it omitted when the field
+  says \`nada\`.
+
+When a task is missing one of these fields, return what the field would hold if you
+can read it unambiguously from the task body, and leave it out otherwise. Never
+invent a \`consumes\` value: an empty one tells the implementer it depends on no
+earlier wave, and a wrong one is worse than none.
+- agentType: the \`**Role:**\` field. Copy it verbatim, including the
+  \`nimbou-skills:\` prefix. Omit the field entirely when the plan declared no Role;
+  never infer one from the file path, since the fallback to general-purpose is what
+  surfaces the planning bug.
 
 Set isNestjsTestWave on a wave whose job is to dispatch
 \`nimbou-skills:nestjs-test\` as the plan's final verification. Only the last wave
