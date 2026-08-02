@@ -156,6 +156,73 @@ test('run-waves routes each implementer to the Role the plan declared', async ()
   ])
 })
 
+test('run-waves keeps the Role when merged tasks agree on it', async () => {
+  const colliding = JSON.parse(JSON.stringify(twoWavePlan))
+  colliding.waves[0].tasks[1].files = ['src/a.ts'] // same file as task 1 -> merge
+  colliding.waves[0].tasks[1].agentType = colliding.waves[0].tasks[0].agentType
+
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, colliding],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [CODE_REVIEW, { findings: [] }],
+    [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
+  ])
+
+  const merged = calls.find((call) => (call.opts.label ?? '').startsWith('Onda 1'))
+  assert.equal(
+    merged.opts.agentType,
+    'nimbou-skills:nestjs-controller-author',
+    'a collision costs the parallelism, but not the Role when both tasks declare the same one',
+  )
+})
+
+test('run-waves drops the Role and says so when merged tasks declare different ones', async () => {
+  const colliding = JSON.parse(JSON.stringify(twoWavePlan))
+  colliding.waves[0].tasks[1].files = ['src/a.ts'] // controller-author + repository-author
+
+  let artifactPrompt = ''
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, colliding],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [CODE_REVIEW, { findings: [] }],
+    [
+      WRITE_FOLLOWUPS,
+      (prompt) => {
+        artifactPrompt = prompt
+        return { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }
+      },
+    ],
+    ['commit follow-ups', { sha: 'shaF', message: 'docs' }],
+    ['review follow-ups', { findings: [] }],
+  ])
+
+  const merged = calls.find((call) => (call.opts.label ?? '').startsWith('Onda 1'))
+  assert.equal(merged.opts.agentType, undefined, 'two different Roles have no correct winner')
+  assert.match(artifactPrompt, /declare different Roles/, 'the dropped routing must reach follow-ups')
+  assert.match(artifactPrompt, /nestjs-controller-author/, 'and must name what was lost')
+})
+
+test('run-waves pins the spec reviewer to general-purpose instead of the default subagent', async () => {
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [CODE_REVIEW, { findings: [] }],
+  ])
+
+  for (const review of calls.filter((call) => (call.opts.label ?? '').startsWith('spec review'))) {
+    assert.equal(review.opts.agentType, 'general-purpose', 'prose-execution.md declares it explicitly')
+  }
+  for (const review of calls.filter((call) => (call.opts.label ?? '').startsWith('code review'))) {
+    assert.equal(review.opts.agentType, 'nimbou-skills:code-reviewer')
+  }
+})
+
 test('run-waves falls back to general-purpose and records a concern when a Role is missing', async () => {
   const unrouted = JSON.parse(JSON.stringify(twoWavePlan))
   for (const wave of unrouted.waves) for (const task of wave.tasks) delete task.agentType
@@ -451,6 +518,8 @@ test('prose-execution carries the full executable contract for Codex', () => {
   assert.match(prose, /implementer-prompt\.md/)
   assert.match(prose, /## Role Routing/)
   assert.match(prose, /Never infer a role from the file path/i)
+  assert.match(prose, /What happens to the Role/)
+  assert.match(prose, /declared explicitly, never left to the default/)
   assert.match(prose, /This file is normative/i)
   assert.match(prose, /Step 1 lives in `SKILL\.md`/)
 

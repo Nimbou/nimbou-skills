@@ -24,6 +24,7 @@ Before dispatching anything, list the files each task in the wave declares it wi
 
 - **Disjoint write sets (the expected case):** fan out. Proceed to 2.2.
 - **Two or more tasks writing the same file:** those tasks are not parallel-safe regardless of what the plan says. Group them into one implementer subagent that owns that file end to end, and fan the rest out normally. Record the collision as a `concern` for Step 3 — the plan should not have declared them parallel.
+  - **What happens to the Role.** The merged group keeps its `Role` when every task in it declared the same one. When they declare **different** Roles there is no correct winner, so the group falls back to `general-purpose` and you record the loss as a second `concern`, naming the Roles that were dropped. A collision therefore costs the specialized routing on top of the parallelism — one more reason it is a planning bug to fix rather than absorb.
 - **Single-task wave:** skip the dispatch. The controller implements it directly; a subagent buys nothing here.
 
 ### 2.2 Fan the wave's tasks out to implementer subagents
@@ -57,6 +58,7 @@ The controller does **not** write implementation code during a fan-out wave. It 
 Rules:
 
 - **Fallback:** a task with no `Role` gets `general-purpose`, you say so in the wave report, and you record it as a `concern` for Step 3 — same as a write-set collision. Both are planning defects, and follow-ups is where they get triaged. Fix the plan rather than leaning on the fallback.
+- **A write-set collision can cost the Role.** Merged tasks keep it only when they agree on it; conflicting Roles fall back to `general-purpose` with a `concern`. See Step 2.1.
 - **Never infer a role from the file path.** If the plan did not declare one, the fallback applies — silently picking `prisma-repository-author` because the path contains `infra/` hides a planning bug.
 - Final-wave `nestjs-test` tasks and `## Pos-execucao` items carry no `Role`. They route through the test auditors and follow-ups, not through implementers.
 - One role per task. A task that would fit two roles was mis-planned; record it as a `concern` and dispatch it under the role that owns the larger share.
@@ -84,7 +86,7 @@ If an implementer reports failure, or a verification cannot be satisfied, stop d
 
 Right after the commit lands, dispatch both reviewers in a single message with two parallel `Agent` calls (`run_in_background: true`):
 
-- **Spec compliance reviewer** — `Agent` with `subagent_type: general-purpose`, prompt built from `./spec-reviewer-prompt.md` over the wave's commit diff. Its job is to detect Missing/Extra/Misunderstanding findings and `⚠️ Deferred` items.
+- **Spec compliance reviewer** — `Agent` with `subagent_type: general-purpose` (declared explicitly, never left to the default), prompt built from `./spec-reviewer-prompt.md` over the wave's commit diff. Its job is to detect Missing/Extra/Misunderstanding findings and `⚠️ Deferred` items.
 - **Code reviewer** — `Agent` with `subagent_type: nimbou-skills:code-reviewer`, scoped to the same commit range, briefed via `nimbou-skills:request-review` placeholders.
 
 Record each background agent's id/name in TodoWrite under the "collect background review results" entry so Step 3 can pick them up.

@@ -209,7 +209,7 @@ for (let w = 0; w < waves.length; w++) {
         label: `${label} · ${group.map(t => t.title).join(' + ')}`,
         phase: 'Implement',
         schema: IMPL_SCHEMA,
-        ...(group.length === 1 && group[0].agentType ? { agentType: group[0].agentType } : {}),
+        ...(groupRole(group, label) ? { agentType: groupRole(group, label) } : {}),
       }),
     ),
   )
@@ -374,6 +374,23 @@ style from \`git log\`. Do not push. Return the SHA and message.`,
   }
 }
 
+// A write-set collision merges tasks into one implementer. Roles survive that merge
+// only when every task in the group declared the SAME one — two different roles have
+// no correct winner, so the group falls back and the loss is recorded.
+function groupRole(group, waveLabel) {
+  const roles = [...new Set(group.map(t => t.agentType).filter(Boolean))]
+
+  if (roles.length === 1 && roles.length === group.length) return roles[0]
+  if (roles.length === 1) return roles[0] // one role declared, the rest declared none
+
+  if (roles.length > 1) {
+    concerns.push(
+      `${waveLabel}: "${group.map(t => t.title).join('" + "')}" were merged by a write-set collision but declare different Roles (${roles.join(', ')}). Dispatched as general-purpose — the specialized routing was lost. Split the file so each Role owns its own task.`,
+    )
+  }
+  return null
+}
+
 function dispatchReviewers(label, sha, requested, reported) {
   reviews.push(
     agent(
@@ -409,7 +426,7 @@ Return findings as \`spec-issue\` (Missing / Extra / Misunderstanding) or
 carries a concrete \`file:line\` and a suggested next step. Vague findings are not
 actionable — concretize or drop them. Return an empty findings array when the
 diff matches the spec. Change nothing.`,
-      { label: `spec review ${label}`, phase: 'Review', schema: REVIEW_SCHEMA },
+      { label: `spec review ${label}`, phase: 'Review', agentType: 'general-purpose', schema: REVIEW_SCHEMA },
     ).catch(() => null),
   )
 
