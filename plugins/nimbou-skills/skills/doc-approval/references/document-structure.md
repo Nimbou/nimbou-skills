@@ -1,173 +1,129 @@
-# Approval Document — structure, translation, and identity
+# Presentation deck — structure, translation, and identity
 
-Read this in full before authoring `assets/template.html`. It defines (1) what each
-section contains and which spec source feeds it, (2) how to rewrite Gherkin into
-business language, and (3) the FAEPEN visual identity and chip/state colours.
+Read this in full before authoring `assets/template.html`. It defines (1) the deck
+shape and how each section is built, (2) how to derive sections from the spec and how
+to translate Gherkin into business language, and (3) the FAEPEN visual identity and
+diagram/chip colour semantics.
 
-The goal is a document a **non-technical sponsor** reads end-to-end and signs. If a
-line would only make sense to an engineer, it does not belong here.
-
----
-
-## 1. Section map (source → section)
-
-Mirror this order. Omit a section only when the spec genuinely has nothing for it
-(e.g. greenfield domains have no "today × proposed").
-
-| # | Section | Source in the spec | Notes |
-| --- | --- | --- | --- |
-| 1 | **Cover** | `domain.md` title + first paragraph of *Contexto* | Brand mark + org, kicker "Especificação de Domínio · Para aprovação", `<h1>` = domain name in business words, one-line serif subtitle, meta line with date + "Aprovação: \<role\>". Add a scope pill ("Etapa X de Y · …") only when the spec frames the domain as one stage of a larger program. |
-| 2 | **Para que serve este documento** | *Contexto* + *Escopo* | A `.lead` box: what the reader is approving, plus a muted scope note (e.g. "primeira de duas etapas") when applicable. |
-| 3 | **Contexto / visão do fluxo** | *Contexto* | Short narrative. Optional `.states` chip row: for a staged flow, highlight the current step and grey the rest; for an ordering/invariant domain, render the chain it enforces instead of program steps; omit it when there is no flow. |
-| 4 | **O que muda** (Hoje × Proposto) | any current-vs-proposed contrast in the spec | A `.compare` table. **Include** whenever a contrast can be sourced — even from one line of prose (e.g. "substitui o caminho manual antigo"), not only a literal "Hoje/Passa a ser" block. **Omit** only when the domain is wholly new behaviour. Never fabricate a contrast. |
-| 5 | **Quem participa** | *Fronteira de responsabilidade* + roles named in *Contexto* | One `.role` row per actor, in business terms (Coordenador, Bolsista, Sistema, …). |
-| 6 | **Glossário** | *Termos centrais* | Two-column table. Translate definitions; drop any code/entity wording. |
-| 7 | **Estados e situações** | *Estados reais* + *Status derivados* | See §3 below. Keep real states and derived statuses in **separate** sub-blocks. If the domain declares no real states of its own, render only derived and rename the section to "Situações". |
-| 8 | **Regras de negócio e cenários** | the `*.feature` files | The heart of the document. One `.rule` card per `Regra`, grouped under `<h3>` per feature/slice. See §2. |
-| 9 | **Escopo** (incluso × fora) + pré-condições | *Escopo desta entrega* | A `.twocol` of `.box.in` / `.box.out`, plus any precondition line. |
-| 10 | **Aprovação** | fixed template | Decision options, observações area, signature lines. See §4. |
-
-A closing `footer.note` repeats the institution, domain, stage, date, and
-"Documento para aprovação interna."
-
-**Source by meaning, not by heading.** The "Source" column names the *typical*
-`domain.md` section, but real specs vary: a domain may carry roles inside *Comandos
-e decisões* instead of *Fronteira de responsabilidade*, or have sections the map
-never lists (*Classificações que alteram o fluxo*, *Entidades de negócio*, *A cadeia
-temporal*). Map that content to the nearest section by what it *means* — a
-classification feeds the glossary or states; a command feeds a rule card or a role.
-
-**Drop engineering-only context.** Cross-domain wiring (*Relacionamento com outros
-domínios*, *Referências cruzadas*, a *Fronteira de responsabilidade* table of
-"owner: which backend") is not for a sponsor — omit it even though the spec carries
-it.
-
-**Surface the core rule.** When a domain is an invariant or ordering (e.g. a date
-chain `início ≤ emissão ≤ fim`), state it once in one plain business line near the
-top of the Contexto — that single rule is the most important thing the reader
-approves; do not leave it buried inside scenarios.
+The goal is a **visual deck** a non-technical sponsor scans in seconds to decide on
+approval. Diagrams carry the model; the checklist carries the rules; the description
+line gives each section its "why". No paragraphs, no technical surface. Signing
+happens outside this artifact — the deck has **no signature block**.
 
 ---
 
-## 2. Gherkin → business translation rules
+## 1. Deck shape
 
-The `.feature` files are written for engineers. Rewrite them; never transcribe.
+- **Page 1 = cover, alone.** Brand mark + org, kicker "Especificação de Domínio · Para
+  aprovação", `<h1>` = domain name in business words, one-line serif subtitle, meta
+  line with date + "Aprovação: <role>".
+- **Then content pages, each holding AT LEAST 2 sections** (never one section on a
+  page — pack them two-up; three only if they genuinely fit without clipping).
+- **One section per theme.** The first section is usually **"O que muda"** (the
+  hoje×proposto shift) when a contrast can be sourced. The remaining sections group
+  the **business rules** by theme — **every business rule in `domain.md` must appear**
+  in some section (completeness is required).
+- Index each section `NN / TOTAL` in its eyebrow.
 
-- **`Funcionalidade:` / `# language: pt` / actor framing** → drop the framing.
-  Carry the intent into the section narrative if useful.
-- **`Regra:`** → a rule card header (`.rule > .rh`), phrased as a plain business
-  rule ("Regra: bolsista já cadastrado é reaproveitado, sem convite").
-- **`Cenário:`** → a `.sc` block:
-  - `.t` (title) = a short, readable scenario name;
-  - `.g` (gloss) = **one or two** business sentences derived from the
-    `Dado`/`Quando`/`Então` steps. Keep **Dado / Quando / Então** as bolded
-    connective words inside the sentence, but rewrite the step content into
-    business language. Collapse multiple `E`/`Dado` steps into one clause.
-- **States** — replace every `UPPER_CASE` token with a readable Title-Case label
-  (`PENDENTE` → **Pendente**, `VINCULADO` → **Vinculado**) and bold it as a status
-  word. Use the chip styles (§3) when listing them.
-- **Strip all technical surface** — no endpoints, verbs, status codes, DTO/field
-  names, class/controller/use-case/repository names, Prisma models, tables,
-  columns, SQL, migrations, tokens, or internal identifiers.
-- **Translate internal terms** to their business equivalent — e.g. "wizard público"
-  → "assistente de cadastro guiado", "dedup por CPF" → "reaproveita o cadastro
-  existente em vez de duplicar". This also covers internal aggregate names, acronyms,
-  and codes: "provisão `SCHOLARSHIP_GRANT`" → "parcela", "SPB" → "Solicitação de
-  Pagamento de Bolsa". Spell an acronym out once, then use the plain noun.
-- **Scenario Outlines** (`Esquema do Cenário` + `Exemplos:`) → collapse the whole
-  examples table into **one** scenario card stating the variation in business words
-  ("a mesma exigência vale para os três tipos de documento"). Never dump the rows.
-- **Drop example/fixture dates and literals** — concrete values in steps
-  (`15/12/2025`, `R$ 1.000,00`) are test fixtures, not business rules. Express the
-  rule relationally ("antes do início do projeto", "acima do saldo disponível")
-  instead of transcribing the value.
-- **Keep business-relevant facts** — deadlines/validity, who does what, what gets
-  blocked, and the resulting status. Drop anything that only matters to code.
-
-Worked example (from `auto-cadastro-bolsista.feature`):
-
-> ```gherkin
-> Cenário: Convite expirado
->   Dado um convite de bolsista EXPIRADO
->   Quando o bolsista abre o link
->   Então o acesso é recusado
->   E é orientado a solicitar um novo convite
-> ```
-
-becomes
-
-> **Convite expirado** — **Quando** o convite expirou, **então** o acesso é
-> recusado e o bolsista é orientado a solicitar um novo convite.
+Typical deck for a rules-heavy domain: cover · "O que muda" · 3–4 rule-theme sections
+= 3 pages (cover + 2 sections + 2 sections). Scale the number of sections to the
+number of rule themes; keep two per page.
 
 ---
 
-## 3. States and derived statuses
+## 2. Section anatomy
 
-Source these from `domain.md`. **Do not merge them** — the reader should see real
-states (an entity's lifecycle) apart from derived statuses (situations computed
-from data).
+Every `.section` has, top to bottom:
 
-- **Real states** (*Estados reais*) → render each lifecycle as a `.states` chip row
-  with `→` arrows between transitions, plus a short `ul.small` legend describing
-  each state in one business sentence.
-- **Derived statuses** (*Status derivados*) → render as a separate `.states` row or
-  a small list, clearly labelled as derived situations, each with its plain-language
-  condition (no code).
-- **Domain with no real states of its own** — panel, projection, and invariant
-  domains often say so verbatim ("este domínio não introduz estados próprios", "são
-  leituras derivadas dos dados"). When so, **omit the real-states block entirely**,
-  rename the section to "Situações", and render only the derived statuses. Do not
-  invent a lifecycle and do not pull real states from other domains into this
-  document.
+1. **`.s-head`** — eyebrow (`THEME` on the left, `NN / TOTAL` on the right).
+2. **`.title`** (serif) — a short, plain-business headline for the theme.
+3. **`.sdesc`** — **REQUIRED one-to-two-line description** of what the section covers.
+   This is not optional: every section carries a description. It also fills vertical
+   space so the section does not read as empty.
+4. **`.s-body`** — two columns:
+   - **left `.mini`** — a small diagram composed from the primitives in §4;
+   - **right `.rules`** — a checklist (`✓`) of the theme's rules, one `.rl` per rule.
 
-### Chip colour semantics
-
-| Class | Use for |
-| --- | --- |
-| `chip gold` | pending / in-progress / intermediate / current step |
-| `chip green` | good terminal / active / completed / linked |
-| `chip red` | error / expired / blocked-bad |
-| `chip muted` | cancelled / inactive / a future step out of this scope |
-
-Use `.arrow` (`→`) between chips to show transitions; separate independent
-transition lines with `&nbsp;&nbsp;|&nbsp;&nbsp;`.
+Keep the checklist to ~4 short lines per section; bold the key noun/verb with `<b>`.
 
 ---
 
-## 4. Approval block
+## 3. Deriving sections from the spec, and Gherkin → business translation
 
-A `.approval` card with:
+Read only `domain.md` + the `*.feature` files. Map content by meaning, not by heading.
 
-1. one short declaration line ("Declaro ter revisado as regras de negócio acima
-   referentes a **\<domínio\>** e registro minha decisão:");
-2. three decision options as checkbox chips: **Aprovado**, **Aprovado com
-   ressalvas**, **Ajustes necessários**;
-3. an "Observações / ressalvas:" label above a blank `.obs` writing area;
-4. signature rows (`.sigrow`/`.sigline`): **Nome**, **Cargo — \<role\>**, then on a
-   second row **Assinatura** and a narrower **Data** field.
+- **"O que muda"** ← any current-vs-proposed contrast in the spec (even one line of
+  prose like "substitui o caminho manual antigo"). Render it as the intro section with
+  a vertical hoje ↓ proposto mini and 3–5 checklist gains. Omit only for wholly-new
+  behaviour with nothing to contrast.
+- **Rule-theme sections** ← the `Regra:` cards across the `*.feature` files and the
+  "Regras de negócio" of `domain.md`. Group related rules under one theme (e.g. "a
+  quem pertence", "o que cada X enxerga", "governança e limites"). Cover **all** rules.
 
-This block is fixed boilerplate; only the domain name and approver role change.
+Rewrite every scenario; never transcribe:
+
+- **`Regra:` / `Cenário:` steps** → one short checklist line stating the rule in
+  business words. Keep **Dado / Quando / Então** as bolded connectives only when it
+  reads naturally; usually the plain affirmative rule is enough for a checklist.
+- **States** — replace every `UPPER_CASE` token with a readable Title-Case label and
+  bold it (`PENDENTE` → **Pendente**). Do not render a dedicated states section; fold
+  a relevant state into the rule line or a diagram tag when it matters.
+- **Scenario Outlines** (`Esquema do Cenário` + `Exemplos:`) → collapse into ONE line
+  stating the variation ("vale para os três tipos"). Never dump the rows.
+- **Drop fixture dates/values** — express relationally ("acima do teto", "antes do
+  início"), never the literal `R$ 1.000,00` / `15/12/2025`.
+- **Strip ALL technical surface** — no endpoints, verbs, status codes, DTO/field
+  names, class/controller/use-case/repository names, Prisma models, tables, columns,
+  SQL, migrations, tokens. Translate internal terms to their business equivalent
+  (a "wizard" → "assistente de cadastro guiado"; an acronym spelled out once).
+
+---
+
+## 4. Mini-diagram vocabulary
+
+Compose each section's `.mini` from these primitives — the diagram is authored per
+theme, it is **not** a fixed template. Pick the shape that shows the theme's idea:
+
+- **`.tag`** — a labelled node. Colour by meaning:
+  - `.tag.owner` (green) → owner / positive / "proposto";
+  - `.tag.bad` (red) → the bad status quo / "hoje";
+  - `.tag.gold` → the highlighted / project-specific / own variant;
+  - plain `.tag` → a neutral target.
+  Optional `.tag .k` eyebrow inside a tag for a small kicker label.
+- **`.node`** — a larger boxed node (same colour modifiers) for a headline pair.
+- **Arrows** — `.ar` (`→`) for "leads to / has"; `.ar.dn` (`↓`) for a vertical step.
+- **`.barrier`** (`✕`, red) — isolation or mutual exclusion between two things.
+- **`.chip` / `.chips`** — a compact list of short items under a node.
+- **`.vp`** — a **vertical pair** (label ↓ target) stacked in a narrow column.
+- **`.note`** — a one-line muted caption under the mini restating the takeaway.
+
+Common shapes: `hoje ↓ proposto` (the shift); `owner → its items` rows (ownership);
+two `.vp` separated by `✕` (isolation); `actor → action` rows (governance).
+
+**Anti-wrap rule (important).** The left column is ~70 mm. A horizontal
+`rótulo → alvo comprido` will wrap and leave the arrow pointing at nothing. When the
+target label is long, either use a **`.vp`** (vertical pair) or **shorten the label**
+to one or two words. Verify in the rendered PDF that no arrow dangles.
 
 ---
 
 ## 5. Visual identity (FAEPEN)
 
-These tokens are already wired into `assets/template.html` `:root`. Keep them unless
-the user asks to rebrand.
+These tokens are wired into `assets/template.html` `:root`. Keep them unless the user
+asks to rebrand; never invent a different org.
 
 | Token | Value | Role |
 | --- | --- | --- |
-| `--green` | `#2C5937` | institutional green — H1/H2, table headers |
-| `--green-deep` | `#132819` | dark green — H3, strong labels |
-| `--gold` | `#C4922A` | gold — H2 underline, accents, scenario left border |
-| `--neutral` | `#F8F6F3` | off-white — lead/boxes background |
+| `--green` | `#2C5937` | institutional green — titles, owner tags |
+| `--green-deep` | `#132819` | dark green — strong labels |
+| `--gold` | `#C4922A` | gold — eyebrow underline, arrows, check markers |
+| `--danger` | `#B71C1C` | red — "hoje"/bad tags, the `✕` barrier |
+| `--neutral` | `#F8F6F3` | off-white — chips background |
 | `--ink` | `#2D2A26` | body text |
 
-- **Titles** in serif (`Georgia, "Times New Roman", serif` fallback — Source Serif
-  may be absent).
-- **Body** in sans (`"Inter", "Helvetica Neue", Arial, sans-serif` — Inter may be
-  absent; the fallback prints fine).
-- **Page**: A4, margins `18mm 16mm 16mm`, `print-color-adjust: exact` so the
-  coloured chips and headers survive printing.
-- Use `.pgbreak` to push long content (e.g. the states + rules block) onto a fresh
-  page so the cover and front matter stay clean.
+- **Titles** in serif (`Georgia` fallback — Source Serif may be absent). **Body** in
+  sans (`Inter` fallback — Helvetica/Arial print fine).
+- **Page**: A4 portrait, margins `15mm`, `print-color-adjust: exact` so tags, chips,
+  the gold eyebrow and the `✕` survive printing.
+- The converter (`scripts/html_to_pdf.sh`) honours whatever `@page size` the HTML
+  declares — A4 portrait is the default; do not change it without reason.

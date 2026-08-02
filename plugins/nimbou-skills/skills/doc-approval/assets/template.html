@@ -1,266 +1,213 @@
 <!DOCTYPE html>
 <!--
-  Approval document template (doc-approval skill).
-  Copy this file to docs/domain/<domain>/aprovacao-<role-slug>.html and fill each
-  section per references/document-structure.md. Replace every {{TOKEN}} and every
-  block marked EXAMPLE / TODO. Keep the CSS as-is unless rebranding.
-  Convert with scripts/html_to_pdf.sh.
+  Presentation deck template (doc-approval skill).
+  Copy this file to docs/domain/<domain>/apresentacao-<role-slug>.html and fill it per
+  references/document-structure.md. Replace every {{TOKEN}}. The deck is:
+    page 1 = cover (alone); then AT LEAST 2 .section per .page.
+  Each .section = eyebrow + title + REQUIRED .sdesc description + .s-body (.mini diagram
+  on the left, .rules checklist on the right). Duplicate .section / .page as needed so
+  ALL business rules from domain.md appear, grouped by theme.
+  Keep the CSS as-is unless rebranding. Convert with scripts/html_to_pdf.sh.
+
+  IMPORTANT: author this HTML DIRECTLY (write/edit). Never post-process it with
+  `perl -i`/`sed` that re-encodes the file — it corrupts UTF-8 accents (mojibake).
 -->
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>{{DOMAIN_TITLE}} — Especificação para Aprovação</title>
+<title>{{DOMAIN_TITLE}} — Apresentação para Aprovação</title>
 <style>
   :root{
     --green:#2C5937; --green-deep:#132819; --gold:#C4922A;
     --ink:#2D2A26; --muted:#6b655d; --neutral:#F8F6F3; --line:#e3ddd3;
-    --blue:#2E62A6; --danger:#B71C1C; --success:#2E7D32; --warning:#E65100;
+    --danger:#B71C1C; --danger-soft:#fbe9e9; --danger-bd:#edc3c3;
+    --green-soft:#e8f0ea; --green-bd:#bcd4c3;
+    --gold-soft:#fbf3e2; --gold-bd:#e8d3a3;
   }
-  *{ box-sizing:border-box; }
-  @page{ size:A4; margin:18mm 16mm 16mm 16mm; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  @page{ size:A4 portrait; margin:15mm; }
   html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  body{
-    font-family:"Inter","Helvetica Neue",Arial,sans-serif;
-    color:var(--ink); font-size:10.5pt; line-height:1.55; margin:0;
-  }
-  h1,h2,h3,.serif{ font-family:Georgia,"Times New Roman",serif; }
-  h1{ font-size:23pt; color:var(--green); line-height:1.12; margin:0 0 6px; letter-spacing:-.01em; }
-  h2{ font-size:15pt; color:var(--green); margin:26px 0 10px; padding-bottom:5px;
-      border-bottom:2px solid var(--gold); letter-spacing:-.01em; }
-  h3{ font-size:11.5pt; color:var(--green-deep); margin:16px 0 6px; }
-  p{ margin:0 0 9px; }
-  .muted{ color:var(--muted); }
-  .small{ font-size:9pt; }
-  a{ color:var(--blue); text-decoration:none; }
+  body{ font-family:"Inter","Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .serif{ font-family:Georgia,"Times New Roman",serif; }
 
-  /* Cover */
-  .cover{ padding:14mm 0 6mm; border-bottom:1px solid var(--line); margin-bottom:8mm; }
-  .brand{ display:flex; align-items:center; gap:10px; margin-bottom:30mm; }
-  .brand .mark{ width:34px; height:34px; border-radius:9px; background:var(--green);
-      color:#fff; font-family:Georgia,serif; font-weight:700; font-size:18px;
-      display:flex; align-items:center; justify-content:center; }
-  .brand .org{ font-weight:600; color:var(--green-deep); font-size:11pt; }
-  .brand .org small{ display:block; color:var(--muted); font-weight:400; font-size:8.5pt; }
-  .kicker{ text-transform:uppercase; letter-spacing:.12em; font-size:8.5pt;
-      color:var(--gold); font-weight:700; margin-bottom:10px; }
-  .cover .sub{ font-size:12pt; color:var(--ink); max-width:150mm; margin-top:8px; }
-  .cover .meta{ margin-top:24px; font-size:9.5pt; color:var(--muted); }
+  /* a full A4 page; the cover is one, each content page holds >= 2 sections */
+  .page{ height:267mm; page-break-after:always; display:flex; flex-direction:column; }
+  .page:last-child{ page-break-after:auto; }
+
+  /* section (two or more per content page) */
+  .section{ flex:1; display:flex; flex-direction:column; min-height:0; padding:4mm 0; }
+  .section + .section{ border-top:1.5px solid var(--line); }
+
+  .s-head{ display:flex; justify-content:space-between; align-items:baseline;
+    border-bottom:2px solid var(--gold); padding-bottom:5px; margin-bottom:2px; }
+  .eyebrow{ text-transform:uppercase; letter-spacing:.12em; font-size:8.5pt; font-weight:700; color:var(--gold); }
+  .eyebrow .n{ color:var(--muted); letter-spacing:.05em; margin-left:8px; }
+  .title{ font-size:17pt; color:var(--green); line-height:1.06; margin:9px 0 0; letter-spacing:-.01em; }
+  .sdesc{ font-size:9.8pt; color:var(--muted); line-height:1.4; margin-top:5px; max-width:165mm; }
+
+  .s-body{ flex:1; display:grid; grid-template-columns:70mm 1fr; gap:22px; align-items:center; margin-top:6px; }
+
+  /* mini diagram — compose per theme from the primitives below */
+  .mini{ display:flex; flex-direction:column; gap:9px; align-items:center; }
+  .mrow{ display:flex; align-items:center; gap:9px; justify-content:center; }
+  .vp{ display:flex; flex-direction:column; align-items:center; gap:5px; max-width:32mm; }
+  .tag{ border:1.5px solid var(--line); border-radius:10px; padding:7px 11px; font-weight:700; font-size:10.5pt;
+    background:#fff; text-align:center; color:var(--green-deep); }
+  .tag .k{ display:block; font-size:7.5pt; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:700; margin-bottom:2px; }
+  .tag.owner{ background:var(--green-soft); border-color:var(--green-bd); color:var(--green); }
+  .tag.bad{ background:var(--danger-soft); border-color:var(--danger-bd); color:var(--danger); }
+  .tag.gold{ background:var(--gold-soft); border-color:var(--gold-bd); color:#7a5a12; }
+  .ar{ color:var(--gold); font-weight:700; font-size:16pt; line-height:1; }
+  .ar.dn{ font-size:13pt; }
+  .barrier{ font-size:15pt; color:var(--danger); font-weight:700; }
+  .note{ font-size:8.7pt; color:var(--muted); text-align:center; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:7px; }
+  .chip{ font-size:9.5pt; font-weight:600; border-radius:7px; padding:3px 9px;
+    background:var(--neutral); border:1px solid var(--line); color:var(--green-deep); }
+  .chip.gold{ background:var(--gold-soft); border-color:var(--gold-bd); color:#7a5a12; }
+
+  /* rules checklist (right column) */
+  .rules{ display:flex; flex-direction:column; gap:11px; }
+  .rl{ display:flex; gap:10px; align-items:flex-start; }
+  .rl .mk{ flex:0 0 auto; width:21px; height:21px; border-radius:6px; background:var(--gold-soft);
+    border:1px solid var(--gold-bd); color:#7a5a12; font-weight:700; font-size:10.5pt; line-height:20px; text-align:center; }
+  .rl .tx{ font-size:10.8pt; line-height:1.4; color:var(--ink); }
+  .rl .tx b{ color:var(--green-deep); }
+
+  /* cover */
+  .cover{ justify-content:center; height:267mm; page-break-after:always; display:flex; flex-direction:column; }
+  .cover .mark{ width:46px; height:46px; border-radius:12px; background:var(--green); color:#fff;
+    font-family:Georgia,serif; font-weight:700; font-size:25px; display:flex; align-items:center; justify-content:center; }
+  .cover .org{ font-weight:600; color:var(--green-deep); font-size:12pt; }
+  .cover .org small{ display:block; color:var(--muted); font-weight:400; font-size:9pt; }
+  .cover h1{ font-size:37pt; color:var(--green); line-height:1.06; letter-spacing:-.015em; margin:8px 0 12px; }
+  .cover .sub{ font-size:15pt; color:var(--ink); max-width:150mm; }
+  .cover .meta{ margin-top:22px; font-size:11pt; color:var(--muted); }
   .cover .meta b{ color:var(--ink); }
-  .pill{ display:inline-block; background:var(--neutral); border:1px solid var(--line);
-      border-radius:999px; padding:3px 11px; font-size:8.5pt; color:var(--green-deep);
-      font-weight:600; }
-
-  .lead{ background:var(--neutral); border:1px solid var(--line); border-radius:12px;
-      padding:14px 16px; margin:14px 0; }
-  .lead p:last-child{ margin-bottom:0; }
-
-  table{ width:100%; border-collapse:collapse; margin:10px 0 14px; font-size:9.7pt; }
-  th,td{ text-align:left; vertical-align:top; padding:7px 10px; border-bottom:1px solid var(--line); }
-  th{ background:var(--green); color:#fff; font-weight:600; font-family:"Inter",sans-serif; }
-  tr:nth-child(even) td{ background:#fbfaf8; }
-  .compare td:first-child{ width:50%; }
-
-  ul{ margin:0 0 9px; padding-left:18px; } li{ margin:2px 0; }
-
-  .role{ display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:1px dashed var(--line); }
-  .role .who{ flex:0 0 38mm; font-weight:700; color:var(--green-deep); }
-
-  .states{ display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin:6px 0 12px; }
-  .chip{ border-radius:8px; padding:4px 10px; font-size:9pt; font-weight:600; border:1px solid var(--line); background:#fff; }
-  .chip.gold{ background:#fbf3e2; border-color:#e8d3a3; color:#7a5a12; }
-  .chip.green{ background:#e8f0ea; border-color:#bcd4c3; color:var(--green); }
-  .chip.red{ background:#fbe9e9; border-color:#edc3c3; color:var(--danger); }
-  .chip.muted{ background:var(--neutral); color:var(--muted); }
-  .arrow{ color:var(--gold); font-weight:700; }
-
-  .rule{ margin:12px 0; border:1px solid var(--line); border-radius:11px; overflow:hidden; }
-  .rule>.rh{ background:#f1ede6; padding:8px 13px; font-weight:700; color:var(--green-deep); font-size:10pt; }
-  .rule>.rb{ padding:6px 13px 11px; }
-  .sc{ margin:9px 0; padding-left:12px; border-left:3px solid var(--gold); }
-  .sc .t{ font-weight:600; color:var(--ink); margin-bottom:2px; }
-  .sc .g{ font-size:9.4pt; color:#4a453d; }
-  .sc .g b{ color:var(--green); font-weight:700; font-family:"Inter",sans-serif; font-size:8.6pt;
-      text-transform:uppercase; letter-spacing:.04em; }
-
-  .twocol{ display:flex; gap:14px; }
-  .twocol>div{ flex:1; }
-  .box{ border:1px solid var(--line); border-radius:11px; padding:11px 13px; background:#fff; }
-  .box.in{ border-color:#bcd4c3; } .box.out{ border-color:#e8d3a3; }
-  .box h3{ margin-top:0; }
-
-  .approval{ margin-top:14px; border:1.5px solid var(--green); border-radius:12px; padding:16px 18px; background:#fbfaf8; }
-  .approval .opts{ display:flex; gap:22px; margin:10px 0 16px; }
-  .approval .opt{ font-size:10pt; } .approval .bx{ display:inline-block; width:13px; height:13px;
-      border:1.5px solid var(--green); border-radius:3px; margin-right:6px; vertical-align:-2px; }
-  .sigrow{ display:flex; gap:26px; margin-top:26px; }
-  .sigrow .f{ flex:1; } .sigline{ border-top:1px solid var(--ink); padding-top:4px; font-size:8.7pt; color:var(--muted); }
-  .obs{ border:1px solid var(--line); border-radius:8px; height:20mm; margin-top:4px; }
-
-  .pgbreak{ page-break-before:always; }
-  footer.note{ margin-top:18px; padding-top:8px; border-top:1px solid var(--line);
-      font-size:8.3pt; color:var(--muted); }
+  .cover .brandrow{ display:flex; align-items:center; gap:12px; margin-bottom:34mm; }
+  .kick{ text-transform:uppercase; letter-spacing:.14em; font-size:10pt; color:var(--gold); font-weight:700; margin-bottom:8px; }
 </style>
 </head>
 <body>
 
-<!-- 1 · COVER -->
-<!-- Brand below is the FAEPEN fork default, copied from the validated reference.
-     Override only if the user supplies different branding. Never invent a different org. -->
+<!-- ============================================================= -->
+<!-- PÁGINA 1 · CAPA                                                -->
+<!-- Brand below is the FAEPEN fork default. Override only if the   -->
+<!-- user supplies different branding; never invent a different org.-->
+<!-- ============================================================= -->
 <section class="cover">
-  <div class="brand">
-    <div class="mark">F</div>
+  <div class="brandrow">
+    <div class="mark serif">F</div>
     <div class="org">FAEPEN<small>Sistema de Gestão de Projetos · Fundação FAEPEN</small></div>
   </div>
-  <div class="kicker">Especificação de Domínio · Para aprovação</div>
-  <h1>{{DOMAIN_TITLE}}</h1>
+  <div class="kick">Especificação de Domínio · Para aprovação</div>
+  <h1 class="serif">{{DOMAIN_TITLE}}</h1>
   <div class="sub serif">{{ONE_LINE_SUBTITLE}}</div>
-  <div class="meta">
-    <!-- OPTIONAL: delete this whole <span class="pill"> element when the domain is NOT one
-         numbered stage of a larger program. Do not invent an "Etapa X de Y" the spec omits. -->
-    <span class="pill">Etapa 1 de 2 · Subtítulo curto da etapa</span>
-    &nbsp;&nbsp; <b>Data:</b> {{DATE_TODAY}} &nbsp;·&nbsp; <b>Aprovação:</b> {{APPROVER_ROLE}}
-  </div>
+  <div class="meta"><b>Data:</b> {{DATE_TODAY}} &nbsp;·&nbsp; <b>Aprovação:</b> {{APPROVER_ROLE}}</div>
 </section>
 
-<!-- 2 · PARA QUE SERVE ESTE DOCUMENTO -->
-<div class="lead">
-  <p><b>Para que serve este documento.</b> {{WHAT_IS_BEING_APPROVED}}</p>
-  <!-- OPTIONAL: delete this whole <p> when the domain is not a stage of a larger program. -->
-  <p class="muted small">{{SCOPE_NOTE}}</p>
-</div>
+<!-- ============================================================= -->
+<!-- PÁGINA DE CONTEÚDO · AO MENOS 2 SEÇÕES POR PÁGINA             -->
+<!-- Duplicate .section per rule-theme (all business rules must     -->
+<!-- appear); duplicate .page every 2 sections. First section is    -->
+<!-- usually "O que muda" when a hoje×proposto contrast exists.      -->
+<!-- ============================================================= -->
+<div class="page">
 
-<!-- 3 · CONTEXTO / VISÃO DO FLUXO -->
-<h2>1. Contexto</h2>
-<p>{{CONTEXT_NARRATIVE}}</p>
-<!-- OPTIONAL: delete this whole <div class="states"> if the domain has no flow
-     (a pure projection/panel usually does not).
-     Staged flow → highlight the current step (gold/green), grey out the others (muted).
-     Ordering/invariant domain → replace the numbered steps with the chain it enforces,
-     e.g. "Início do projeto → Emissão → Fim do projeto". -->
-<div class="states">
-  <span class="chip green">1 · {{STEP_1}}</span><span class="arrow">→</span>
-  <span class="chip gold">2 · {{STEP_2}} (este documento)</span><span class="arrow">→</span>
-  <span class="chip muted">3 · {{STEP_3}}</span>
-</div>
-
-<!-- 4 · O QUE MUDA — OPTIONAL. Include if ANY current-vs-proposed contrast can be sourced
-     from the spec (even from a single line of prose like "substitui o caminho manual antigo"),
-     not only from a literal "Hoje / Passa a ser" block. Delete this whole <h2>+<table> when the
-     domain is wholly new behaviour with nothing to contrast. Never fabricate a contrast. -->
-<h2>2. O que muda</h2>
-<table class="compare">
-  <tr><th>Hoje</th><th>Proposto</th></tr>
-  <tr><td>{{TODAY_1}}</td><td>{{PROPOSED_1}}</td></tr>
-  <tr><td>{{TODAY_2}}</td><td>{{PROPOSED_2}}</td></tr>
-</table>
-
-<!-- 5 · QUEM PARTICIPA -->
-<h2>3. Quem participa</h2>
-<div class="role"><div class="who">{{ROLE_NAME}}</div><div>{{ROLE_RESPONSIBILITY}}</div></div>
-<!-- repeat .role per actor -->
-
-<!-- 6 · GLOSSÁRIO -->
-<h2>4. Glossário</h2>
-<table>
-  <tr><th>Termo</th><th>Significado</th></tr>
-  <tr><td>{{TERM}}</td><td>{{PLAIN_DEFINITION}}</td></tr>
-  <!-- repeat per glossary term -->
-</table>
-
-<!-- Suggested page break. Move it (or add/remove one) so no page ends up mostly empty —
-     short domains may not need a break here; long ones may need another before section 6/8.
-     Confirm with the visual-validation step before delivering. -->
-<div class="pgbreak"></div>
-
-<!-- 7 · ESTADOS E SITUAÇÕES — keep real states and derived statuses in SEPARATE sub-blocks.
-     If domain.md declares no real states of its own (panel/projection/invariant domains often
-     say so verbatim), delete the OPTIONAL real-states sub-block below, rename this <h2> to
-     "Situações", and render only the derived statuses. -->
-<h2>5. Estados e situações</h2>
-<!-- OPTIONAL real-states sub-block — delete entirely if the domain has no real states of its own. -->
-<h3>{{REAL_STATE_GROUP — e.g. "Situação do convite"}}</h3>
-<div class="states">
-  <span class="chip gold">{{STATE_PENDING}}</span><span class="arrow">→</span>
-  <span class="chip green">{{STATE_DONE}}</span>
-  &nbsp;&nbsp;|&nbsp;&nbsp;
-  <span class="chip gold">{{STATE_PENDING}}</span><span class="arrow">→</span><span class="chip red">{{STATE_EXPIRED}}</span>
-</div>
-<ul class="small">
-  <li><b>{{State}}</b> — {{one-line business meaning}}.</li>
-</ul>
-<!-- /OPTIONAL real-states sub-block -->
-<h3>{{DERIVED_STATUS_GROUP — e.g. "Situação do beneficiário"}}</h3>
-<div class="states">
-  <span class="chip gold">{{DERIVED_A}}</span>
-  <span class="small muted">{{condition}}</span>
-  <span class="arrow">→</span>
-  <span class="chip green">{{DERIVED_B}}</span>
-  <span class="small muted">{{condition}}</span>
-</div>
-
-<!-- 8 · REGRAS DE NEGÓCIO E CENÁRIOS — translate every .feature, grouped by Regra -->
-<h2>6. Regras de negócio e cenários</h2>
-
-<h3>6.1 — {{FEATURE_SLICE_TITLE}}</h3>
-<div class="rule">
-  <div class="rh">Regra: {{RULE_IN_BUSINESS_LANGUAGE}}</div>
-  <div class="rb">
-    <div class="sc">
-      <div class="t">{{SCENARIO_TITLE}}</div>
-      <div class="g"><b>Quando</b> {{condition in business words}}, <b>então</b> {{outcome in business words}}.</div>
+  <!-- SEÇÃO EXEMPLO A — "O que muda" (mini vertical hoje ↓ proposto) -->
+  <section class="section">
+    <div class="s-head"><span class="eyebrow">{{THEME_A — ex.: O que muda}}</span><span class="eyebrow"><span class="n">01 / {{TOTAL}}</span></span></div>
+    <div class="title serif">{{SECTION_A_TITLE}}</div>
+    <!-- REQUIRED: one-line description of what this section covers -->
+    <div class="sdesc">{{SECTION_A_DESCRIPTION}}</div>
+    <div class="s-body">
+      <div class="mini">
+        <div class="tag bad"><span class="k">{{HOJE_KICKER}}</span>{{HOJE_LABEL}}</div>
+        <div class="ar dn">↓</div>
+        <div class="tag owner"><span class="k">{{PROPOSTO_KICKER}}</span>{{PROPOSTO_LABEL}}</div>
+      </div>
+      <div class="rules">
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_1}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_2}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_3}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_4}}</span></div>
+      </div>
     </div>
-    <div class="sc">
-      <div class="t">{{SCENARIO_TITLE — when the scenario has no Quando}}</div>
-      <div class="g"><b>Dado</b> {{precondition in business words}}, <b>então</b> {{outcome in business words}}.</div>
+  </section>
+
+  <!-- SEÇÃO EXEMPLO B — regra com mini horizontal (rótulo → alvo) -->
+  <section class="section">
+    <div class="s-head"><span class="eyebrow">{{THEME_B}}</span><span class="eyebrow"><span class="n">02 / {{TOTAL}}</span></span></div>
+    <div class="title serif">{{SECTION_B_TITLE}}</div>
+    <div class="sdesc">{{SECTION_B_DESCRIPTION}}</div>
+    <div class="s-body">
+      <div class="mini">
+        <div class="mrow"><span class="tag owner">{{LEFT_1}}</span><span class="ar">→</span><span class="tag">{{RIGHT_1}}</span></div>
+        <div class="mrow"><span class="tag owner">{{LEFT_2}}</span><span class="ar">→</span><span class="tag">{{RIGHT_2}}</span></div>
+        <div class="note">{{MINI_CAPTION}}</div>
+      </div>
+      <div class="rules">
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_1}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_2}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_3}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_4}}</span></div>
+      </div>
     </div>
-    <!-- repeat .sc per scenario; keep only the connectives the scenario actually uses.
-         For a Scenario Outline (Esquema do Cenário + Exemplos), collapse the whole table into
-         ONE .sc that states the variation in business words — do not dump the examples rows. -->
-  </div>
-</div>
-<!-- repeat .rule per Regra; repeat <h3> per feature slice -->
+  </section>
 
-<!-- 9 · ESCOPO -->
-<h2>7. Escopo</h2>
-<div class="twocol">
-  <div class="box in"><h3>Incluso nesta entrega</h3>
-    <ul class="small">
-      <li>{{INCLUDED_ITEM}}</li>
-    </ul>
-  </div>
-  <div class="box out"><h3>Fora desta entrega</h3>
-    <ul class="small">
-      <li>{{EXCLUDED_ITEM}}</li>
-    </ul>
-  </div>
-</div>
-<p class="small muted">{{PRECONDITION_NOTE — optional}}</p>
-
-<!-- 10 · APROVAÇÃO (fixed boilerplate; only domain + role change) -->
-<h2>8. Aprovação</h2>
-<div class="approval">
-  <p class="small">Declaro ter revisado as regras de negócio acima referentes ao <b>{{DOMAIN_TITLE}}</b> e registro minha decisão:</p>
-  <div class="opts">
-    <span class="opt"><span class="bx"></span> Aprovado</span>
-    <span class="opt"><span class="bx"></span> Aprovado com ressalvas</span>
-    <span class="opt"><span class="bx"></span> Ajustes necessários</span>
-  </div>
-  <div class="small muted">Observações / ressalvas:</div>
-  <div class="obs"></div>
-  <div class="sigrow">
-    <div class="f"><div class="sigline">Nome</div></div>
-    <div class="f"><div class="sigline">Cargo — {{APPROVER_ROLE}}</div></div>
-  </div>
-  <div class="sigrow" style="margin-top:22px;">
-    <div class="f"><div class="sigline">Assinatura</div></div>
-    <div class="f" style="flex:0 0 45mm;"><div class="sigline">Data</div></div>
-  </div>
 </div>
 
-<footer class="note">
-  <!-- Drop the " · Etapa X de Y" fragment when the domain is not a numbered stage. -->
-  FAEPEN · Especificação de domínio "{{DOMAIN_TITLE}}" · Etapa X de Y · {{DATE_TODAY}} · Documento para aprovação interna.
-</footer>
+<!-- ============================================================= -->
+<!-- Segunda página de conteúdo (repita o padrão de 2 seções).     -->
+<!-- Mini com par vertical (.vp) + barreira ✕ para isolamento /    -->
+<!-- exclusão mútua — use quando o rótulo do alvo for longo, para  -->
+<!-- NÃO quebrar linha na coluna estreita (a seta não pode ficar   -->
+<!-- apontando para o vazio).                                       -->
+<!-- ============================================================= -->
+<div class="page">
+
+  <section class="section">
+    <div class="s-head"><span class="eyebrow">{{THEME_C}}</span><span class="eyebrow"><span class="n">03 / {{TOTAL}}</span></span></div>
+    <div class="title serif">{{SECTION_C_TITLE}}</div>
+    <div class="sdesc">{{SECTION_C_DESCRIPTION}}</div>
+    <div class="s-body">
+      <div class="mini">
+        <div class="mrow" style="align-items:center;gap:12px;">
+          <div class="vp"><span class="tag">{{A_TOP}}</span><span class="ar dn">↓</span><span class="tag">{{A_BOTTOM}}</span></div>
+          <span class="barrier">✕</span>
+          <div class="vp"><span class="tag">{{B_TOP}}</span><span class="ar dn">↓</span><span class="tag gold">{{B_BOTTOM}}</span></div>
+        </div>
+        <div class="note">{{MINI_CAPTION}}</div>
+      </div>
+      <div class="rules">
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_1}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_2}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_3}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_4}}</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="s-head"><span class="eyebrow">{{THEME_D}}</span><span class="eyebrow"><span class="n">04 / {{TOTAL}}</span></span></div>
+    <div class="title serif">{{SECTION_D_TITLE}}</div>
+    <div class="sdesc">{{SECTION_D_DESCRIPTION}}</div>
+    <div class="s-body">
+      <div class="mini">
+        <div class="mrow"><span class="tag owner">{{LEFT_1}}</span><span class="ar">→</span><span class="tag">{{RIGHT_1}}</span></div>
+        <div class="mrow"><span class="tag">{{LEFT_2}}</span><span class="ar">→</span><span class="tag gold">{{RIGHT_2}}</span></div>
+        <div class="note">{{MINI_CAPTION}}</div>
+      </div>
+      <div class="rules">
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_1}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_2}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_3}}</span></div>
+        <div class="rl"><span class="mk">✓</span><span class="tx">{{RULE_4}}</span></div>
+      </div>
+    </div>
+  </section>
+
+</div>
 
 </body>
 </html>

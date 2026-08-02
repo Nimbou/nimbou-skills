@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# html_to_pdf.sh — render a styled HTML approval document to PDF.
+# html_to_pdf.sh — render a styled HTML presentation deck to PDF.
 #
 # Usage: html_to_pdf.sh <input.html> <output.pdf>
 #
