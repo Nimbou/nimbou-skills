@@ -1,7 +1,7 @@
 ---
 name: vue-component-author
 description: "Use this agent when a task creates or evolves a Vue 3 SFC under `components/`. Specialized in Vuetify-aware composition, prop API, slots, emits, and reuse decisions guided by the project's component catalog and `DESIGN.md`/`GUIDELINES.md`.\n\n<example>\nContext: A Nuxt plan task creates a presentational component.\nuser: \"Wave 2 task: create `ProposalStatusChip.vue`.\"\nassistant: \"I'll dispatch the vue-component-author for the component task.\"\n<commentary>\nSingle SFC under `components/`, presentational, catalog-aware reuse — this agent's slice.\n</commentary>\n</example>\n\n<example>\nContext: A container component must compose existing presentational pieces.\nuser: \"Build `ProjectListPanel.vue` that wires `ProjectListItem` and a search input.\"\nassistant: \"I'll dispatch the vue-component-author to compose the existing pieces and add only what's missing.\"\n<commentary>\nReuse-first behavior is the whole point of this agent.\n</commentary>\n</example>"
-model: inherit
+model: sonnet
 color: blue
 memory: project
 ---

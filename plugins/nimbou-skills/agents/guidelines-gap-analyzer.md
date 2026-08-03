@@ -2,7 +2,7 @@
 name: guidelines-gap-analyzer
 description: |
   Use this agent when completed or recently modified work needs a review focused on project guidelines, architecture boundaries, naming rules, and missing reuse. It is a conventions-first review lens for NestJS, Prisma, Clean Architecture, and the prefixed Nuxt/Vuetify workflow in this fork.
-model: inherit
+model: opus
 color: red
 memory: project
 ---

@@ -2,7 +2,7 @@
 name: code-explorer
 description: |
   Use this agent when a feature needs codebase discovery before design or implementation. It should trace similar features, architecture boundaries, tests, integration points, and project conventions, then return the most important files to read next.
-model: inherit
+model: haiku
 color: blue
 memory: project
 ---

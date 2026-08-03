@@ -2,7 +2,7 @@
 name: 'e2e-quality-auditor'
 description: |
   Use this agent when you need to audit, fix, stabilize, or expand end-to-end tests for a specific user flow or bounded feature. This agent is specialized in browser-driven E2E suites such as Playwright or Cypress, with focus on deterministic setup, auth/session continuity, selectors, waits, data isolation, and separating flaky tests from real product defects.
-model: inherit
+model: sonnet
 color: orange
 memory: project
 ---

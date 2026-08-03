@@ -2,7 +2,7 @@
 name: code-architect
 description: |
   Use this agent when feature design needs a concrete implementation approach with explicit trade-offs. It should propose an architecture from a named lens such as minimal changes, clean architecture, or pragmatic balance.
-model: inherit
+model: opus
 color: purple
 memory: project
 ---

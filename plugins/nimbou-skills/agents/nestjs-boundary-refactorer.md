@@ -1,7 +1,7 @@
 ---
 name: 'nestjs-boundary-refactorer'
 description: "Use this agent when one bounded NestJS backend slice needs structural refactoring around controllers, use-cases, module boundaries, and dependency direction while keeping business behavior stable and Prisma details out of the application boundary."
-model: inherit
+model: opus
 color: blue
 memory: project
 ---

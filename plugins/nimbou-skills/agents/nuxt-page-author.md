@@ -1,7 +1,7 @@
 ---
 name: nuxt-page-author
 description: "Use this agent when a task creates or evolves a Nuxt page, layout, or route wiring that composes existing components and composables. Specialized in page-level state orchestration, route meta, layout selection, and SEO/meta wiring.\n\n<example>\nContext: A wave's last step composes the new components into a route.\nuser: \"Wave 3 task: build `pages/proposals/[id].vue` using existing components and `useProposalDetails`.\"\nassistant: \"I'll dispatch the nuxt-page-author for the page task.\"\n<commentary>\nPage-level composition + route wiring is the agent's slice; new components belong elsewhere.\n</commentary>\n</example>\n\n<example>\nContext: A layout change is needed for an admin section.\nuser: \"Add `layouts/admin.vue` and apply it to `/admin/*` pages.\"\nassistant: \"I'll dispatch the nuxt-page-author for the layout + meta task.\"\n<commentary>\nLayouts and route meta wiring fall here.\n</commentary>\n</example>"
-model: inherit
+model: sonnet
 color: pink
 memory: project
 ---

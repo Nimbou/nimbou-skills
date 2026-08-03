@@ -2,7 +2,7 @@
 name: code-reviewer
 description: |
   Use this agent when a major project step has been completed and needs review against the plan, project conventions, and functional expectations. It supports focused review lenses such as bugs, maintainability, or architecture, and should filter out low-confidence noise.
-model: inherit
+model: opus
 color: red
 memory: project
 ---
