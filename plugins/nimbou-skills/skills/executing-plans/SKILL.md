@@ -9,22 +9,19 @@ description: Use when you have an approved wave-structured plan and want it exec
 
 Load the plan, review it critically, confirm it is wave-structured, then hand it to an executor. Inside a wave, one implementer subagent runs per task, in parallel — nobody writes the whole wave sequentially. Each wave is committed as soon as its tasks land and verify. The spec compliance review runs as a **non-blocking subagent** — its findings never gate task or wave progression; they accumulate into `<plan>.followups.md` at the end. Code review is deliberately **not** part of this skill: run `/code-review` over the branch before merging.
 
-**This skill owns Step 1 only.** Steps 2 through 4 live in `./prose-execution.md` (Codex, and Claude Code without workflows) and in `/nimbou-skills:run-waves` (Claude Code). Keeping the executable body out of this file is deliberate: with both an old prose path and a workflow in the same document, the prose is what gets followed by default, and the workflow never runs.
-
 Parallelism only happens within a wave, exactly as the plan declares it. Waves stay sequential because later waves consume contracts earlier waves produce. Reviews run alongside execution, not in front of it.
 
 **Why fan out:** `nestjs-plan` and `nuxt-plan` already guarantee that tasks inside a wave are parallel-safe — no shared file writes, no implicit ordering. Implementing them one after another throws that guarantee away and pays wave time proportional to the task count. It also drags every task's diff and verification output through a single context, which degrades the controller across long plans.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-Use this skill when you have an approved plan to execute end to end and reviews should be advisory rather than gating.
-
 ## Routing: where the run actually happens
 
-This file is a **router**. It owns Step 1 and nothing else executable. The body of
+**This file is a router. It owns Step 1 and nothing else executable.** The body of
 the run — the per-task fan-out, the per-wave commit, the reviewers, the follow-ups —
-lives in `./prose-execution.md` and in the `run-waves` workflow. Pick one, in this
-order:
+lives in `./prose-execution.md` and in the `run-waves` workflow. The split is
+deliberate: with an executable prose path and a workflow in the same document, the
+prose wins by default and the workflow never runs. Pick one, in this order:
 
 **Claude Code — use the workflow.** Once Step 1 is done, launch:
 
@@ -53,6 +50,9 @@ two disagree, the prose file wins and the workflow is the bug.
 - task results stay in script variables instead of the controller's context
 - a stopped run resumes without re-running completed tasks
 - the orchestration is a file you can read, diff, and rerun
+- mechanical steps (parse, commit, follow-ups artifact) run on a small model at low
+  effort, and implementers get their spec as a line range into the plan rather than
+  as re-emitted prose — both are cost decisions a hand-walked prose run will not make
 
 ### What the workflow cannot do
 
@@ -77,11 +77,9 @@ here, in conversation, first.**
 
 ## Boundary
 
-Use this skill for full plan execution from an approved, wave-structured plan, when reviews should be advisory.
+Use this skill for full plan execution from an approved, wave-structured plan, when reviews should be advisory rather than gating.
 
 Do not use it just because parallel work exists. If the real need is "split N unrelated failures across N agents" with no plan behind it, use `nimbou-skills:dispatching-parallel-agents` instead.
-
-Do not use it on a plan that lacks `## Ondas de Execução` — refuse and request a wave-structured plan.
 
 ## When to Stop
 
@@ -107,18 +105,15 @@ Return to Step 1 when:
 
 ## Remember
 
+These are this file's rules. The per-wave mechanics — fan-out, write-set grouping,
+commit-per-wave, background reviewers, follow-up execution — belong to
+`./prose-execution.md` and are not restated here.
+
 - review the plan critically first — Step 1 is this file's only executable content
-- on Claude Code, delegate Steps 2-4 to `/nimbou-skills:run-waves`; walk `./prose-execution.md` by hand only when workflows are unavailable, and announce it
 - wave mode only — refuse plans without `## Ondas de Execução`
-- fan each wave's tasks out to parallel implementer subagents; the controller orchestrates and commits, it does not implement
-- check write sets before fanning out — tasks sharing a file go to one implementer, not two
-- commit once per wave, as soon as its tasks land and verify; do not wait for reviewers
-- dispatch the spec reviewer as a background subagent per wave (run_in_background); code review is `/code-review` over the branch, not part of this skill
-- never let reviewer output gate the next wave — findings feed `<plan>.followups.md`
+- on Claude Code, delegate Steps 2-4 to `/nimbou-skills:run-waves`; walk `./prose-execution.md` by hand only when workflows are unavailable, and announce it
+- never let reviewer output gate a wave — findings feed `<plan>.followups.md`; code review is `/code-review` over the branch, not part of this skill
 - run `nestjs-test` as the final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (explicit suite paths only — never an unfiltered `pnpm test`)
-- collect every background reviewer's result before producing follow-ups
-- generate `<plan>.followups.md` only when there are deferred items
-- execute **all** follow-ups before declaring completion, grouped by file and dispatched in parallel — manual items go to the output, not to the file
 - stop when blocked by implementation, not by reviewer output
 - do not start implementation on `main` or `master` without explicit user consent
 
@@ -131,10 +126,10 @@ Required workflow skills:
 - `nimbou-skills:nuxt-plan` — produces wave-structured frontend plans for this skill to execute
 - `nimbou-skills:nestjs-test` — REQUIRED final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (no full-suite runs)
 
-Execution body:
+Execution body — see Routing above for which one applies:
 
-- `./prose-execution.md` — Steps 2-4, normative. Followed by Codex always, and by Claude Code when workflows are unavailable.
-- `/nimbou-skills:run-waves` — Claude Code workflow running the same Steps 2-4 as a script. The default on Claude Code.
+- `./prose-execution.md` — Steps 2-4, normative.
+- `/nimbou-skills:run-waves` — the same Steps 2-4 as a script. The default on Claude Code.
 
 Local templates, used by both paths:
 

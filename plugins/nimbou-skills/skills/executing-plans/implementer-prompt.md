@@ -20,8 +20,17 @@ Task tool ([ROLE]):
 
     ## Your Task
 
-    [FULL TEXT of the task, verbatim from the plan — requirements, code blocks,
-     file paths, signatures. Do not summarize; paste it.]
+    [The task's FULL text — requirements, code blocks, file paths, signatures.
+     Never summarize it. Deliver it one of two equivalent ways:
+
+     - paste it verbatim, when you already have the plan in context; or
+     - point at it: `Read("<plan path>", offset: <task start line>, limit: <task
+       line count>)`, which is what `run-waves` does. Re-emitting a plan's prose
+       just to paste it back costs the whole document in output tokens.
+
+     When pointing, add: if the first line read is not this task's heading, `Grep`
+     the plan for the heading and read from there; if the task still cannot be
+     found, report a blocker rather than implementing a guess.]
 
     ## Files You Own
 

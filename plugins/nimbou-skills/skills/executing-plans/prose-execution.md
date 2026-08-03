@@ -36,7 +36,7 @@ declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `
 directly under the task heading. Read those fields; do not re-derive them from the prose.
 Each implementer gets:
 
-- the task's full body, verbatim from the plan
+- the task's full body — either pasted verbatim, or handed as a `Read` of the plan file at the task's exact line range. The two are equivalent, and the range is cheaper: re-emitting a plan's prose just so it can be pasted back costs the whole document in output tokens, which are the expensive ones. When you pass a range, tell the implementer to `Grep` the plan for the task heading if the first line it reads is not that heading, and to report a blocker rather than implement a guess. `run-waves` takes the range path; a controller that already has the plan in context can just paste
 - `Files` as the exact set it owns, and an explicit statement that it must not touch any other file
 - `Verificação` **verbatim** — implementers run it themselves. It is the command expecting PASS; a `nestjs-plan` task also contains a checklist step running the same suite expecting FAIL, and that one is never the verification
 - `Consome` pasted in as actual declarations, not referenced by name
@@ -77,7 +77,7 @@ Wait for every implementer in the wave to return, then:
 
 1. Read each report.
 2. Confirm no implementer wrote outside its declared file set (`git status` against the union of declared files). Anything extra is a finding — decide whether to keep it or revert it, and record it as a `concern`.
-3. Re-run the wave's verifications yourself if any implementer's verification output is missing, ambiguous, or claimed rather than shown. Run them **exactly as the plan declares** — they are already scoped to the files the wave changes. Never substitute an unfiltered test command (no bare `pnpm test`, `npm test`, `pytest`).
+3. Re-run **only** the verifications whose implementer came back with a claim rather than a transcript. An implementer that pasted actual runner output already ran that suite; re-running it doubles the wave's test time on the sequential critical path, and the commit is the one step every later wave waits on. `passou` is a claim; a runner transcript is evidence. When you do re-run, run the command **exactly as the plan declares** — it is already scoped to the files the wave changes. Never substitute an unfiltered test command (no bare `pnpm test`, `npm test`, `pytest`).
 4. Mark each task complete in TodoWrite.
 
 If an implementer reports failure, or a verification cannot be satisfied, stop downstream waves. Report the exact file/task/wave that blocked the flow. **Do not commit a partially completed wave.** Reviewer ❌ findings never trigger this stop — they go to follow-ups.

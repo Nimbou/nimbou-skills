@@ -57,21 +57,21 @@ const twoWavePlan = {
     {
       title: 'Contratos',
       tasks: [
-        { title: 'DTO', spec: 'spec a', files: ['src/a.ts'], verification: 'pnpm test -- a', agentType: 'nimbou-skills:nestjs-controller-author' },
-        { title: 'Repo contract', spec: 'spec b', files: ['src/b.ts'], verification: 'pnpm test -- b', agentType: 'nimbou-skills:prisma-repository-author' },
+        { title: 'DTO', specLines: { start: 10, end: 20 }, files: ['src/a.ts'], verification: 'pnpm test -- a', agentType: 'nimbou-skills:nestjs-controller-author' },
+        { title: 'Repo contract', specLines: { start: 21, end: 30 }, files: ['src/b.ts'], verification: 'pnpm test -- b', agentType: 'nimbou-skills:prisma-repository-author' },
       ],
     },
     {
       title: 'Implementação',
       tasks: [
-        { title: 'Use case', spec: 'spec c', files: ['src/c.ts'], verification: 'pnpm test -- c', consumes: 'type A', agentType: 'nimbou-skills:nestjs-usecase-author' },
+        { title: 'Use case', specLines: { start: 40, end: 55 }, files: ['src/c.ts'], verification: 'pnpm test -- c', consumes: 'type A', agentType: 'nimbou-skills:nestjs-usecase-author' },
       ],
     },
     {
       title: 'Verificação',
       isNestjsTestWave: true,
       tasks: [
-        { title: 'nestjs-test', spec: 'run scoped suites', files: ['src/a.spec.ts'], verification: 'pnpm test -- --runInBand src/a.spec.ts' },
+        { title: 'nestjs-test', specLines: { start: 60, end: 70 }, files: ['src/a.spec.ts'], verification: 'pnpm test -- --runInBand src/a.spec.ts' },
       ],
     },
   ],
@@ -641,4 +641,69 @@ test('code review is not part of executing-plans on either path', () => {
   // The artifact keeps review-* types, but as something the user appends.
   assert.match(followups, /`executing-plans` never writes these/)
   assert.match(prose, /this skill never writes them/)
+})
+
+test('run-waves hands implementers a plan line range instead of the task text', async () => {
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
+  ])
+
+  const dto = calls.find((call) => (call.opts.label ?? '').includes('DTO'))
+  // start 10, end 20 -> offset 10, limit 11. Re-emitting the task body as parse
+  // output is the single largest token cost in the run; the range replaces it.
+  assert.match(dto.prompt, /Read\("docs\/plans\/x\.md", offset: 10, limit: 11\)/)
+  assert.match(dto.prompt, /Grep` the plan for the heading/, 'drifted ranges need a recovery path')
+
+  const review = calls.find((call) => (call.opts.label ?? '').startsWith('spec review'))
+  assert.match(review.prompt, /Read\("docs\/plans\/x\.md", offset: 10, limit: 11\)/)
+  assert.match(review.prompt, /Read\("docs\/plans\/x\.md", offset: 21, limit: 10\)/)
+})
+
+test('run-waves tiers its inline agents by category instead of inheriting the session model', async () => {
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    // A finding is required here: with nothing pending, the run returns before the
+    // follow-ups phase and the artifact agent is never dispatched.
+    [SPEC_REVIEW, { findings: [{ tipo: 'spec-deferred', descricao: 'nit', ref: 'src/a.ts:3' }] }],
+    [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
+  ])
+
+  const byLabel = (prefix) => calls.filter((call) => (call.opts.label ?? '').startsWith(prefix))
+
+  // Mechanical work: git plumbing and structured extraction. On an opus session
+  // these were a full opus agent each, once per wave.
+  assert.equal(byLabel('parse-plan')[0].opts.model, 'haiku')
+  for (const commit of byLabel('commit ')) assert.equal(commit.opts.model, 'haiku')
+  assert.equal(byLabel('write followups')[0].opts.model, 'haiku')
+
+  // Judgement work stays pinned up: spec review is the only lens left in the run.
+  for (const review of byLabel('spec review')) assert.equal(review.opts.model, 'opus')
+})
+
+test('run-waves re-runs only the verifications an implementer failed to evidence', async () => {
+  const shown = { status: 'DONE', filesTouched: ['src/a.ts'], verification: 'PASS src/a.spec.ts\n'.repeat(50) }
+  const claimed = { status: 'DONE', filesTouched: ['src/b.ts'], verification: 'passou' }
+
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda 1 — Contratos · DTO', shown],
+    ['Onda 1 — Contratos · Repo contract', claimed],
+    ['Onda', shown],
+    [SPEC_REVIEW, { findings: [] }],
+    [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
+  ])
+
+  const wave1 = calls.find((call) => (call.opts.label ?? '') === 'commit Onda 1 — Contratos')
+  assert.match(wave1.prompt, /pnpm test -- b/, 'the bare claim must be re-verified')
+  assert.doesNotMatch(wave1.prompt, /pnpm test -- a/, 're-running a proven suite doubles the wave on the critical path')
+
+  const wave2 = calls.find((call) => (call.opts.label ?? '') === 'commit Onda 2 — Implementação')
+  assert.match(wave2.prompt, /Skip verification/, 'a fully evidenced wave re-runs nothing')
 })

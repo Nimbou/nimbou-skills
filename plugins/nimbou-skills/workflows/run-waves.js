@@ -49,10 +49,15 @@ const PLAN_SCHEMA = {
             type: 'array',
             items: {
               type: 'object',
-              required: ['title', 'spec', 'files', 'verification'],
+              required: ['title', 'specLines', 'files', 'verification'],
               properties: {
                 title: { type: 'string' },
-                spec: { type: 'string', description: 'full task text, verbatim from the plan' },
+                specLines: {
+                  type: 'object',
+                  required: ['start', 'end'],
+                  description: '1-indexed line range of the task body inside the plan file',
+                  properties: { start: { type: 'integer' }, end: { type: 'integer' } },
+                },
                 files: { type: 'array', items: { type: 'string' }, description: 'files this task writes' },
                 verification: { type: 'string', description: 'declared verification command, verbatim' },
                 consumes: { type: 'string', description: 'contracts from earlier waves this task depends on' },
@@ -127,10 +132,15 @@ the heading it sits under.
 Plans from \`nestjs-plan\` and \`nuxt-plan\` declare an Execution Contract per task —
 five labelled fields directly under the task heading. **Read those fields; do not
 re-derive them from the prose.** For every task in every wave, return:
-- title: the task heading
-- spec: the task's FULL body, verbatim — everything below the five fields. Do not
-  summarize or compress it; an implementer subagent with none of this context will
-  be handed this string as its entire specification.
+- title: the task heading, verbatim, without its \`#\` markers
+- specLines: the 1-indexed line range of the task's body in the plan file. \`start\`
+  is the line of the task heading itself; \`end\` is the last line belonging to this
+  task — the line before the next task heading, or the last line of the wave's
+  section for the final task. **Do not return the task text.** An implementer will
+  open the plan at this range and read it directly, so the range must cover the
+  whole task and must not spill into the next one. Read the file with line numbers
+  so these are exact; an off-by-one that truncates a task's body is a silent
+  spec loss.
 - files: the \`**Files:**\` field, split on commas. This is the write set.
 - verification: the \`**Verificação:**\` field, verbatim. It is the command expecting
   PASS. A nestjs-plan task also contains a checklist step that runs the same suite
@@ -156,7 +166,7 @@ Also return planOrigin (nestjs-plan / nuxt-plan / other) and posExecucao: the
 verbatim items under \`## Pos-execucao\` when that section exists.
 
 Read only. Change nothing.`,
-  { label: 'parse-plan', schema: PLAN_SCHEMA },
+  { label: 'parse-plan', schema: PLAN_SCHEMA, model: 'haiku', effort: 'low' },
 )
 
 if (!plan) return { error: `Could not parse ${planPath}.` }
@@ -245,6 +255,14 @@ for (let w = 0; w < waves.length; w++) {
   // Step 2.4: commit once per wave.
   phase('Commit')
   const files = [...new Set(reports.flatMap(r => r.filesTouched ?? []))]
+
+  // The implementers already ran their verifications. Re-running every one of them
+  // here doubles the wave's test time on the sequential critical path, so only the
+  // ones that came back as a bare claim get re-run. A transcript is long and carries
+  // runner output; "passou" is not evidence of anything.
+  const unproven = groups.flatMap((group, i) =>
+    (reports[i]?.verification ?? '').length >= 200 ? [] : group.map(t => t.verification).filter(Boolean),
+  )
   const commit = await agent(
     `Commit exactly one wave of an approved plan.
 
@@ -259,17 +277,22 @@ Do this:
 1. Run \`git status --porcelain\` and compare against the list above. Report any
    file changed that no implementer declared — an implementer wrote outside its
    boundary. Do NOT revert it; record it and carry on.
-2. Re-run the wave's declared verifications if any implementer's output looks
-   claimed rather than shown. Run them exactly as written below. Never widen to
-   an unfiltered suite run (no bare \`pnpm test\`, \`npm test\`, \`pytest\`).
-${tasks.map(t => `   - ${t.verification}`).join('\n')}
+2. ${
+      unproven.length
+        ? `Re-run these verifications — their implementers reported a claim rather than
+   runner output. Run them exactly as written, and nothing else. Never widen to an
+   unfiltered suite run (no bare \`pnpm test\`, \`npm test\`, \`pytest\`).
+${unproven.map(v => `   - ${v}`).join('\n')}`
+        : `Skip verification. Every implementer in this wave returned actual runner
+   output, so the suites already ran. Do not re-run them.`
+    }
 3. Stage the wave's files EXPLICITLY by path. Never \`git add -A\`.
 4. Read \`git log\` on the current branch and mirror its message style. Reference
    the wave and list the tasks included.
 5. Commit, then return the resulting SHA and the message you used.
 
 Do not push. Do not commit anything outside this wave.`,
-    { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA, effort: 'low' },
+    { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA, model: 'haiku', effort: 'low' },
   )
 
   if (!commit) {
@@ -293,7 +316,15 @@ Do not push. Do not commit anything outside this wave.`,
   dispatchSpecReview(
     label,
     commit.sha,
-    tasks.map((t, i) => `### Task ${i + 1} — ${t.title}\n\n${t.spec}`).join('\n\n'),
+    `The wave's tasks are specified in the plan at \`${planPath}\`. Read each range
+below before judging the diff — the spec is the plan's text, not this summary.
+
+${tasks
+  .map(
+    t =>
+      `- **${t.title}** — \`Read("${planPath}", offset: ${t.specLines?.start ?? 1}, limit: ${Math.max(1, (t.specLines?.end ?? 1) - (t.specLines?.start ?? 1) + 1)})\``,
+  )
+  .join('\n')}`,
     reports
       .map((r, i) => {
         const who = groups[i].map(t => t.title).join(' + ')
@@ -344,7 +375,7 @@ Do this:
 
 Do NOT commit — the caller commits this wave. Report status, the files you touched,
 and the actual runner output.`,
-    { label, phase: 'Implement', schema: IMPL_SCHEMA, agentType: 'general-purpose' },
+    { label, phase: 'Implement', schema: IMPL_SCHEMA, agentType: 'general-purpose', model: 'sonnet' },
   )
 
   if (!testReport || testReport.status === 'BLOCKED') {
@@ -366,7 +397,7 @@ ${testFiles.map(f => `- ${f}`).join('\n')}
 
 Stage them EXPLICITLY by path — never \`git add -A\`. Mirror the repo's commit
 style from \`git log\`. Do not push. Return the SHA and message.`,
-          { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA, effort: 'low' },
+          { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA, model: 'haiku', effort: 'low' },
         )
       : null
 
@@ -378,7 +409,19 @@ style from \`git log\`. Do not push. Return the SHA and message.`,
         tasks: ['nestjs-test'],
         files: testFiles,
       })
-      dispatchSpecReview(label, testCommit.sha, 'Final verification wave: scoped nestjs-test run.', JSON.stringify(testReport, null, 2))
+      dispatchSpecReview(
+        label,
+        testCommit.sha,
+        'Final verification wave: a scoped `nestjs-test` run over the files this plan changed. There is no plan task to read — judge the diff on its own terms.',
+        [
+          `status: ${testReport.status}`,
+          `files: ${(testReport.filesTouched ?? []).join(', ') || 'none reported'}`,
+          testReport.behaviorChanged ? `behavior: ${testReport.behaviorChanged}` : null,
+          (testReport.concerns ?? []).length ? `concerns: ${testReport.concerns.join('; ')}` : null,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+      )
     } else {
       log(`${label}: green with no file changes, nothing to commit.`)
     }
@@ -437,7 +480,9 @@ Return findings as \`spec-issue\` (Missing / Extra / Misunderstanding) or
 carries a concrete \`file:line\` and a suggested next step. Vague findings are not
 actionable — concretize or drop them. Return an empty findings array when the
 diff matches the spec. Change nothing.`,
-      { label: `spec review ${label}`, phase: 'Review', agentType: 'general-purpose', schema: REVIEW_SCHEMA },
+      // Pinned to opus: this is the only review lens left in the run, and letting a
+      // lower session model drag it down would quietly weaken the wave's only check.
+      { label: `spec review ${label}`, phase: 'Review', agentType: 'general-purpose', model: 'opus', schema: REVIEW_SCHEMA },
     ).catch(() => null),
   )
 
@@ -505,6 +550,7 @@ Commit the artifact on its own as a docs commit. Stage it explicitly.`,
   {
     label: 'write followups',
     phase: 'Follow-ups',
+    model: 'haiku',
     effort: 'low',
     schema: {
       type: 'object',
@@ -568,6 +614,7 @@ Return the files you touched, what you fixed, and what you skipped and why.`,
       {
         label: `fix ${group[0]?.files?.[0] ?? 'follow-ups'}`,
         phase: 'Follow-ups',
+        model: 'sonnet',
         schema: {
           type: 'object',
           required: ['filesTouched'],
@@ -615,7 +662,7 @@ Do this:
 4. Return the SHAs and messages.
 
 Do not push.`,
-  { label: 'commit follow-ups', phase: 'Follow-ups', schema: COMMIT_SCHEMA },
+  { label: 'commit follow-ups', phase: 'Follow-ups', schema: COMMIT_SCHEMA, model: 'haiku', effort: 'low' },
 )
 
 return {
@@ -641,7 +688,20 @@ same repository. Stay inside your file boundary.
 
 ## Your Task${multi ? 's' : ''}
 
-${group.map((t, i) => `### ${multi ? `Task ${i + 1} — ` : ''}${t.title}\n\n${t.spec}`).join('\n\n')}
+Your specification lives in the plan at \`${planPath}\`. Read ${multi ? 'each range below' : 'the range below'}
+with the Read tool, using \`offset\` and \`limit\`, before doing anything else. Read
+${multi ? 'those ranges' : 'that range'} and nothing else of the plan — the rest belongs to other implementers.
+
+${group
+  .map(
+    (t, i) =>
+      `${multi ? `${i + 1}. ` : ''}**${t.title}** — \`Read("${planPath}", offset: ${t.specLines?.start ?? 1}, limit: ${Math.max(1, (t.specLines?.end ?? 1) - (t.specLines?.start ?? 1) + 1)})\``,
+  )
+  .join('\n')}
+
+If the first line you read is not the task heading named above, the range drifted:
+\`Grep\` the plan for the heading and read from there instead. If you still cannot
+find the task, STOP and report it as a blocker rather than implementing a guess.
 
 ## Files You Own
 

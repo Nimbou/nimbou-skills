@@ -160,7 +160,9 @@ test('core and audit skills document their new guardrails', () => {
   assert.match(execute, /wave-structured frontend plans/i)
   assert.match(execute, /spec-reviewer-prompt\.md/)
   assert.match(execute, /followups-template\.md/)
-  assert.match(execute, /commit once per wave/i)
+  // Commit cadence is a Step 2 rule, so it is asserted where it is normative. The
+  // router restating every executor rule is what let the two drift apart before.
+  assert.match(read('plugins/nimbou-skills/skills/executing-plans/prose-execution.md'), /commit once per wave/i)
   assert.doesNotMatch(execute, /task mode/i)
   assert.match(e2eQuality, /^---\nname: e2e-test-quality/m)
   assert.match(e2eQuality, /e2e-quality-auditor/)
@@ -361,7 +363,10 @@ test('role-specialized author agents are scaffolded for SDD routing', () => {
     assert.equal(existsSync(resolve(root, file)), true, `${file} should exist`)
     const body = read(file)
     assert.match(body, new RegExp(`^---\\nname: ${slug}`, 'm'), `${slug} frontmatter name`)
-    assert.match(body, /model: inherit/, `${slug} should set model: inherit`)
+    // Every agent in this list is a code author: bounded work against a task the
+    // plan already closed. `inherit` would put each one on the session model, which
+    // on an opus setup means a full opus session per implementer dispatched.
+    assert.match(body, /^model: sonnet$/m, `${slug} should pin model: sonnet`)
     assert.match(body, /memory: project/, `${slug} should set memory: project`)
     assert.match(body, /## Scope/, `${slug} should declare ## Scope`)
     assert.match(body, /## Mandatory Execution Order/, `${slug} should declare ## Mandatory Execution Order`)
