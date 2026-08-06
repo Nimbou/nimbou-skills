@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Great+Vibes&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { width: 1080px; height: 1080px; overflow: hidden; }
+
+  body {
+    background: url("fundo-aniversario.png") center / cover no-repeat, #e8b93a;
+    font-family: 'Montserrat', sans-serif;
+    position: relative;
+  }
+
+  /* --- paleta (amostrada da arte de referencia) --- */
+  :root {
+    --oliva: #48381e;   /* titulo + setor */
+    --branco: #ffffff;  /* nome + data */
+  }
+
+  .titulo {
+    position: absolute;
+    top: 52px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-weight: 900;
+    font-size: 96px;
+    line-height: 1.02;
+    letter-spacing: -2px;
+    color: var(--oliva);
+    text-shadow: 0 2px 10px rgba(255, 255, 255, .35);
+  }
+
+  /* --- moldura polaroid --- */
+  .polaroid {
+    position: absolute;
+    top: 196px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    background: #fff;
+    padding: 26px 26px 30px;
+    box-shadow: 0 16px 40px rgba(60, 40, 0, .28);
+  }
+
+  .polaroid img {
+    display: block;
+    width: 440px;
+    height: 440px;
+    object-fit: cover;           /* recorte quadrado central automatico */
+    object-position: center 22%; /* privilegia o rosto */
+  }
+
+  /* --- nome + setor --- */
+  .nome {
+    position: absolute;
+    top: 712px;
+    left: 50px;
+    right: 50px;
+    text-align: center;
+    font-family: 'Great Vibes', cursive;
+    font-weight: 400;
+    font-size: 118px;           /* degraus: 118 -> 104 -> 92 -> 80 -> 68 */
+    line-height: 1.06;
+    color: var(--branco);
+    text-shadow: 0 4px 16px rgba(60, 40, 0, .38);
+    white-space: nowrap;
+  }
+
+  .setor {
+    position: absolute;
+    top: 838px;
+    left: 50px;
+    right: 50px;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 42px;
+    color: var(--oliva);
+  }
+
+  /* --- rodape: data + logo, alinhados no mesmo eixo --- */
+  .rodape {
+    position: absolute;
+    left: 58px;
+    right: 54px;
+    bottom: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .data {
+    font-weight: 900;
+    font-size: 102px;
+    line-height: 1;
+    letter-spacing: -3px;
+    color: var(--branco);
+    text-shadow: 0 4px 14px rgba(60, 40, 0, .35);
+  }
+
+  .logo {
+    display: block;
+    height: 158px;
+    width: auto;
+  }
+</style>
+</head>
+<body>
+  <div class="titulo">Feliz Aniversário</div>
+
+  <div class="polaroid">
+    <img src="foto.png" alt="">
+  </div>
+
+  <div class="nome">{{NOME}}</div>
+  <div class="setor">{{SETOR}}</div>
+
+  <div class="rodape">
+    <div class="data">{{DATA}}</div>
+    <img class="logo" src="faepen-logo.png" alt="Fundação FAEPEN">
+  </div>
+</body>
+</html>
