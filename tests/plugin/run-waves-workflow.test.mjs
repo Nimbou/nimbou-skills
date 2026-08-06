@@ -78,8 +78,10 @@ const twoWavePlan = {
 }
 
 const PARSE = /extract its execution structure/
-const SPEC_REVIEW = /reviewing whether a wave/
-const CODE_REVIEW = /Brief yourself/
+const SPEC_REVIEW = /reviewing whether a plan/
+// The second and last lens: boundaries and conventions, blind to the plan. It
+// replaced the per-wave code reviewer, which the run no longer spawns at all.
+const GAP_REVIEW = /boundary lens/
 const WRITE_FOLLOWUPS = /Write the follow-ups artifact/
 
 const doneImplementer = { status: 'DONE', filesTouched: ['src/a.ts'], verification: 'pass' }
@@ -114,7 +116,7 @@ test('run-waves fans out one implementer per task and commits once per wave', as
     ['commit Onda', (prompt) => ({ sha: prompt.includes('Contratos') ? 'sha1' : 'sha2', message: 'm' })],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
   ])
 
   const implementers = calls.filter((call) => call.opts.phase === 'Implement')
@@ -141,7 +143,7 @@ test('run-waves routes each implementer to the Role the plan declared', async ()
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
   ])
 
   const routed = calls
@@ -166,7 +168,7 @@ test('run-waves keeps the Role when merged tasks agree on it', async () => {
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
   ])
 
@@ -188,7 +190,7 @@ test('run-waves drops the Role and says so when merged tasks declare different o
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [
       WRITE_FOLLOWUPS,
       (prompt) => {
@@ -212,7 +214,7 @@ test('run-waves pins the spec reviewer to general-purpose instead of the default
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
   ])
 
   for (const review of calls.filter((call) => (call.opts.label ?? '').startsWith('spec review'))) {
@@ -235,7 +237,7 @@ test('run-waves falls back to general-purpose and records a concern when a Role 
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [
       WRITE_FOLLOWUPS,
       (prompt) => {
@@ -263,7 +265,7 @@ test('run-waves adds the nestjs-test wave when a backend plan forgot it', async 
     ['Onda Final', { status: 'DONE', filesTouched: ['src/a.spec.ts'], verification: 'pnpm test -- --runInBand src/a.spec.ts' }],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [
       WRITE_FOLLOWUPS,
       (prompt) => {
@@ -299,7 +301,7 @@ test('run-waves does not add a nestjs-test wave to a frontend plan', async () =>
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
   ])
 
   assert.equal(
@@ -315,7 +317,7 @@ test('run-waves never lets an implementer commit', async () => {
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
   ])
 
   for (const call of calls.filter((entry) => entry.opts.phase === 'Implement')) {
@@ -334,7 +336,7 @@ test('run-waves collapses tasks that share a file into one implementer', async (
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
     ['commit follow-ups', { sha: 'shaF', message: 'docs' }],
     ['review follow-ups', { findings: [] }],
@@ -372,7 +374,7 @@ test('run-waves groups follow-up fixes by file and keeps manual items out of the
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [{ tipo: 'spec-deferred', descricao: 'nit', ref: 'src/a.ts:3' }] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [
       WRITE_FOLLOWUPS,
       {
@@ -416,7 +418,7 @@ test('run-waves skips the follow-up commit and review when nothing was automatab
     ['Onda', doneImplementer],
     // one finding, so the artifact is written at all; it resolves to manual-only below
     [SPEC_REVIEW, { findings: [{ tipo: 'spec-deferred', descricao: 'nit', ref: 'src/a.ts:3' }] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [
       WRITE_FOLLOWUPS,
       { path: 'docs/plans/x.followups.md', automatable: [], manual: ['rodar migration em produção'] },
@@ -449,7 +451,7 @@ test('run-waves keeps raw verification output out of the spec reviewer prompt', 
     ['commit Onda', okCommit],
     ['Onda', noisy],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
   ])
 
@@ -468,7 +470,7 @@ test('run-waves carries `## Pos-execucao` items into the follow-ups artifact', a
     ['commit Onda', okCommit],
     ['Onda', doneImplementer],
     [SPEC_REVIEW, { findings: [] }],
-    [CODE_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
     [
       WRITE_FOLLOWUPS,
       (prompt) => {
@@ -558,7 +560,11 @@ test('the parser reads the contract fields instead of re-deriving them', () => {
   assert.match(source, /Read those fields; do not\s*\n?re-derive them from the prose/)
   assert.match(source, /the \\`\*\*Files:\*\*\\` field, split on commas/)
   assert.match(source, /the \\`\*\*Verificação:\*\*\\` field, verbatim/)
-  assert.match(source, /never return that one/, 'the FAIL-expecting run must be excluded')
+  // The FAIL-expecting run used to be excluded from extraction, which is what made
+  // the Iron Law unenforceable: nothing downstream could tell a test-driven task
+  // from one that wrote test and implementation together. It is now its own field.
+  assert.match(source, /the \\`\*\*RED:\*\*\\` field, verbatim/)
+  assert.match(source, /must never be merged into it/, 'RED and Verificação are separate fields')
   assert.match(source, /Never\s*\n?invent a \\`consumes\\` value/)
   assert.match(source, /Assign each task to a wave by its \\`\*\*Onda:\*\*\\` field/)
 })
@@ -634,9 +640,13 @@ test('code review is not part of executing-plans on either path', () => {
     assert.match(doc, /\/code-review/, `${name} should point at the branch-level review`)
     assert.doesNotMatch(doc, /nimbou-skills:code-reviewer/, `${name} should not dispatch a code reviewer`)
   }
-  assert.match(prose, /Code review is not part of this skill/)
-  assert.match(prose, /it has no access to the plan/)
-  assert.match(prose, /outside its declared file boundary/)
+  assert.match(prose, /Full `\/code-review` is not part of this skill/)
+  // Two lenses replaced it, and the prose must stay honest about what neither covers.
+  assert.match(prose, /guidelines-gap-analyzer/)
+  assert.match(prose, /TDD does not find the test you never thought to write/)
+
+  // The boundary lens is dispatched by its agent type, not as a generic subagent.
+  assert.match(source, /agentType: 'nimbou-skills:guidelines-gap-analyzer'/)
 
   // The artifact keeps review-* types, but as something the user appends.
   assert.match(followups, /`executing-plans` never writes these/)
@@ -682,8 +692,15 @@ test('run-waves tiers its inline agents by category instead of inheriting the se
   for (const commit of byLabel('commit ')) assert.equal(commit.opts.model, 'haiku')
   assert.equal(byLabel('write followups')[0].opts.model, 'haiku')
 
-  // Judgement work stays pinned up: spec review is the only lens left in the run.
+  // Judgement work stays pinned up.
   for (const review of byLabel('spec review')) assert.equal(review.opts.model, 'opus')
+
+  // The boundary lens carries no inline model: `guidelines-gap-analyzer` declares
+  // its own tier, and overriding it here would silently outrank the agent file.
+  const boundary = byLabel('boundary review')
+  assert.equal(boundary.length, 1, 'exactly one boundary pass per run')
+  assert.equal(boundary[0].opts.agentType, 'nimbou-skills:guidelines-gap-analyzer')
+  assert.equal(boundary[0].opts.model, undefined)
 })
 
 test('run-waves re-runs only the verifications an implementer failed to evidence', async () => {
