@@ -1,13 +1,13 @@
 export const meta = {
   name: 'run-waves',
-  description: 'Run an approved wave-structured plan wave by wave: tasks in parallel per wave, one commit per wave, non-blocking reviews, follow-ups at the end',
+  description: 'Run an approved wave-structured plan wave by wave: tasks in parallel per wave, one commit per wave, a single spec review at the end, follow-ups at the end',
   whenToUse:
     'After nimbou-skills:executing-plans Step 1 has loaded and approved a wave-structured plan. Pass the plan path as args. Step 1 stays in conversation — this script cannot ask the user anything mid-run.',
   phases: [
     { title: 'Parse', detail: 'read the plan and extract waves, tasks, file boundaries' },
     { title: 'Implement', detail: 'one implementer per task, parallel inside each wave' },
     { title: 'Commit', detail: 'one commit per wave, staged explicitly' },
-    { title: 'Review', detail: 'spec compliance per wave, non-blocking' },
+    { title: 'Review', detail: 'one spec compliance pass over every committed wave' },
     { title: 'Follow-ups', detail: 'collect findings, write the artifact, fix by file group' },
   ],
 }
@@ -182,7 +182,12 @@ log(`${waves.length} waves, ${taskCount} tasks. Waves run in order; tasks inside
 
 // ── Execute ──────────────────────────────────────────────────────────────────
 
-const reviews = [] // fired per wave, never awaited until the end
+// Spec review payloads, one per committed wave. Collected during the run and
+// spent on a SINGLE reviewer at the end instead of one Opus reviewer per wave:
+// same lens, a fraction of the tokens. The trade is latency — the review no
+// longer overlaps wave w+1 — which is the right trade when the waves carry
+// their own test coverage.
+const reviewInputs = []
 const executed = []
 const concerns = []
 let stoppedAt = null
@@ -230,7 +235,10 @@ for (let w = 0; w < waves.length; w++) {
         label: `${label} · ${group.map(t => t.title).join(' + ')}`,
         phase: 'Implement',
         schema: IMPL_SCHEMA,
-        ...(groupRole(group, label) ? { agentType: groupRole(group, label) } : {}),
+        // A declared Role carries its own model. Without one the fallback is
+        // general-purpose, which would inherit the session model — an Opus-tier
+        // implementer for a task the plan simply forgot to route. Pin it.
+        ...(groupRole(group, label) ? { agentType: groupRole(group, label) } : { model: 'sonnet' }),
       }),
     ),
   )
@@ -313,7 +321,7 @@ Do not push. Do not commit anything outside this wave.`,
   // The reviewer is told to distrust these reports and read the diff instead, so
   // pasting each implementer's raw verification output would be paying for tokens
   // we instruct the model to ignore. Send the claims, not the transcript.
-  dispatchSpecReview(
+  collectSpecReview(
     label,
     commit.sha,
     `The wave's tasks are specified in the plan at \`${planPath}\`. Read each range
@@ -409,7 +417,7 @@ style from \`git log\`. Do not push. Return the SHA and message.`,
         tasks: ['nestjs-test'],
         files: testFiles,
       })
-      dispatchSpecReview(
+      collectSpecReview(
         label,
         testCommit.sha,
         'Final verification wave: a scoped `nestjs-test` run over the files this plan changed. There is no plan task to read — judge the diff on its own terms.',
@@ -445,57 +453,80 @@ function groupRole(group, waveLabel) {
   return null
 }
 
-function dispatchSpecReview(label, sha, requested, reported) {
-  reviews.push(
-    agent(
-      `You are reviewing whether a wave's implementation matches its specification.
+function collectSpecReview(label, sha, requested, reported) {
+  reviewInputs.push({ label, sha, requested, reported })
+}
+
+// ── Spec review ──────────────────────────────────────────────────────────────
+
+phase('Review')
+
+let findings = []
+
+if (!reviewInputs.length) {
+  log('No committed wave to review.')
+} else {
+  log(`Reviewing ${reviewInputs.length} committed wave(s) in one pass.`)
+
+  const review = await agent(
+    `You are reviewing whether a plan's implementation matches its specification.
 Follow the spec compliance reviewer contract in the \`nimbou-skills:executing-plans\`
 skill (\`spec-reviewer-prompt.md\`).
 
-The work was performed by one implementer subagent per task, running in parallel.
-Each reported its own task done and the wave was committed on that basis. Do not
-trust the reports — read the diff.
+The work was performed by one implementer subagent per task, running in parallel
+within each wave. Each reported its own task done and its wave was committed on
+that basis. Do not trust the reports — read the diffs.
 
 Parallel implementers introduce failure modes a single executor does not have.
 Check specifically for: two tasks that independently redefined the same type or
 helper; a task that wrote outside its declared files; an earlier wave's contract
-re-declared with a different shape by one task; a gap each task assumed the other
-would close.
+re-declared with a different shape by a later one; a gap each task assumed the
+other would close. Because you are seeing every wave at once, cross-wave drift is
+yours to catch — a contract established in wave 1 and quietly reshaped in wave 3
+is exactly the finding this pass exists for.
 
-## What Was Requested
+Review the waves below, in order. Each is one commit.
 
-${requested}
+${reviewInputs
+  .map(
+    r => `---
 
-## What the Implementers Claim Was Changed
+## ${r.label}
 
-${reported}
+### What Was Requested
 
-## Diff Under Review
+${r.requested}
 
-Run \`git show ${sha}\` and open the touched files at \`file:line\` to confirm
-context. Review only this commit.
+### What the Implementers Claim Was Changed
+
+${r.reported}
+
+### Diff
+
+Run \`git show ${r.sha}\`.`,
+  )
+  .join('\n\n')}
+
+---
+
+Open the touched files at \`file:line\` to confirm context. Review only these
+commits.
 
 Return findings as \`spec-issue\` (Missing / Extra / Misunderstanding) or
 \`spec-deferred\` (out-of-scope nits, nearby pre-existing issues). Every finding
-carries a concrete \`file:line\` and a suggested next step. Vague findings are not
-actionable — concretize or drop them. Return an empty findings array when the
-diff matches the spec. Change nothing.`,
-      // Pinned to opus: this is the only review lens left in the run, and letting a
-      // lower session model drag it down would quietly weaken the wave's only check.
-      { label: `spec review ${label}`, phase: 'Review', agentType: 'general-purpose', model: 'opus', schema: REVIEW_SCHEMA },
-    ).catch(() => null),
-  )
+carries a concrete \`file:line\`, names the wave it belongs to, and suggests a
+next step. Vague findings are not actionable — concretize or drop them. Return an
+empty findings array when the diffs match the spec. Change nothing.`,
+    // Pinned to opus: this is the only review lens left in the run, and letting a
+    // lower session model drag it down would quietly weaken the plan's only check.
+    { label: 'spec review', phase: 'Review', agentType: 'general-purpose', model: 'opus', schema: REVIEW_SCHEMA },
+  ).catch(() => null)
 
+  if (!review) {
+    concerns.push('O spec review não retornou resultado. O plano foi executado sem essa verificação — revise o diff manualmente.')
+  }
+  findings = review?.findings ?? []
 }
-
-// ── Collect reviews ──────────────────────────────────────────────────────────
-
-phase('Review')
-log(`Waiting on ${reviews.length} background reviewer(s).`)
-
-const findings = (await Promise.all(reviews))
-  .filter(Boolean)
-  .flatMap(r => r.findings ?? [])
 
 if (stoppedAt) {
   return {

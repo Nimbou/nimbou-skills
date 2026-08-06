@@ -18,7 +18,7 @@ Parallelism only happens within a wave, exactly as the plan declares it. Waves s
 ## Routing: where the run actually happens
 
 **This file is a router. It owns Step 1 and nothing else executable.** The body of
-the run — the per-task fan-out, the per-wave commit, the reviewers, the follow-ups —
+the run — the per-task fan-out, the per-wave commit, the spec review, the follow-ups —
 lives in `./prose-execution.md` and in the `run-waves` workflow. The split is
 deliberate: with an executable prose path and a workflow in the same document, the
 prose wins by default and the workflow never runs. Pick one, in this order:
@@ -73,7 +73,7 @@ here, in conversation, first.**
 4. Confirm wave structure: the plan must contain `## Ondas de Execução` (or the legacy `## Grupos de Execucao`). If it does not, **stop** and ask the plan author to regenerate the plan via `nimbou-skills:nestjs-plan` or `nimbou-skills:nuxt-plan`. Do not fall back to a serial task list.
 5. Detect plan origin: if the header references `nestjs-plan` or the plan path matches a backend slice, the final wave MUST run `nimbou-skills:nestjs-test` scoped strictly to the files the plan touched. Add the dispatch to TodoWrite if the plan author forgot it. Never let the final wave widen into an unfiltered `pnpm test` run.
 6. Detect `## Pos-execucao` (typical for `nuxt-plan` output). Capture those items now to seed the follow-ups artifact in Step 3.
-7. Create TodoWrite (one entry per wave, plus one entry per task inside each wave, plus the post-wave commit, plus a single "collect background review results" entry, plus Step 3) and proceed only when the plan is executable.
+7. Create TodoWrite (one entry per wave, plus one entry per task inside each wave, plus the post-wave commit, plus a single "collect spec review" entry, plus Step 3) and proceed only when the plan is executable.
 
 ## Boundary
 
@@ -106,7 +106,7 @@ Return to Step 1 when:
 ## Remember
 
 These are this file's rules. The per-wave mechanics — fan-out, write-set grouping,
-commit-per-wave, background reviewers, follow-up execution — belong to
+commit-per-wave, end-of-plan spec review, follow-up execution — belong to
 `./prose-execution.md` and are not restated here.
 
 - review the plan critically first — Step 1 is this file's only executable content
@@ -134,7 +134,7 @@ Execution body — see Routing above for which one applies:
 Local templates, used by both paths:
 
 - `./implementer-prompt.md` — per-task implementer subagent prompt, dispatched in parallel inside a wave
-- `./spec-reviewer-prompt.md` — per-wave spec compliance reviewer prompt (dispatched as a background subagent)
+- `./spec-reviewer-prompt.md` — spec compliance reviewer prompt (one subagent at the end of the run, over every committed wave)
 - `./followups-template.md` — skeleton for `<plan>.followups.md`
 
 ## Output Discipline
@@ -142,7 +142,7 @@ Local templates, used by both paths:
 When execution completes or stops, report:
 
 - which waves were executed and committed, and how many implementer subagents ran in each
-- what each per-wave spec reviewer subagent returned (✅ / ❌ / ⚠️ Deferred), per wave
+- what the spec reviewer subagent returned (✅ / ❌ / ⚠️ Deferred), attributed per wave
 - that code review was not run here, and `/code-review` over the branch is still owed before merging
 - what failed or remains blocked, and whether the failure belongs to one task, one file, or one wave
 - whether `<plan>.followups.md` was generated, where it lives, and whether it carries `spec-issue` entries the user should look at

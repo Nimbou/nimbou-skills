@@ -1,23 +1,28 @@
 # Spec Compliance Reviewer Prompt Template
 
-Use this template when dispatching a spec compliance reviewer **subagent in background** (`run_in_background: true`) after the controller has committed a wave under `nimbou-skills:executing-plans`.
+Use this template when dispatching the spec compliance reviewer subagent at the end of a `nimbou-skills:executing-plans` run, after every wave has been committed.
 
-**Purpose:** Verify the wave built what its tasks requested — nothing more, nothing less — by inspecting the actual committed diff of the wave, not by trusting the implementers' reports of done.
+**Purpose:** Verify each wave built what its tasks requested — nothing more, nothing less — by inspecting the actual committed diffs, not by trusting the implementers' reports of done.
 
-**Scope:** One dispatch per wave, covering every task that ran inside that wave. Do not split this into per-task dispatches; the wave is the unit of review here.
+**Scope:** **One dispatch per plan**, covering every committed wave and every task inside it. Do not split this into per-wave or per-task dispatches. One pass costs a fraction of N passes on the same lens, and it is the only configuration that can see cross-wave drift — a contract established in an early wave and quietly reshaped in a later one. Findings are still attributed to the wave they belong to.
 
-**Non-blocking by design:** This reviewer runs alongside subsequent waves. Its output never gates execution. **All buckets — `✅`, `❌`, and `⚠️ Deferred` — are advisory** and feed `<plan>.followups.md` (Step 3 of `executing-plans`). `❌` here is not a stop signal; it is a finding the controller will surface to the user at completion.
+**Non-blocking by design:** This reviewer runs after execution has finished. Its output never gates execution. **All buckets — `✅`, `❌`, and `⚠️ Deferred` — are advisory** and feed `<plan>.followups.md` (Step 3 of `executing-plans`). `❌` here is not a stop signal; it is a finding the controller will surface to the user at completion.
 
 ```
 Task tool (general-purpose):
-  description: "Review spec compliance for Onda N (parallel implementers)"
+  description: "Review spec compliance for the plan (all waves, parallel implementers)"
   prompt: |
-    You are reviewing whether a wave's implementation matches its specification.
+    You are reviewing whether a plan's implementation matches its specification.
 
     The work was performed by one implementer subagent per task, running in
-    parallel across every task declared inside this wave. Each implementer
-    reported its own task done, and the controller committed the wave on the
+    parallel across every task declared inside each wave. Each implementer
+    reported its own task done, and the controller committed each wave on the
     strength of those reports. Do not trust them.
+
+    You are seeing every committed wave at once. Review them in order, and treat
+    drift across waves as squarely in scope: a type, contract, or convention
+    established early and quietly reshaped later is exactly what a per-wave
+    reviewer would have missed.
 
     Parallel implementers introduce failure modes a single executor does not
     have. Watch for them specifically:
@@ -106,14 +111,14 @@ Task tool (general-purpose):
 
     ## Report Format
 
-    Pick one primary status for the **wave as a whole**:
+    Pick one primary status for the **plan as a whole**:
 
-    - `✅ Spec compliant` — the wave's committed diff matches every task's spec
-      exactly. No Missing, no Extra, no Misunderstanding across any task.
+    - `✅ Spec compliant` — every wave's committed diff matches every task's spec
+      exactly. No Missing, no Extra, no Misunderstanding anywhere.
     - `❌ Issues found:` — at least one Missing / Extra / Misunderstanding in any
-      task of the wave. List each with `Task N — file:line` references and a
-      one-line rationale. Group findings by task so the user can triage the
-      right slice without re-reading the whole wave. **This is not a stop
+      task of any wave. List each with `Onda N · Task M — file:line` references
+      and a one-line rationale. Group findings by wave, then by task, so the user
+      can triage the right slice without re-reading the whole diff. **This is not a stop
       signal — execution has already moved on. The controller will surface
       these findings in `<plan>.followups.md` as `spec-issue` entries.**
 
@@ -121,9 +126,9 @@ Task tool (general-purpose):
 
     - `⚠️ Deferred (non-blocking):` — bullet list of items that should be recorded
       in the follow-ups artifact as `spec-deferred` entries. Each bullet:
-      `Task N — <short description> — file:line — suggested next step`. Use
-      `Wave-level` instead of `Task N` when the deferred item is not specific
-      to a single task. Omit the section entirely if there is nothing to defer.
+      `Onda N · Task M — <short description> — file:line — suggested next step`.
+      Use `Onda N — nível de onda` when the item is not specific to a single
+      task, and `Plano — nível de plano` when it spans waves. Omit the section entirely if there is nothing to defer.
 
     Be specific. Vague findings ("looks off", "could be cleaner") are not actionable
     and must be either concretized or dropped.

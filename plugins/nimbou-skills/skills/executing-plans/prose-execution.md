@@ -88,25 +88,25 @@ If an implementer reports failure, or a verification cannot be satisfied, stop d
 
 - One commit per wave. Stage explicitly the files touched by the wave; never use `git add -A`.
 - Mirror the repo's recent commit-message style (see `git log` on the current branch). Reference the wave (e.g., `Onda N — <título>`) and list the tasks included.
-- Do not wait for reviews. Reviews are advisory and run in background.
+- Do not review here. Spec review is advisory and happens once, at the end of the plan.
 
-### 2.5 Dispatch the wave's reviewers, then move on
+### 2.5 Record the wave for review, then move on
 
-Right after the commit lands, dispatch **one** reviewer with `run_in_background: true`:
+Right after the commit lands, record in TodoWrite — under the "collect spec review" entry — the wave's label, its commit SHA, the `specLines` ranges of its tasks, and what its implementers claimed. That is the payload Step 3 will hand to the reviewer.
 
-- **Spec compliance reviewer** — `Agent` with `subagent_type: general-purpose` (declared explicitly, never left to the default), prompt built from `./spec-reviewer-prompt.md` over the wave's commit diff. Its job is to detect Missing/Extra/Misunderstanding findings and `⚠️ Deferred` items.
+Do **not** dispatch a reviewer per wave. **One** spec compliance reviewer runs at the end, over every committed wave at once — `Agent` with `subagent_type: general-purpose` (declared explicitly, never left to the default), prompt built from `./spec-reviewer-prompt.md`. Its job is to detect Missing/Extra/Misunderstanding findings and `⚠️ Deferred` items.
+
+Why one pass and not N: the reviewer is the run's most expensive agent, and N reviewers each re-read the plan and re-establish context for a diff that only makes full sense alongside the others. A single pass also sees cross-wave drift — a contract set in wave 1 and quietly reshaped in wave 3 — which no per-wave reviewer can see. The cost is that findings arrive at the end rather than alongside the next wave; that is acceptable because reviews were never blocking anyway.
 
 **Code review is not part of this skill.** Run `/code-review` over the branch before merging. That axis — correctness and quality of the diff — is covered better by one pass over the whole change than by N passes each scoped to one wave, and a per-wave code reviewer would double the agent count for a second opinion you are going to get anyway.
 
 What `/code-review` cannot cover, and why the spec reviewer stays: it has no access to the plan, so it cannot tell a requirement that was never implemented from one that was never requested. Missing, Extra, and Misunderstanding are only visible to a reviewer holding the task specs. Neither can it detect an implementer that wrote outside its declared file boundary, since only the spec reviewer receives that boundary.
 
-Record the background agent's id/name in TodoWrite under the "collect background review results" entry so Step 3 can pick it up.
-
-Do **not** wait for the review to return. Open the next wave as soon as the current one is committed and its reviewer is dispatched.
+Open the next wave as soon as the current one is committed and recorded.
 
 ### 2.6 Final wave
 
-If the plan came from `nestjs-plan`, the final wave is `nimbou-skills:nestjs-test`. Run it after the last implementation wave's commit, not before. The dispatch scope must cover **only what this plan changed** — controllers, use-cases, repositories, Prisma adapters, and migrations introduced or modified across waves 1 through N — and nothing else. When briefing `nestjs-test`, list the explicit suite/file paths derived from the plan's diff and require that the test runner be invoked with those paths (e.g., `pnpm test -- --runInBand <suite-path>`); reject any briefing that resolves to an unfiltered suite run. The `nestjs-test` wave itself follows the same pattern: commit when green, then dispatch its two background reviewers.
+If the plan came from `nestjs-plan`, the final wave is `nimbou-skills:nestjs-test`. Run it after the last implementation wave's commit, not before. The dispatch scope must cover **only what this plan changed** — controllers, use-cases, repositories, Prisma adapters, and migrations introduced or modified across waves 1 through N — and nothing else. When briefing `nestjs-test`, list the explicit suite/file paths derived from the plan's diff and require that the test runner be invoked with those paths (e.g., `pnpm test -- --runInBand <suite-path>`); reject any briefing that resolves to an unfiltered suite run. The `nestjs-test` wave itself follows the same pattern: commit when green, then record it for the end-of-plan spec review like any other wave.
 
 Do not flatten the wave topology unless the user approves it. Do not invent serial dependencies the plan did not declare. Do not widen a wave to absorb the next one because its tasks look small.
 
@@ -114,9 +114,9 @@ Do not flatten the wave topology unless the user approves it. Do not invent seri
 
 After **all** waves have finished and committed (including the final `nestjs-test` wave when applicable):
 
-1. Wait for every background review subagent dispatched in Step 2.5 to finish. Read each one's result. **Do not skip any** — even if some waves are old, their reviewers' findings still belong in follow-ups.
+1. Dispatch the single spec compliance reviewer over every wave recorded in Step 2.5, in order. Give it each wave's label, commit SHA, task spec ranges, and implementer claims, and instruct it to read the diffs rather than trust the claims. **Do not drop a wave** — an early wave's diff is as reviewable as the last one, and cross-wave drift is only visible when all of them are in scope.
 2. Collect deferred items from these sources:
-   - **Every finding** returned by the per-wave spec reviewer subagents — `❌ Issues found` and `⚠️ Deferred (non-blocking)` alike. Since reviews are non-blocking here, both buckets land as follow-ups.
+   - **Every finding** returned by the spec reviewer — `❌ Issues found` and `⚠️ Deferred (non-blocking)` alike. Since review is non-blocking here, both buckets land as follow-ups.
    - Concerns raised during execution — by an implementer subagent in its report, or by the controller itself (architectural doubt, file growing too large, write-set collision, refactor suggestion, anything `DONE_WITH_CONCERNS`-equivalent).
    - Items declared in the plan's `## Pos-execucao` section (when present).
 3. If the collected list is **empty**: do not create any file. Announce "Plano executado sem follow-ups pendentes." and stop here.
