@@ -28,6 +28,11 @@ Task tool (general-purpose):
     have. Watch for them specifically:
     - two tasks that independently redefined the same type, constant, or helper
     - a task that wrote outside its declared file boundary
+    - implementation committed with no test alongside it, or a reported red run
+      whose failure could not have exercised the behavior (import error,
+      unresolved provider, parse failure) — that task was not driven by its
+      test, whatever it claims. A `red run` reported as NOT REPORTED is itself
+      the finding
     - a contract declared in an earlier wave that one task consumed correctly
       and another quietly re-declared with a different shape
     - a gap between two tasks that each assumed the other would close

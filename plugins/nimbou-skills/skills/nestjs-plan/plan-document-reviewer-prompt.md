@@ -23,6 +23,8 @@ Task tool (general-purpose):
     | Spec Alignment | Plan covers spec requirements, no major scope creep |
     | Task Decomposition | Tasks have clear boundaries, steps are actionable |
     | Buildability | Could an engineer follow this plan without getting stuck? |
+    | TDD shape | Every behavior-bearing task owns both its test and its implementation. No wave is a wave of tests. No task writes a test that a different task implements. |
+    | RED field | Every task declares `**RED:**`. It names a failure *class* ("FAIL por comportamento ausente"), never a literal error string the planner could not know yet. `RED: n/a` carries a reason, and that reason is a schema/migration or pure module-composition task — never a use-case, repository, or controller. |
 
     ## Calibration
 

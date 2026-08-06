@@ -32,15 +32,20 @@ Before dispatching anything, list the files each task in the wave declares it wi
 Dispatch **one implementer subagent per task**, all in a **single message with multiple parallel `Agent` calls**.
 
 Build each prompt from `./implementer-prompt.md`. Plans from `nestjs-plan` and `nuxt-plan`
-declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `Verificação` —
+declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `RED`, `Verificação` —
 directly under the task heading. Read those fields; do not re-derive them from the prose.
 Each implementer gets:
 
 - the task's full body — either pasted verbatim, or handed as a `Read` of the plan file at the task's exact line range. The two are equivalent, and the range is cheaper: re-emitting a plan's prose just so it can be pasted back costs the whole document in output tokens, which are the expensive ones. When you pass a range, tell the implementer to `Grep` the plan for the task heading if the first line it reads is not that heading, and to report a blocker rather than implement a guess. `run-waves` takes the range path; a controller that already has the plan in context can just paste
 - `Files` as the exact set it owns, and an explicit statement that it must not touch any other file
-- `Verificação` **verbatim** — implementers run it themselves. It is the command expecting PASS; a `nestjs-plan` task also contains a checklist step running the same suite expecting FAIL, and that one is never the verification
+- `RED` **verbatim** — the same command run *before* implementation, expecting FAIL, plus the failure class the plan declared. The implementer writes the test, runs this, and confirms the failure is the declared one before writing a line of implementation
+- `Verificação` **verbatim** — implementers run it themselves. It is the command expecting PASS, run after
 - `Consome` pasted in as actual declarations, not referenced by name
-- the required report shape: files touched, behavior changed, verification output, concerns
+- the required report shape: files touched, behavior changed, **red run output**, verification output, concerns
+
+**The red run is reported, not assumed.** Instruct every implementer to return the actual output of its `RED` command and one line on why that output proves the test was real. A failure caused by an unresolvable provider, a missing module, or a parse error exercised no behavior — that is a red run to fix before implementing, not one to report. A task that declared `RED: n/a` reports that string with the plan's reason.
+
+This is the whole reason the field exists. The Iron Law in `nimbou-skills:test-driven-development` is unenforceable while the red run lives only in prose: an implementer that writes test and implementation together still comes back green, and nothing downstream can tell the difference. A reported red run is the only artifact that distinguishes them.
 
 **A task in wave 2+ whose `Consome` is empty is a planning bug, not an empty dependency.**
 The wave exists because it consumes something earlier. Record it as a `concern`, and reconstruct
@@ -98,9 +103,11 @@ Do **not** dispatch a reviewer per wave. **One** spec compliance reviewer runs a
 
 Why one pass and not N: the reviewer is the run's most expensive agent, and N reviewers each re-read the plan and re-establish context for a diff that only makes full sense alongside the others. A single pass also sees cross-wave drift — a contract set in wave 1 and quietly reshaped in wave 3 — which no per-wave reviewer can see. The cost is that findings arrive at the end rather than alongside the next wave; that is acceptable because reviews were never blocking anyway.
 
-**Code review is not part of this skill.** Run `/code-review` over the branch before merging. That axis — correctness and quality of the diff — is covered better by one pass over the whole change than by N passes each scoped to one wave, and a per-wave code reviewer would double the agent count for a second opinion you are going to get anyway.
+Alongside it, at the same point in Step 3, runs **one** `nimbou-skills:guidelines-gap-analyzer` pass over the same commits. That is the second and last lens: architecture boundaries, conventions, missed reuse. It is deliberately blind to the plan — the spec reviewer holds that.
 
-What `/code-review` cannot cover, and why the spec reviewer stays: it has no access to the plan, so it cannot tell a requirement that was never implemented from one that was never requested. Missing, Extra, and Misunderstanding are only visible to a reviewer holding the task specs. Neither can it detect an implementer that wrote outside its declared file boundary, since only the spec reviewer receives that boundary.
+**Full `/code-review` is not part of this skill, and is no longer its default follow-up.** Three things now cover its ground: every task was driven by a failing test whose red run is on the record, the spec reviewer holds the plan, and the gap analyzer holds the boundaries. Run `/code-review` over the branch when you want a further pass — before a risky merge, on unfamiliar territory — not mechanically on every plan.
+
+What none of the three replaces: a defect that is correct against the spec, inside the boundaries, and covered by a passing test — a subtle N+1, an authorization path nobody thought to specify, a DTO exposing a field it should not. TDD does not find the test you never thought to write. That is what `/code-review` is still for, and it is a judgment call about the change, not a step.
 
 Open the next wave as soon as the current one is committed and recorded.
 
@@ -114,14 +121,16 @@ Do not flatten the wave topology unless the user approves it. Do not invent seri
 
 After **all** waves have finished and committed (including the final `nestjs-test` wave when applicable):
 
-1. Dispatch the single spec compliance reviewer over every wave recorded in Step 2.5, in order. Give it each wave's label, commit SHA, task spec ranges, and implementer claims, and instruct it to read the diffs rather than trust the claims. **Do not drop a wave** — an early wave's diff is as reviewable as the last one, and cross-wave drift is only visible when all of them are in scope.
+1. Dispatch both reviewers concurrently over every wave recorded in Step 2.5, in order:
+   - **Spec compliance** — give it each wave's label, commit SHA, task spec ranges, and implementer claims, including each task's reported red run, and instruct it to read the diffs rather than trust the claims. Auditing the red-run claims against the diff is part of its job: implementation committed with no test, or a red run whose failure could not have exercised the behavior, is a `spec-issue`. **Do not drop a wave** — an early wave's diff is as reviewable as the last one, and cross-wave drift is only visible when all of them are in scope.
+   - **Boundary lens** — `Agent` with `subagent_type: nimbou-skills:guidelines-gap-analyzer` over the same commits. Give it the SHAs and nothing from the plan. Its findings are `guideline-issue` / `guideline-deferred`.
 2. Collect deferred items from these sources:
-   - **Every finding** returned by the spec reviewer — `❌ Issues found` and `⚠️ Deferred (non-blocking)` alike. Since review is non-blocking here, both buckets land as follow-ups.
+   - **Every finding** returned by either reviewer — `❌ Issues found` and `⚠️ Deferred (non-blocking)` alike. Since review is non-blocking here, both buckets land as follow-ups.
    - Concerns raised during execution — by an implementer subagent in its report, or by the controller itself (architectural doubt, file growing too large, write-set collision, refactor suggestion, anything `DONE_WITH_CONCERNS`-equivalent).
    - Items declared in the plan's `## Pos-execucao` section (when present).
 3. If the collected list is **empty**: do not create any file. Announce "Plano executado sem follow-ups pendentes." and stop here.
 4. Otherwise, write `<plan>.followups.md` next to the plan file (same directory, same basename, `.followups.md` suffix) using `./followups-template.md`. Each entry must carry:
-   - **Tipo** — one of `spec-issue` | `spec-deferred` | `concern` | `pos-execucao`. The `review-*` types exist in the template for findings you append yourself after running `/code-review`; this skill never writes them.
+   - **Tipo** — one of `spec-issue` | `spec-deferred` | `guideline-issue` | `guideline-deferred` | `concern` | `pos-execucao`. The `review-*` types exist in the template for findings you append yourself after running `/code-review`; this skill never writes them.
    - **Origem** — which wave/reviewer produced the item.
    - **Descrição** — short one-liner with `file:line` when applicable.
    - **Próximo passo** — the reviewer's suggested action, or `a definir` if none was given.
@@ -132,10 +141,10 @@ The follow-ups artifact is **not** part of any wave commit. Commit it separately
 
 After `<plan>.followups.md` is committed (or confirmed empty), work through **all** collected items before declaring the plan complete:
 
-1. Triage the follow-ups list by severity: `spec-issue` first, then `concern`, then `pos-execucao`. When you have already appended `/code-review` findings, `review-critical` sorts above `spec-issue` and `review-important` / `review-minor` below it.
+1. Triage the follow-ups list by severity: `spec-issue` first, then `guideline-issue`, then `concern`, then the two deferred buckets, then `pos-execucao`. When you have already appended `/code-review` findings, `review-critical` sorts above `spec-issue` and `review-important` / `review-minor` below `guideline-issue`.
 2. Split the automatable items into **groups by file**. Two items touching the same file belong to the same group; items touching disjoint files are independent.
 3. Dispatch **one subagent per group, in parallel**, in a single message. Each gets the findings for its files, the affected file paths, and the scoped verification command for those files. Severity ordering still governs what lands inside a group's prompt first, but groups themselves do not wait on each other — they are disjoint by construction.
 4. For each returned group: mark its entries resolved in `<plan>.followups.md` with a one-line resolution note and the commit that fixed it.
 5. **If an item requires a manual action** (human decision, external system change, environment config, infra adjustment, or anything the agent cannot execute): do **not** write it to the file. Surface it in the output under a clearly labelled "Ações manuais necessárias" section, describing what needs to be done and why the agent cannot do it.
 6. Commit all follow-up fixes together in a single commit (or one commit per logical group when fixes are unrelated). Stage explicitly — never `git add -A`.
-7. When all automatable items are resolved, announce: "Plano executado. Todos os follow-ups automatizáveis resolvidos." Remind the user that `/code-review` over the branch is still owed before merging. If manual items were surfaced, list them once more in the final announcement so the user has them in one place.
+7. When all automatable items are resolved, announce: "Plano executado. Todos os follow-ups automatizáveis resolvidos." State which lenses ran — TDD red runs per task, spec compliance, boundary analysis — so the user can judge whether a `/code-review` pass over the branch is worth it before merging. If manual items were surfaced, list them once more in the final announcement so the user has them in one place.

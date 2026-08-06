@@ -2,7 +2,7 @@
 
 Use this template when the controller fans a wave's tasks out under `nimbou-skills:executing-plans` (Step 2.2). **One dispatch per task**, all dispatched together in a single message so they run in parallel.
 
-**Purpose:** Implement exactly one task from the plan, inside a declared file boundary, and prove it with the task's own verification command.
+**Purpose:** Implement exactly one task from the plan, inside a declared file boundary, driven by its own failing test, and prove both the red run and the green one.
 
 **Precondition:** the controller already checked write sets (Step 2.1). Every implementer in a wave owns a disjoint set of files. If two tasks share a file, they were merged into one dispatch before reaching this template.
 
@@ -51,6 +51,25 @@ Task tool ([ROLE]):
     If a contract you were given does not match what is on disk, STOP and report
     the mismatch — it means an earlier wave diverged.
 
+    ## Test First — Before Any Implementation
+
+    Write the task's test first, then run:
+
+    ```
+    [The task's declared RED command, exactly as the plan wrote it, together
+     with the failure class the plan declared it must produce.]
+    ```
+
+    Rules:
+    - The failure must be the declared one. A test that fails because a module
+      cannot be imported, a provider cannot be resolved, or the file does not
+      parse never exercised the behavior and proves nothing. Fix the test until
+      it fails for the behavior it is meant to drive out — that is not a red run
+      to report, it is one to correct.
+    - Only then implement, minimally, until it passes.
+    - When the task declares `RED: n/a`, report that string with the plan's
+      reason. Do not invent a test to fill the field.
+
     ## Verification
 
     Run this command, verbatim, when your implementation is in place:
@@ -91,6 +110,12 @@ Task tool ([ROLE]):
     **Files touched:** one line per file, with what changed in it.
 
     **Behavior changed:** what is observably different now, in one or two lines.
+
+    **Red run:** the RED command, its ACTUAL output, and one line on why that
+    output proves the test was real. The failing assertion or error is what
+    matters — do not paste the whole transcript. If you implemented before
+    running red, say so plainly; an honest report is recoverable, a fabricated
+    one is not.
 
     **Verification:** the command you ran and its actual output. Paste the real
     output — a claim that it passed is not evidence.

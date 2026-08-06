@@ -7,7 +7,7 @@ description: Use when you have an approved wave-structured plan and want it exec
 
 ## Overview
 
-Load the plan, review it critically, confirm it is wave-structured, then hand it to an executor. Inside a wave, one implementer subagent runs per task, in parallel — nobody writes the whole wave sequentially. Each wave is committed as soon as its tasks land and verify. The spec compliance review runs as a **non-blocking subagent** — its findings never gate task or wave progression; they accumulate into `<plan>.followups.md` at the end. Code review is deliberately **not** part of this skill: run `/code-review` over the branch before merging.
+Load the plan, review it critically, confirm it is wave-structured, then hand it to an executor. Inside a wave, one implementer subagent runs per task, in parallel — nobody writes the whole wave sequentially. Each wave is committed as soon as its tasks land and verify. Every task is driven by its own failing test, and the red run is reported as evidence. Two **non-blocking** reviewers run once at the end — spec compliance against the plan, and a boundary lens over the diff; their findings never gate progression, they accumulate into `<plan>.followups.md`. Full code review is deliberately **not** part of this skill: run `/code-review` over the branch when the change warrants a further pass.
 
 Parallelism only happens within a wave, exactly as the plan declares it. Waves stay sequential because later waves consume contracts earlier waves produce. Reviews run alongside execution, not in front of it.
 
@@ -91,7 +91,7 @@ Stop immediately when:
 - a verification fails repeatedly
 - a wave encounters a failure that invalidates downstream waves
 
-Reviewer findings — including ❌ from the spec reviewer — do **not** stop execution. They go to follow-ups and are surfaced to the user at completion.
+Reviewer findings — including ❌ from either reviewer — do **not** stop execution. They go to follow-ups and are surfaced to the user at completion.
 
 Ask for clarification instead of guessing.
 
@@ -112,7 +112,7 @@ commit-per-wave, end-of-plan spec review, follow-up execution — belong to
 - review the plan critically first — Step 1 is this file's only executable content
 - wave mode only — refuse plans without `## Ondas de Execução`
 - on Claude Code, delegate Steps 2-4 to `/nimbou-skills:run-waves`; walk `./prose-execution.md` by hand only when workflows are unavailable, and announce it
-- never let reviewer output gate a wave — findings feed `<plan>.followups.md`; code review is `/code-review` over the branch, not part of this skill
+- never let reviewer output gate a wave — findings feed `<plan>.followups.md`; full code review is `/code-review` over the branch, not part of this skill
 - run `nestjs-test` as the final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (explicit suite paths only — never an unfiltered `pnpm test`)
 - stop when blocked by implementation, not by reviewer output
 - do not start implementation on `main` or `master` without explicit user consent
@@ -142,7 +142,8 @@ Local templates, used by both paths:
 When execution completes or stops, report:
 
 - which waves were executed and committed, and how many implementer subagents ran in each
-- what the spec reviewer subagent returned (✅ / ❌ / ⚠️ Deferred), attributed per wave
-- that code review was not run here, and `/code-review` over the branch is still owed before merging
+- what each reviewer returned (✅ / ❌ / ⚠️ Deferred), attributed per wave
+- that every task reported a red run, or which ones did not
+- which lenses ran (red runs, spec compliance, boundaries), so the user can judge whether `/code-review` over the branch is worth it before merging
 - what failed or remains blocked, and whether the failure belongs to one task, one file, or one wave
 - whether `<plan>.followups.md` was generated, where it lives, and whether it carries `spec-issue` entries the user should look at

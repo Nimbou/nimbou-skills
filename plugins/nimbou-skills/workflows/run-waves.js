@@ -7,7 +7,7 @@ export const meta = {
     { title: 'Parse', detail: 'read the plan and extract waves, tasks, file boundaries' },
     { title: 'Implement', detail: 'one implementer per task, parallel inside each wave' },
     { title: 'Commit', detail: 'one commit per wave, staged explicitly' },
-    { title: 'Review', detail: 'one spec compliance pass over every committed wave' },
+    { title: 'Review', detail: 'spec compliance + boundary lens over every committed wave' },
     { title: 'Follow-ups', detail: 'collect findings, write the artifact, fix by file group' },
   ],
 }
@@ -60,6 +60,11 @@ const PLAN_SCHEMA = {
                 },
                 files: { type: 'array', items: { type: 'string' }, description: 'files this task writes' },
                 verification: { type: 'string', description: 'declared verification command, verbatim' },
+                red: {
+                  type: 'string',
+                  description:
+                    'the RED field verbatim: the command that must FAIL before implementation, plus the failure class it must produce. The literal string "n/a — <reason>" when the task carries no testable behavior.',
+                },
                 consumes: { type: 'string', description: 'contracts from earlier waves this task depends on' },
                 agentType: { type: 'string', description: 'role-specialized agent named by the plan, if any' },
               },
@@ -73,11 +78,16 @@ const PLAN_SCHEMA = {
 
 const IMPL_SCHEMA = {
   type: 'object',
-  required: ['status', 'filesTouched', 'verification'],
+  required: ['status', 'filesTouched', 'redOutput', 'verification'],
   properties: {
     status: { type: 'string', enum: ['DONE', 'DONE_WITH_CONCERNS', 'BLOCKED'] },
     filesTouched: { type: 'array', items: { type: 'string' } },
     behaviorChanged: { type: 'string' },
+    redOutput: {
+      type: 'string',
+      description:
+        'the RED run: the command, its ACTUAL output, and why that output proves the test failed for the right reason. The literal string "n/a — <reason>" only when the task declared no RED.',
+    },
     verification: { type: 'string', description: 'command run and its actual output' },
     concerns: { type: 'array', items: { type: 'string' } },
     blocker: { type: 'string' },
@@ -103,7 +113,7 @@ const REVIEW_SCHEMA = {
         properties: {
           tipo: {
             type: 'string',
-            enum: ['spec-issue', 'spec-deferred'],
+            enum: ['spec-issue', 'spec-deferred', 'guideline-issue', 'guideline-deferred'],
           },
           descricao: { type: 'string' },
           ref: { type: 'string', description: 'file:line when applicable' },
@@ -143,8 +153,13 @@ re-derive them from the prose.** For every task in every wave, return:
   spec loss.
 - files: the \`**Files:**\` field, split on commas. This is the write set.
 - verification: the \`**Verificação:**\` field, verbatim. It is the command expecting
-  PASS. A nestjs-plan task also contains a checklist step that runs the same suite
-  expecting FAIL, to prove the test is real — never return that one.
+  PASS.
+- red: the \`**RED:**\` field, verbatim — the same command run *before* implementation,
+  expecting FAIL, plus the class of failure it must produce. It is a separate field
+  from \`Verificação\` and must never be merged into it. Return it omitted only when
+  the plan genuinely has no such field; when the plan wrote \`n/a — <motivo>\`, return
+  that string as-is rather than dropping it, since the reason is what makes the
+  exception reviewable.
 - consumes: the \`**Consome:**\` field, verbatim. Return it omitted when the field
   says \`nada\`.
 
@@ -339,6 +354,7 @@ ${tasks
         const claims = [
           `status: ${r.status}`,
           `files: ${(r.filesTouched ?? []).join(', ') || 'none reported'}`,
+          `red run: ${r.redOutput || 'NOT REPORTED'}`,
           r.behaviorChanged ? `behavior: ${r.behaviorChanged}` : null,
           (r.concerns ?? []).length ? `concerns: ${r.concerns.join('; ')}` : null,
         ].filter(Boolean)
@@ -382,7 +398,9 @@ Do this:
 4. Stabilize or expand only the suites covering the files above.
 
 Do NOT commit — the caller commits this wave. Report status, the files you touched,
-and the actual runner output.`,
+and the actual runner output. This wave stabilizes existing coverage rather than
+driving out new behavior, so report \`redOutput\` as
+\`n/a — onda final de verificação\`.`,
     { label, phase: 'Implement', schema: IMPL_SCHEMA, agentType: 'general-purpose', model: 'sonnet' },
   )
 
@@ -466,9 +484,16 @@ let findings = []
 if (!reviewInputs.length) {
   log('No committed wave to review.')
 } else {
-  log(`Reviewing ${reviewInputs.length} committed wave(s) in one pass.`)
+  log(`Reviewing ${reviewInputs.length} committed wave(s): spec compliance + boundary lens.`)
 
-  const review = await agent(
+  // Two lenses, concurrently. Spec compliance reads the plan and asks whether the
+  // diff is what was asked for. The gap analyzer never sees the plan and asks
+  // whether the diff respects the project's boundaries and conventions — the axis
+  // a green test suite says nothing about, and the reason the run can stop paying
+  // for a full `/code-review` on every plan.
+  const [review, gaps] = await parallel([
+    () =>
+      agent(
     `You are reviewing whether a plan's implementation matches its specification.
 Follow the spec compliance reviewer contract in the \`nimbou-skills:executing-plans\`
 skill (\`spec-reviewer-prompt.md\`).
@@ -512,20 +537,64 @@ Run \`git show ${r.sha}\`.`,
 Open the touched files at \`file:line\` to confirm context. Review only these
 commits.
 
-Return findings as \`spec-issue\` (Missing / Extra / Misunderstanding) or
-\`spec-deferred\` (out-of-scope nits, nearby pre-existing issues). Every finding
-carries a concrete \`file:line\`, names the wave it belongs to, and suggests a
-next step. Vague findings are not actionable — concretize or drop them. Return an
-empty findings array when the diffs match the spec. Change nothing.`,
-    // Pinned to opus: this is the only review lens left in the run, and letting a
-    // lower session model drag it down would quietly weaken the plan's only check.
-    { label: 'spec review', phase: 'Review', agentType: 'general-purpose', model: 'opus', schema: REVIEW_SCHEMA },
-  ).catch(() => null)
+Every task was supposed to be driven by a failing test. Each implementer reported a
+\`red run\` claim above. Audit those claims against the diff: a task whose commit
+introduces implementation with no corresponding test, or whose red run reports a
+failure that could not have exercised the behavior (an import error, an unresolved
+provider, a parse failure), did not do TDD. Report it as a \`spec-issue\`. A claim
+of \`NOT REPORTED\` is itself the finding.
+
+Return findings as \`spec-issue\` (Missing / Extra / Misunderstanding, or a broken
+red-run claim) or \`spec-deferred\` (out-of-scope nits, nearby pre-existing issues).
+Every finding carries a concrete \`file:line\`, names the wave it belongs to, and
+suggests a next step. Vague findings are not actionable — concretize or drop them.
+Return an empty findings array when the diffs match the spec. Change nothing.`,
+        // Pinned to opus: dropping the session model here would quietly weaken the
+        // strongest check the run still performs.
+        { label: 'spec review', phase: 'Review', agentType: 'general-purpose', model: 'opus', schema: REVIEW_SCHEMA },
+      ),
+    () =>
+      agent(
+        `Review this plan's committed work for architecture boundaries, project
+conventions, and missed reuse. You are the boundary lens — you do NOT have the plan
+and you are not judging whether the right feature was built. Another reviewer does
+that.
+
+Commits under review, in order:
+
+${reviewInputs.map(r => `- \`${r.sha}\` — ${r.label}`).join('\n')}
+
+Run \`git show <sha>\` for each, and read the surrounding files to judge whether the
+new code fits what is already there.
+
+What matters here is precisely what a passing test suite cannot tell you: Prisma or
+other infrastructure types leaking across the application boundary, a use-case that
+duplicates one that already exists, a repository method that belongs on a port that
+was never updated, naming that departs from the module's existing convention, a
+controller that grew business logic, a component or composable rebuilt instead of
+reused.
+
+Return findings as \`guideline-issue\` (a boundary or convention actually violated)
+or \`guideline-deferred\` (worth doing, not urgent). Every finding carries a concrete
+\`file:line\` and a suggested next step. Do not report style preferences, and do not
+report anything you cannot point at in the diff. Return an empty findings array when
+the code fits the project. Change nothing.`,
+        {
+          label: 'boundary review',
+          phase: 'Review',
+          agentType: 'nimbou-skills:guidelines-gap-analyzer',
+          schema: REVIEW_SCHEMA,
+        },
+      ),
+  ])
 
   if (!review) {
     concerns.push('O spec review não retornou resultado. O plano foi executado sem essa verificação — revise o diff manualmente.')
   }
-  findings = review?.findings ?? []
+  if (!gaps) {
+    concerns.push('O guidelines-gap-analyzer não retornou resultado. Fronteiras e convenções ficaram sem lente neste run — considere rodar `/code-review` sobre o branch.')
+  }
+  findings = [...(review?.findings ?? []), ...(gaps?.findings ?? [])]
 }
 
 if (stoppedAt) {
@@ -750,6 +819,34 @@ ${group.map(t => t.consumes).filter(Boolean).join('\n\n') || 'None declared — 
 Use these exactly as declared. Do not redefine, widen, or "improve" them. If a
 contract you were given does not match what is on disk, STOP and report the
 mismatch — it means an earlier wave diverged.
+
+## Test First — Do This Before Writing Any Implementation
+
+${
+  group.every(t => (t.red ?? '').trim().toLowerCase().startsWith('n/a'))
+    ? `${multi ? 'Every task here declares' : 'This task declares'} \`RED: n/a\` — no testable
+behavior (schema/migration or pure module composition). Report that verbatim as
+\`redOutput\`, with the plan's stated reason. Do not invent a test to fill the field.`
+    : `For each task that declares a RED command below: write the test first, run the
+command, and confirm it fails **for the declared reason**.
+
+${group
+  .map(t => `- **${t.title}** — ${t.red ? `\`${t.red}\`` : 'no RED declared in the plan; say so in `redOutput` rather than inventing one'}`)
+  .join('\n')}
+
+A test that fails because a module cannot be imported, a provider cannot be
+resolved, or the file does not parse proves nothing — it never exercised the
+behavior. That is a red run you must fix before implementing, not a red run you
+report. Fix the test until it fails for the behavior it is supposed to drive out.
+
+Then implement, minimally, until it passes.
+
+Report the ACTUAL output of the red run in \`redOutput\`, plus one line on why that
+output proves the test was real. Do not paste the whole runner transcript — the
+failing assertion or error and its reason are what matter. If you implemented before
+running red, say so plainly in \`redOutput\`; an honest report is recoverable, a
+fabricated one is not.`
+}
 
 ## Verification
 

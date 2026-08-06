@@ -56,7 +56,7 @@ Every plan MUST start with this header:
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Steps use checkbox (`- [ ]`) syntax for tracking. Each wave ends with an automatic spec-compliance checkpoint over the wave's diff, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites/files touched by this plan — never the full backend suite.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Steps use checkbox (`- [ ]`) syntax for tracking. Every task is driven by its failing test: run the `RED:` command and report its output before writing implementation. The run ends with one spec-compliance pass over every wave plus a boundary pass over the backend diff, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites/files touched by this plan — never the full backend suite.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -76,6 +76,7 @@ Every plan MUST start with this header:
 **Onda:** N
 **Files:** `src/modules/.../create-invoice.use-case.ts`, `src/modules/.../create-invoice.spec.ts`
 **Consome:** `nada`
+**RED:** `pnpm test -- --runInBand src/modules/.../create-invoice.spec.ts` — espera FAIL por comportamento ausente (`DuplicateInvoiceReferenceError` não lançado), não por import, DI ou sintaxe
 **Verificação:** `pnpm test -- --runInBand src/modules/.../create-invoice.spec.ts`
 
 - [ ] **Step 1: Write the failing test**
@@ -142,12 +143,24 @@ a field the executor has to infer is a field it can infer wrong.
 | `**Onda:**` | The wave number this task belongs to. Explicit — never leave the executor to infer wave membership from prose. |
 | `**Files:**` | Every file this task WRITES, comma-separated. This is the task's write set: two tasks in the same wave must not share a file. Files the task only reads do not belong here. |
 | `**Consome:**` | The contracts this task consumes from earlier waves — types, signatures, routes, DTOs, schema fields — **pasted as actual declarations**, not referenced by name. Write `nada` only for Onda 1. |
+| `**RED:**` | The command that runs the task's test **before** any implementation exists, plus the class of failure it must produce. Same scoped path as `Verificação`. Write `n/a — <motivo>` when the task carries no testable behavior. |
 | `**Verificação:**` | The single command that proves the task is done, expecting PASS. Scoped path always; a bare `pnpm test` is a planning failure. |
 
-Two rules that are easy to get wrong:
+Rules that are easy to get wrong:
 
 - **`Consome` is mandatory from Onda 2 on.** A later wave exists *because* it consumes something an earlier wave produced. If you cannot name what a task consumes, the wave boundary was wrong — merge it into the earlier wave. The implementer subagent has none of your context: a task told it consumes nothing will redeclare the type it should have imported.
-- **`Verificação` is the green command, not the red one.** Step 2 of the checklist runs the same suite expecting FAIL, to prove the test is real. That run is part of the task body, never the `Verificação` field.
+- **`RED` and `Verificação` are the same command, run at two different moments.** RED is Step 2 of the checklist (expects FAIL, before implementation); `Verificação` is Step 4 (expects PASS, after). They are separate fields because the executor reports both, and a task that only ever ran green is not a task that was driven by its test.
+- **Declare the failure *class*, never the literal message.** You are writing the plan before any code exists — `Cannot find module` and `Nest can't resolve dependencies` are guesses, and a wrong guess leaves the implementer choosing between fudging the report and blocking. Write what the failure must prove instead: `espera FAIL por comportamento ausente, não por import, DI ou sintaxe`. That is checkable a priori and is exactly the distinction the Iron Law cares about — a test that fails because it does not compile tests nothing.
+- **`RED: n/a` requires a reason, always.** A Prisma migration or a pure module-composition task has no behavior to drive out; say so (`n/a — migration expand-step, sem comportamento`). What is forbidden is the silent omission. If you find yourself writing `n/a` on a task that creates a use-case, the task is wrong, not the field.
+
+### Tasks that carry no RED
+
+Only two shapes qualify, and both are structural rather than behavioral:
+
+- `prisma-schema-author` tasks whose whole output is schema plus a generated migration.
+- Pure module composition — a task whose diff is provider registration and nothing else.
+
+Everything else — use-cases, repositories, controllers, guards, filters — has behavior, therefore has a RED. A controller task's RED is a route-level test that 404s before the route exists.
 
 ## Role Mapping
 
@@ -182,12 +195,12 @@ These are plan failures:
 
 - Always express execution as **`## Ondas de Execução`** (waves). Within a wave, every task runs in parallel by default; the only reason to put work in a later wave is that it consumes a contract, schema, type, or shared module produced by an earlier wave.
 - Default wave shape:
-  1. **Onda 1 — Contratos e Testes:** failing HTTP/use-case/repository tests, DTOs, domain contracts, Prisma migrations expand-step. Anything downstream consumes types or behavior defined here.
-  2. **Onda 2 — Implementação Independente:** use-cases, domain services, repository adapters, fixtures. Dispatch in parallel — they share no mutable state.
+  1. **Onda 1 — Contratos:** DTOs, domain contracts and ports, Prisma migrations expand-step. Only what a later wave literally imports. **Tests do not belong here** — a test is consumed by no one, and splitting it away from its implementation hands RED to one agent and GREEN to another, which is test-first, not TDD.
+  2. **Onda 2 — Implementação Independente:** use-cases, domain services, repository adapters, fixtures — each with its own test, written first, inside the same task. Dispatch in parallel — they share no mutable state.
   3. **Onda 3 — Wiring NestJS:** controllers, guards, filters, interceptors, module composition. Parallel per module.
   4. **Onda Final — Verificação:** dispatch `nimbou-skills:nestjs-test` with scope covering **only the files this plan changed** — the controllers, use-cases, repositories, Prisma adapters, and migrations introduced or modified across waves 1 through N. The final-wave task list must enumerate the exact suites/files (paths) that need stabilization or expansion, derived from the plan's diff. **Never dispatch the full backend test suite.** The runner command must always carry a scoped path filter (e.g., `pnpm test -- --runInBand <suite-path>`); the unfiltered `pnpm test` is forbidden as a verification step.
 - Collapse or split waves only when a real dependency or its absence justifies it. Two waves with no shared contract should be one wave.
-- After each wave, the executor MUST automatically dispatch a spec-compliance review over the wave's diff. Mark this as a checkpoint inside the plan; do not leave it implicit. Code review is not a per-wave step — `/code-review` runs over the branch before merging.
+- Review happens once, at the end of the run, not per wave: the executor dispatches a spec-compliance pass over every committed wave plus a `guidelines-gap-analyzer` pass over the backend diff. Do not write per-wave review checkpoints into the plan. Full `/code-review` is not part of the run — with every task driven by a failing test and the gap analyzer covering boundaries, run it over the branch when you want the extra pass, not by default.
 - If the request is HTTP-facing, include controller, DTO, guard, filter or interceptor, and route-level verification tasks.
 - If the request is persistence-heavy, include repository contracts, Prisma adapters, fixture strategy, and integration-test tasks.
 - If the request spans both, make dependency direction explicit so application logic does not depend on Prisma or NestJS transport details.
@@ -215,9 +228,9 @@ After writing the complete plan, check:
 5. **Migration consistency:** schema-impacting work has ordered expand, migrate, and contract steps when relevant
 6. **Contract efficiency:** chatty endpoints, per-id validation loops, and full-payload updates are not planned by accident
 7. **Test coverage:** the plan proves behavior at HTTP, application, and persistence levels when relevant
-8. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave; tasks inside a wave are genuinely parallel-safe (no shared file writes, no implicit ordering)
-9. **Execution Contract:** every task carries `Role`, `Onda`, `Files`, `Consome`, and `Verificação`. No task declares a commit step. `Consome` is non-empty for every task outside Onda 1, and holds pasted declarations rather than names
-10. **Review checkpoints:** every wave ends with an explicit spec-compliance checkpoint
+8. **TDD shape:** every task that carries behavior owns its test *and* its implementation — no task writes a test another task implements, and no wave is a wave of tests. Every `RED: n/a` names a reason, and that reason is a schema/migration or pure-composition task, never a use-case, repository, or controller
+9. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave; tasks inside a wave are genuinely parallel-safe (no shared file writes, no implicit ordering)
+10. **Execution Contract:** every task carries `Role`, `Onda`, `Files`, `Consome`, `RED`, and `Verificação`. No task declares a commit step. `Consome` is non-empty for every task outside Onda 1, and holds pasted declarations rather than names. `RED` declares a failure class, not a literal error string
 11. **Final wave:** the final wave dispatches `nimbou-skills:nestjs-test` with scope restricted to the files this plan touched — every controller, use-case, repository, and migration introduced anywhere in the plan, **and nothing else**. The verification command must include explicit suite paths; an unfiltered `pnpm test` is a planning failure.
 
 Fix issues inline before handing off the plan.
