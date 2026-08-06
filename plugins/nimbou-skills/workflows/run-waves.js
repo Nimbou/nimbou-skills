@@ -388,6 +388,10 @@ else:
 
 ${touched.map(f => `- ${f}`).join('\n')}
 
+Use **final-wave mode**: every task in this plan was already driven by its own
+failing test, so per-slice coverage exists. Re-asserting it here is rework, not
+thoroughness.
+
 Do this:
 1. Derive the explicit suite/file paths that cover those files — the controllers,
    use-cases, repositories, Prisma adapters, and migrations they contain.
@@ -395,7 +399,14 @@ Do this:
    \`pnpm test -- --runInBand <suite-path>\`.
 3. An unfiltered \`pnpm test\` is forbidden. If you cannot derive a scoped path
    set, report BLOCKED rather than widening the run.
-4. Stabilize or expand only the suites covering the files above.
+4. Stabilize what is fragile when the plan's suites run together — order
+   dependence, fixture leakage, timing. These pass per-task and break in company.
+5. Write new tests ONLY for the seams between tasks: each task proved its slice in
+   isolation, and nobody proved they compose. A route-level test exercising
+   controller → use-case → repository is in scope for exactly that reason.
+6. If you find plan behavior with no test at all, write it AND report it as a
+   concern — the task's RED was fake or skipped, and that belongs in follow-ups
+   rather than being silently patched here.
 
 Do NOT commit — the caller commits this wave. Report status, the files you touched,
 and the actual runner output. This wave stabilizes existing coverage rather than
@@ -823,10 +834,17 @@ mismatch — it means an earlier wave diverged.
 ## Test First — Do This Before Writing Any Implementation
 
 ${
-  group.every(t => (t.red ?? '').trim().toLowerCase().startsWith('n/a'))
-    ? `${multi ? 'Every task here declares' : 'This task declares'} \`RED: n/a\` — no testable
-behavior (schema/migration or pure module composition). Report that verbatim as
-\`redOutput\`, with the plan's stated reason. Do not invent a test to fill the field.`
+  // A task drives out behavior only when the plan gave it a real RED command.
+  // `n/a` is the declared exception; a missing field is a nuxt-plan task, which
+  // has no RED contract at all. Both take the no-red branch — inventing a test to
+  // satisfy a field the plan never wrote is worse than reporting its absence.
+  group.every(t => !(t.red ?? '').trim() || (t.red ?? '').trim().toLowerCase().startsWith('n/a'))
+    ? `${multi ? 'No task here declares a RED command' : 'This task declares no RED command'}${
+        group.some(t => (t.red ?? '').trim())
+          ? ' — the plan wrote `n/a`, meaning no testable behavior (schema/migration or pure module composition)'
+          : ' — this plan carries no RED contract for this kind of task'
+      }. Report that verbatim as \`redOutput\`, with the plan's stated reason when it
+gave one. Do not invent a test to fill the field.`
     : `For each task that declares a RED command below: write the test first, run the
 command, and confirm it fails **for the declared reason**.
 

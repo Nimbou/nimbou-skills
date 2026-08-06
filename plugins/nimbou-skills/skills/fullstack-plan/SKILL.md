@@ -61,18 +61,22 @@ The default shape. Collapse or split only when a real contract dependency justif
 
 | Onda | Backend | Frontend |
 |---|---|---|
-| 1 — Contratos | DTOs, domain contracts, Prisma migration expand-step, failing tests | types derived from `openapi.yaml`, fixtures, failing tests |
-| 2 — Implementação | use-cases, domain services, repository adapters | components, composables, utils |
+| 1 — Contratos | DTOs, domain contracts and ports, Prisma migration expand-step | types derived from `openapi.yaml`, fixtures |
+| 2 — Implementação | use-cases, domain services, repository adapters — each with its test, written first, in the same task | components, composables, utils |
 | 3 — Wiring | controllers, guards, filters, interceptors, module composition | page and layout integration, route wiring |
 | Final — Verificação | `nestjs-test` scoped strictly to the files this plan changed | catalog verification and scoped `/test` in `## Pos-execucao` |
 
 Both sides occupy Onda 2 at the same time. That is the whole point of the skill.
 
+**Onda 1 carries no tests, on either side.** A test is consumed by no later wave, and splitting it away from its implementation hands RED to one agent and GREEN to another — test-first, not TDD. Backend tests live inside the task that implements the behavior.
+
+**The two stacks are not symmetric about TDD, deliberately.** Backend tasks are test-driven and declare `RED:`. Frontend tasks are not: the browser-level equivalent is a Playwright run, which is too slow and too coupled to serve as a short red-green cycle, and unit-testing a Vuetify component mostly asserts the framework. Frontend quality is covered by the `guidelines-gap-analyzer` pass and by `/code-review`, where reading the diff is cheap and asserting the visual result is expensive — the opposite of the backend's economics. Do not invent a frontend RED to make the table look balanced.
+
 **Unbalanced sides are normal and correct.** If the backend needs three implementation waves and the frontend finishes in one, the frontend simply has no task in the later waves. Do not invent frontend work to fill a wave, and do not hold a wave open waiting for symmetry. One shared wave numbering, gaps allowed.
 
 ## Execution Contract
 
-Every task carries the same five fields `nimbou-skills:executing-plans` extracts, regardless of which stack it belongs to:
+Every task carries the fields `nimbou-skills:executing-plans` extracts, regardless of which stack it belongs to:
 
 ```md
 #### Task N: <nome>
@@ -80,10 +84,13 @@ Every task carries the same five fields `nimbou-skills:executing-plans` extracts
 **Onda:** N
 **Files:** `<files this task WRITES, comma-separated>`
 **Consome:** `<pasted declarations>` | `nada`
+**RED:** `<command that must FAIL before implementation>` — <failure class it must produce>
 **Verificação:** `<scoped command that proves the task done, expecting PASS>`
 ```
 
 Rules specific to a joint plan:
+
+- **`RED` is a backend field.** Backend tasks declare it under `nestjs-plan`'s rules: the failure *class*, never a literal error string, and `RED: n/a — <motivo>` only for schema/migration or pure module composition. Frontend tasks write `**RED:** `n/a — frontend, coberto por review``. The executor requires the field to be present on every task precisely so its absence cannot be silent; what differs across stacks is the value, not the presence.
 
 - **Write sets are checked across both stacks.** Two tasks in the same wave must not share a file. Backend and frontend rarely collide, but generated types, shared constants, and `openapi.yaml`-derived files do.
 - **`Consome` for a frontend task quotes the contract**, pasted: the route, the request and response shape, the error cases. Not "the endpoint from Task 3".
@@ -96,7 +103,7 @@ Rules specific to a joint plan:
 ```md
 # Plan: [Feature Name]
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Waves mix backend and frontend tasks; each wave ends with a spec-compliance checkpoint, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites this plan touched.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Waves mix backend and frontend tasks. Backend tasks are driven by their failing test: run the `RED:` command and report its output before writing implementation; frontend tasks declare `RED: n/a`. The run ends with one spec-compliance pass over every wave plus a boundary pass over the diff, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites this plan touched.
 
 **Goal:** [one sentence]
 **Contrato:** `docs/domain/<domain>/openapi.yaml` [approved on <date or commit>]
@@ -129,11 +136,12 @@ After writing the plan, check:
 1. **Contract closed:** every frontend `Consome` traces to approved `openapi.yaml`, and none names a backend task
 2. **No false serialization:** for every frontend task outside Onda 1, the reason it is not earlier is a contract it consumes — not a backend task landing
 3. **Write sets:** no two tasks in the same wave write the same file, across both stacks
-4. **Execution Contract:** all five fields on every task; no commit steps
-5. **Roles:** every slug exists in the owning platform planner's Role Mapping
-6. **Platform rules:** backend tasks respect `nestjs-plan` boundaries; frontend tasks respect `nuxt-plan` reuse and design resolution
-7. **Final wave:** `nestjs-test` scoped to this plan's files with explicit suite paths — never an unfiltered `pnpm test`
-8. **Balance is not a goal:** waves with work on one side only are fine when the dependency graph says so
+4. **Execution Contract:** every field on every task; no commit steps
+5. **TDD shape:** Onda 1 contains no tests on either side. Every backend task carrying behavior owns its test and its implementation, and declares a `RED` failure class. Every frontend task declares `RED: n/a — frontend, coberto por review`. No `n/a` on a backend use-case, repository, or controller
+6. **Roles:** every slug exists in the owning platform planner's Role Mapping
+7. **Platform rules:** backend tasks respect `nestjs-plan` boundaries; frontend tasks respect `nuxt-plan` reuse and design resolution
+8. **Final wave:** `nestjs-test` scoped to this plan's files with explicit suite paths — never an unfiltered `pnpm test`
+9. **Balance is not a goal:** waves with work on one side only are fine when the dependency graph says so
 
 Fix issues inline before handing off.
 

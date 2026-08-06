@@ -133,7 +133,7 @@ per-task commits would interleave into unreviewable history.
 
 ## Execution Contract
 
-The five fields above the checklist are what `nimbou-skills:executing-plans` extracts to
+The fields above the checklist are what `nimbou-skills:executing-plans` extracts to
 dispatch the task. They exist so the executor performs extraction, not interpretation —
 a field the executor has to infer is a field it can infer wrong.
 
