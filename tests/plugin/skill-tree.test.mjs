@@ -341,6 +341,10 @@ test('role-specialized author agents are scaffolded for SDD routing', () => {
     {
       file: 'plugins/nimbou-skills/agents/nestjs-controller-author.md',
       slug: 'nestjs-controller-author',
+      // The only author whose task is pure transport wiring against a contract that
+      // already exists: parse -> call the use-case -> map. No design decision is left
+      // for it to make, so it runs a tier below the other authors.
+      model: 'haiku',
       scopeMatch: /HTTP transport/,
       boundaryMatch: /3-step coordinator/i,
     },
@@ -364,14 +368,15 @@ test('role-specialized author agents are scaffolded for SDD routing', () => {
     },
   ]
 
-  for (const { file, slug, scopeMatch, boundaryMatch } of roleAgents) {
+  for (const { file, slug, model = 'sonnet', scopeMatch, boundaryMatch } of roleAgents) {
     assert.equal(existsSync(resolve(root, file)), true, `${file} should exist`)
     const body = read(file)
     assert.match(body, new RegExp(`^---\\nname: ${slug}`, 'm'), `${slug} frontmatter name`)
     // Every agent in this list is a code author: bounded work against a task the
     // plan already closed. `inherit` would put each one on the session model, which
-    // on an opus setup means a full opus session per implementer dispatched.
-    assert.match(body, /^model: sonnet$/m, `${slug} should pin model: sonnet`)
+    // on an opus setup means a full opus session per implementer dispatched. Sonnet
+    // is the default; an entry may drop a tier, but never inherit and never opus.
+    assert.match(body, new RegExp(`^model: ${model}$`, 'm'), `${slug} should pin model: ${model}`)
     assert.match(body, /memory: project/, `${slug} should set memory: project`)
     assert.match(body, /## Scope/, `${slug} should declare ## Scope`)
     assert.match(body, /## Mandatory Execution Order/, `${slug} should declare ## Mandatory Execution Order`)

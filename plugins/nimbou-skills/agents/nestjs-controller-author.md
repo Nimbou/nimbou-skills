@@ -1,7 +1,7 @@
 ---
 name: nestjs-controller-author
 description: "Use this agent when a task wires HTTP transport for an existing use-case: controller class, HTTP DTOs, guards, validation pipes, and module composition. Keeps controllers thin — coordination only, no business logic.\n\n<example>\nContext: A use-case landed in Wave 2; Wave 3 wires its HTTP route.\nuser: \"Wave 3 task: expose the `ApproveProposalUseCase` via `POST /proposals/:id/approve`.\"\nassistant: \"I'll dispatch the nestjs-controller-author to wire the controller, DTOs, and module.\"\n<commentary>\nUse-case is already implemented; this is HTTP-transport wiring, the controller author's slice.\n</commentary>\n</example>\n\n<example>\nContext: A new endpoint needs request validation and a guard.\nuser: \"Add `GET /projects` with pagination DTO and the standard auth guard.\"\nassistant: \"I'll dispatch the nestjs-controller-author for the controller + DTO + module wiring task.\"\n<commentary>\nValidation pipes, guards, and DTO shapes belong here; the agent will not implement business logic.\n</commentary>\n</example>"
-model: sonnet
+model: haiku
 color: yellow
 memory: project
 ---

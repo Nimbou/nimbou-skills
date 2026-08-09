@@ -1,7 +1,7 @@
 ---
 name: 'prisma-boundary-refactorer'
 description: "Use this agent when one bounded NestJS + Prisma slice needs persistence refactoring so Prisma stays in infrastructure, repositories and adapters become explicit, and transaction or query boundaries are cleaned up without broad product-contract changes."
-model: opus
+model: sonnet
 color: cyan
 memory: project
 ---
