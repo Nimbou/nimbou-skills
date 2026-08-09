@@ -9,6 +9,7 @@ export const meta = {
     { title: 'Commit', detail: 'one commit per wave, staged explicitly' },
     { title: 'Review', detail: 'spec compliance + boundary lens over every committed wave' },
     { title: 'Follow-ups', detail: 'collect findings, write the artifact, fix by file group' },
+    { title: 'Smoke', detail: 'browser smoke over the promised flows, when the plan touched frontend' },
   ],
 }
 
@@ -29,8 +30,13 @@ if (!planPath) {
 
 const PLAN_SCHEMA = {
   type: 'object',
-  required: ['waves'],
+  required: ['waves', 'repoRoot'],
   properties: {
+    repoRoot: {
+      type: 'string',
+      description: 'absolute path of the checkout this run writes to — `git rev-parse --show-toplevel`',
+    },
+    branch: { type: 'string', description: '`git rev-parse --abbrev-ref HEAD` in that checkout' },
     planOrigin: { type: 'string', description: 'nestjs-plan | nuxt-plan | other' },
     waveStructured: { type: 'boolean' },
     posExecucao: { type: 'array', items: { type: 'string' } },
@@ -96,8 +102,68 @@ const IMPL_SCHEMA = {
 
 const COMMIT_SCHEMA = {
   type: 'object',
-  required: ['sha', 'message'],
-  properties: { sha: { type: 'string' }, message: { type: 'string' } },
+  required: ['status'],
+  properties: {
+    status: {
+      type: 'string',
+      enum: ['COMMITTED', 'PARTIAL_WAVE'],
+      description: 'PARTIAL_WAVE when a file an implementer reported as touched is absent from git status here',
+    },
+    sha: { type: 'string', description: 'omitted when status is PARTIAL_WAVE — nothing was committed' },
+    message: { type: 'string' },
+    missingReported: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'files an implementer reported touching that this checkout shows no change for',
+    },
+    missingDeclared: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'files the plan declared for this wave that nobody touched and nobody reported',
+    },
+    undeclaredChanged: { type: 'array', items: { type: 'string' }, description: 'changed files nobody declared' },
+  },
+}
+
+// What counts as frontend surface. The trigger is the committed diff, not the plan's
+// declared origin: a backend plan that touched one SFC still put something on screen,
+// and a frontend plan that only moved a util did not.
+const FRONT_PATTERNS = [
+  /\.vue$/,
+  /(^|\/)(pages|components|layouts|composables|middleware|assets)\//,
+  /(^|\/)nuxt\.config\.[cm]?[jt]s$/,
+  /\.(css|scss|sass)$/,
+]
+
+const SMOKE_SCHEMA = {
+  type: 'object',
+  required: ['status'],
+  properties: {
+    status: {
+      type: 'string',
+      enum: ['PASS', 'FAIL', 'SKIPPED'],
+      description:
+        'SKIPPED when no browser driver was available or the app never came up — that is an environment gap, never a defect',
+    },
+    driver: { type: 'string', description: 'chrome-devtools | playwright | none' },
+    flows: { type: 'integer', description: 'how many flows were actually exercised' },
+    findings: {
+      type: 'array',
+      description: 'flows that failed against what the plan promised. Empty when status is PASS or SKIPPED.',
+      items: {
+        type: 'object',
+        required: ['flow', 'descricao', 'files'],
+        properties: {
+          flow: { type: 'string', description: 'the flow sentence, as it was smoked' },
+          descricao: { type: 'string', description: 'what was seen versus what was promised' },
+          evidence: { type: 'string', description: 'screenshot path and the console line that matters' },
+          files: { type: 'array', items: { type: 'string' }, description: 'files that likely own the defect' },
+          verification: { type: 'string', description: 'scoped command to re-verify after a fix, if any applies' },
+        },
+      },
+    },
+    concerns: { type: 'array', items: { type: 'string' } },
+  },
 }
 
 const REVIEW_SCHEMA = {
@@ -130,6 +196,12 @@ phase('Parse')
 
 const plan = await agent(
   `Read the plan at \`${planPath}\` and extract its execution structure.
+
+First, establish where this run writes. Run \`git rev-parse --show-toplevel\` and
+\`git rev-parse --abbrev-ref HEAD\`, and return them as repoRoot and branch. Every
+later agent in this run is anchored to that absolute path, so it must be the
+checkout you are actually standing in — a worktree, when one was set up. Do not
+guess it from the plan's prose or from any absolute path written inside the plan.
 
 Waves live under \`## Ondas de Execução\` (or the legacy \`## Grupos de Execucao\`).
 Set waveStructured to false if neither heading exists — do not invent waves from a
@@ -180,7 +252,7 @@ test tasks is not the final verification wave.
 Also return planOrigin (nestjs-plan / nuxt-plan / other) and posExecucao: the
 verbatim items under \`## Pos-execucao\` when that section exists.
 
-Read only. Change nothing.`,
+Beyond the two \`git rev-parse\` reads, read only. Change nothing.`,
   { label: 'parse-plan', schema: PLAN_SCHEMA, model: 'haiku', effort: 'low' },
 )
 
@@ -191,8 +263,24 @@ if (plan.waveStructured === false) {
   }
 }
 
+// Every write in this run is anchored here. Without it, implementers resolve the
+// plan's paths against whatever checkout they inherited — which is how a wave gets
+// half-written into the main checkout and committed as if it were complete.
+const repoRoot = (plan.repoRoot ?? '').trim()
+if (!repoRoot.startsWith('/')) {
+  return {
+    error:
+      'Could not establish an absolute repoRoot for this run. Every implementer must be anchored to one checkout before any wave is dispatched.',
+  }
+}
+
+// Hand agents the plan by absolute path too: a relative one resolves against
+// whatever directory the agent inherited, which is the same failure mode.
+const planRef = planPath.startsWith('/') ? planPath : `${repoRoot}/${planPath.replace(/^\.\//, '')}`
+
 const waves = plan.waves ?? []
 const taskCount = waves.reduce((n, w) => n + (w.tasks?.length ?? 0), 0)
+log(`Anchored at ${repoRoot}${plan.branch ? ` (${plan.branch})` : ''} — every write and every commit happens there.`)
 log(`${waves.length} waves, ${taskCount} tasks. Waves run in order; tasks inside a wave run in parallel.`)
 
 // ── Execute ──────────────────────────────────────────────────────────────────
@@ -286,8 +374,16 @@ for (let w = 0; w < waves.length; w++) {
   const unproven = groups.flatMap((group, i) =>
     (reports[i]?.verification ?? '').length >= 200 ? [] : group.map(t => t.verification).filter(Boolean),
   )
+  const declaredFiles = [...new Set(tasks.flatMap(t => t.files ?? []))]
   const commit = await agent(
     `Commit exactly one wave of an approved plan.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+Run every git command in WORKTREE_ROOT. Confirm with \`git rev-parse --show-toplevel\`
+before anything else; if it prints something different, \`cd\` there first. This wave
+may have been implemented in a worktree rather than the project's main checkout, and
+a status taken in the wrong one is what makes a half-written wave look complete.
 
 Wave: ${label}
 Tasks included:
@@ -296,10 +392,21 @@ ${tasks.map(t => `- ${t.title}`).join('\n')}
 Files reported as touched by the implementers:
 ${files.map(f => `- ${f}`).join('\n')}
 
+Files the plan declared for this wave:
+${declaredFiles.map(f => `- ${f}`).join('\n') || '- (none declared)'}
+
 Do this:
-1. Run \`git status --porcelain\` and compare against the list above. Report any
-   file changed that no implementer declared — an implementer wrote outside its
-   boundary. Do NOT revert it; record it and carry on.
+1. Run \`git status --porcelain\` and reconcile it against both lists above. Paths in
+   the lists are relative to WORKTREE_ROOT; an absolute path outside WORKTREE_ROOT is
+   itself proof that an implementer wrote into another checkout.
+   - **A file an implementer reported touching, with no change in \`git status\`** —
+     return it in missingReported, set status to PARTIAL_WAVE, and COMMIT NOTHING.
+     The work exists somewhere this run will never commit. This is a stop, not a note:
+     committing the rest produces a wave that references code that is not there.
+   - A file the plan declared that nobody reported and nothing changed — return it in
+     missingDeclared and carry on; it is a concern, not a stop.
+   - A file changed that nobody declared — return it in undeclaredChanged and carry on.
+     Do NOT revert it.
 2. ${
       unproven.length
         ? `Re-run these verifications — their implementers reported a claim rather than
@@ -312,7 +419,9 @@ ${unproven.map(v => `   - ${v}`).join('\n')}`
 3. Stage the wave's files EXPLICITLY by path. Never \`git add -A\`.
 4. Read \`git log\` on the current branch and mirror its message style. Reference
    the wave and list the tasks included.
-5. Commit, then return the resulting SHA and the message you used.
+5. Commit, then return status COMMITTED with the resulting SHA and the message you
+   used. Skip steps 2 through 5 entirely when step 1 found a missingReported file:
+   return status PARTIAL_WAVE with that list and no SHA.
 
 Do not push. Do not commit anything outside this wave.`,
     { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA, model: 'haiku', effort: 'low' },
@@ -321,6 +430,34 @@ Do not push. Do not commit anything outside this wave.`,
   if (!commit) {
     stoppedAt = { wave: label, blockers: [{ tasks: ['<commit>'], blocker: 'commit agent returned no result' }] }
     break
+  }
+
+  // A file reported as written that this checkout has no change for means the work
+  // landed in another checkout. Committing the remainder would produce a wave whose
+  // code references files that are not in the branch — the failure this guard exists
+  // for, and one that only surfaces waves later as a "divergent contract".
+  if (commit.status === 'PARTIAL_WAVE' || !commit.sha) {
+    const missing = commit.missingReported ?? []
+    stoppedAt = {
+      wave: label,
+      blockers: [
+        {
+          tasks: tasks.map(t => t.title),
+          blocker: missing.length
+            ? `Wave written outside ${repoRoot}: ${missing.join(', ')} were reported as touched but show no change here. Move those paths into this checkout before rerunning; committing the rest would land a partial wave.`
+            : 'commit agent returned no SHA',
+        },
+      ],
+    }
+    log(`${label} PARTIAL — work landed outside ${repoRoot}; nothing committed, downstream waves stopped.`)
+    break
+  }
+
+  for (const f of commit.missingDeclared ?? []) {
+    concerns.push(`${label}: plan declared "${f}" for this wave but nothing changed it.`)
+  }
+  for (const f of commit.undeclaredChanged ?? []) {
+    concerns.push(`${label}: "${f}" changed but no task declared it.`)
   }
 
   executed.push({
@@ -339,13 +476,13 @@ Do not push. Do not commit anything outside this wave.`,
   collectSpecReview(
     label,
     commit.sha,
-    `The wave's tasks are specified in the plan at \`${planPath}\`. Read each range
+    `The wave's tasks are specified in the plan at \`${planRef}\`. Read each range
 below before judging the diff — the spec is the plan's text, not this summary.
 
 ${tasks
   .map(
     t =>
-      `- **${t.title}** — \`Read("${planPath}", offset: ${t.specLines?.start ?? 1}, limit: ${Math.max(1, (t.specLines?.end ?? 1) - (t.specLines?.start ?? 1) + 1)})\``,
+      `- **${t.title}** — \`Read("${planRef}", offset: ${t.specLines?.start ?? 1}, limit: ${Math.max(1, (t.specLines?.end ?? 1) - (t.specLines?.start ?? 1) + 1)})\``,
   )
   .join('\n')}`,
     reports
@@ -380,7 +517,14 @@ if (!stoppedAt && plan.planOrigin === 'nestjs-plan' && !waves.some(w => w.isNest
   const testReport = await agent(
     `Run the plan's final verification wave using \`nimbou-skills:nestjs-test\`.
 
-The plan at \`${planPath}\` came from \`nestjs-plan\` but declared no final
+    WORKTREE_ROOT = ${repoRoot}
+
+Work only inside WORKTREE_ROOT — confirm with \`git rev-parse --show-toplevel\` before
+your first write, and build every path from WORKTREE_ROOT if your working directory
+is elsewhere. This run may be happening in a worktree, and a test written into the
+main checkout is a test this branch does not have. Report paths relative to it.
+
+The plan at \`${planRef}\` came from \`nestjs-plan\` but declared no final
 verification wave. You are that wave.
 
 Scope: ONLY what this plan changed across every wave — these files and nothing
@@ -427,18 +571,38 @@ driving out new behavior, so report \`redOutput\` as
     const testFiles = testReport.filesTouched ?? []
     const testCommit = testFiles.length
       ? await agent(
-          `Commit the final verification wave for the plan at \`${planPath}\`.
+          `Commit the final verification wave for the plan at \`${planRef}\`.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+Run every git command there; confirm with \`git rev-parse --show-toplevel\` first.
 
 Files touched by the nestjs-test wave:
 ${testFiles.map(f => `- ${f}`).join('\n')}
 
-Stage them EXPLICITLY by path — never \`git add -A\`. Mirror the repo's commit
-style from \`git log\`. Do not push. Return the SHA and message.`,
+Run \`git status --porcelain\` and check each of those files against it. Any file
+listed above with no change here was written into another checkout: return it in
+missingReported with status PARTIAL_WAVE and commit nothing.
+
+Otherwise stage them EXPLICITLY by path — never \`git add -A\`. Mirror the repo's
+commit style from \`git log\`. Do not push. Return status COMMITTED with the SHA and
+message.`,
           { label: `commit ${label}`, phase: 'Commit', schema: COMMIT_SCHEMA, model: 'haiku', effort: 'low' },
         )
       : null
 
-    if (testCommit) {
+    if (testCommit && testCommit.status === 'PARTIAL_WAVE') {
+      stoppedAt = {
+        wave: label,
+        blockers: [
+          {
+            tasks: ['nestjs-test'],
+            blocker: `Final wave written outside ${repoRoot}: ${(testCommit.missingReported ?? []).join(', ') || 'commit agent returned no SHA'}.`,
+          },
+        ],
+      }
+      log(`${label} PARTIAL — work landed outside ${repoRoot}; nothing committed.`)
+    } else if (testCommit?.sha) {
       executed.push({
         wave: label,
         sha: testCommit.sha,
@@ -459,8 +623,13 @@ style from \`git log\`. Do not push. Return the SHA and message.`,
           .filter(Boolean)
           .join('\n'),
       )
-    } else {
+    } else if (!testFiles.length) {
       log(`${label}: green with no file changes, nothing to commit.`)
+    } else {
+      stoppedAt = {
+        wave: label,
+        blockers: [{ tasks: ['nestjs-test'], blocker: 'commit agent returned no result for the final wave' }],
+      }
     }
   }
 }
@@ -545,6 +714,9 @@ Run \`git show ${r.sha}\`.`,
 
 ---
 
+These commits live in \`${repoRoot}\` — run every git command and open every file
+there, not in another checkout of the same project.
+
 Open the touched files at \`file:line\` to confirm context. Review only these
 commits.
 
@@ -574,6 +746,8 @@ that.
 Commits under review, in order:
 
 ${reviewInputs.map(r => `- \`${r.sha}\` — ${r.label}`).join('\n')}
+
+They live in \`${repoRoot}\`; run every git command and open every file there.
 
 Run \`git show <sha>\` for each, and read the surrounding files to judge whether the
 new code fits what is already there.
@@ -627,14 +801,27 @@ const items = [
 ]
 
 if (!items.length) {
-  return { wavesCommitted: executed, followups: null, message: 'Plano executado sem follow-ups pendentes.' }
+  // A plan with nothing pending is exactly the one nobody thinks to open in a
+  // browser, so the smoke runs on this path too.
+  const browserSmoke = await runBrowserSmoke(executed.flatMap(e => e.files ?? []))
+  return {
+    wavesCommitted: executed,
+    followups: null,
+    browserSmoke,
+    message: 'Plano executado sem follow-ups pendentes.',
+  }
 }
 
 phase('Follow-ups')
 log(`${items.length} follow-up item(s) collected.`)
 
 const artifact = await agent(
-  `Write the follow-ups artifact for the plan at \`${planPath}\`.
+  `Write the follow-ups artifact for the plan at \`${planRef}\`.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+Write and commit inside WORKTREE_ROOT — confirm with \`git rev-parse --show-toplevel\`
+first. The artifact belongs to the same branch as the waves it reports on.
 
 Use the \`followups-template.md\` skeleton from the \`nimbou-skills:executing-plans\`
 skill. Write to the same directory and basename as the plan, with the
@@ -689,25 +876,20 @@ Commit the artifact on its own as a docs commit. Stage it explicitly.`,
 
 if (!artifact) return { wavesCommitted: executed, findings, concerns, error: 'Follow-ups artifact could not be written.' }
 
-// Group automatable items by file so two agents never write the same file. An item
-// spanning files that already sit in different groups merges those groups.
-const byFile = new Map()
-for (const item of artifact.automatable ?? []) {
-  const files = (item.files ?? []).length ? item.files : ['<unassigned>']
-  const merged = [item]
-  for (const existing of new Set(files.map(f => byFile.get(f)).filter(Boolean))) {
-    merged.push(...existing)
-    for (const f of [...byFile.keys()]) if (byFile.get(f) === existing) byFile.set(f, merged)
-  }
-  for (const f of files) byFile.set(f, merged)
-}
-const fixGroups = [...new Set(byFile.values())]
+const fixGroups = groupByFile(artifact.automatable ?? [])
 
 const fixes = await parallel(
   fixGroups.map(group => () =>
     agent(
       `Resolve these follow-up findings. They all touch the same file set, so you own
 it end to end — other agents are resolving disjoint file sets in parallel right now.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+Every path you read or write resolves under WORKTREE_ROOT — confirm with
+\`git rev-parse --show-toplevel\` before your first write and build paths from
+WORKTREE_ROOT if your working directory is elsewhere. A fix written into another
+checkout is a fix this branch does not have.
 
 Findings, in the order you should address them (critical and spec issues first):
 
@@ -746,10 +928,12 @@ const fixedFiles = [...new Set(fixes.filter(Boolean).flatMap(f => f.filesTouched
 // commit agent and a reviewer over an empty diff burns two agents for no work.
 if (!fixedFiles.length) {
   log('No automatable follow-up produced a change — skipping the follow-up commit and its review.')
+  const browserSmoke = await runBrowserSmoke(executed.flatMap(e => e.files ?? []))
   return {
     wavesCommitted: executed,
     followups: artifact.path,
     followupCommit: null,
+    browserSmoke,
     manualActions: artifact.manual ?? [],
     skipped: fixes.filter(Boolean).flatMap(f => f.skipped ?? []),
     message: (artifact.manual ?? []).length
@@ -759,27 +943,37 @@ if (!fixedFiles.length) {
 }
 
 const followupCommit = await agent(
-  `Commit the follow-up fixes just applied for the plan at \`${planPath}\`.
+  `Commit the follow-up fixes just applied for the plan at \`${planRef}\`.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+Run every git command there; confirm with \`git rev-parse --show-toplevel\` first.
 
 Files the fixers reported touching:
 ${fixedFiles.map(f => `- ${f}`).join('\n')}
 
 Do this:
+0. Run \`git status --porcelain\`. Any file listed above with no change here was
+   written into another checkout — return it in missingReported with status
+   PARTIAL_WAVE and commit nothing.
 1. Stage exactly the files listed above, by path. Never \`git add -A\`.
 2. Commit them together, mirroring the repo's commit style. One commit, unless the
    fixes are genuinely unrelated — then one per logical group.
 3. Update \`${artifact.path}\`: mark each resolved entry with a one-line resolution
    note and the commit that fixed it. Commit that update too.
-4. Return the SHAs and messages.
+4. Return status COMMITTED with the SHAs and messages.
 
 Do not push.`,
   { label: 'commit follow-ups', phase: 'Follow-ups', schema: COMMIT_SCHEMA, model: 'haiku', effort: 'low' },
 )
 
+const browserSmoke = await runBrowserSmoke([...executed.flatMap(e => e.files ?? []), ...fixedFiles])
+
 return {
   wavesCommitted: executed,
   followups: artifact.path,
   followupCommit,
+  browserSmoke,
   manualActions: artifact.manual ?? [],
   message: (artifact.manual ?? []).length
     ? 'Plano executado. Follow-ups automatizáveis resolvidos. Ações manuais pendentes — ver manualActions.'
@@ -789,24 +983,236 @@ return {
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
+// Group items by file so two agents never write the same one. An item spanning
+// files that already sit in different groups merges those groups.
+function groupByFile(items) {
+  const byFile = new Map()
+  for (const item of items) {
+    const files = (item.files ?? []).length ? item.files : ['<unassigned>']
+    const merged = [item]
+    for (const existing of new Set(files.map(f => byFile.get(f)).filter(Boolean))) {
+      merged.push(...existing)
+      for (const f of [...byFile.keys()]) if (byFile.get(f) === existing) byFile.set(f, merged)
+    }
+    for (const f of files) byFile.set(f, merged)
+  }
+  return [...new Set(byFile.values())]
+}
+
+function isFrontFile(path) {
+  return FRONT_PATTERNS.some(pattern => pattern.test(path))
+}
+
+// Step 5: the only lens in this run that looks at the application instead of at its
+// source. Runs last, over the state the branch actually ends in, and only when the
+// committed diff put something on screen.
+async function runBrowserSmoke(touched) {
+  const front = [...new Set(touched.filter(isFrontFile))]
+  if (!front.length) return null
+
+  phase('Smoke')
+  log(`${front.length} frontend file(s) in the committed diff — smoking the flows this plan promised.`)
+
+  let outcome = null
+  let pending = []
+  let recheck = null
+
+  // Two rounds, not more: the first fix often reveals the defect behind it, and a
+  // third round on a run this long buys less than it costs. What survives is a
+  // follow-up, recorded as such.
+  for (let round = 1; round <= 2; round += 1) {
+    const smoke = await agent(smokePrompt(front, recheck), {
+      label: round === 1 ? 'browser smoke' : 'browser smoke (recheck)',
+      phase: 'Smoke',
+      schema: SMOKE_SCHEMA,
+      model: 'sonnet',
+    })
+
+    if (!smoke) {
+      concerns.push('Browser smoke: o agente não retornou resultado. A validação em browser não rodou neste plano.')
+      outcome = { status: 'SKIPPED', driver: 'none', concerns: ['agente de smoke não retornou'] }
+      break
+    }
+
+    outcome = smoke
+    for (const c of smoke.concerns ?? []) concerns.push(`Browser smoke: ${c}`)
+    pending = smoke.findings ?? []
+
+    // SKIPPED means no driver or an environment that never came up. Neither is a
+    // statement about the code, so neither may open a fix cycle.
+    if (smoke.status === 'SKIPPED' || !pending.length || round === 2) break
+
+    log(`${pending.length} flow(s) failed on screen — fixing and re-checking once.`)
+
+    const fixed = await parallel(
+      groupByFile(pending).map(group => () =>
+        agent(
+          `Fix what the browser smoke found. These findings share a file set, so you own
+it end to end — other agents are fixing disjoint sets in parallel right now.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+Read and write only under WORKTREE_ROOT; confirm with \`git rev-parse --show-toplevel\`
+before your first write.
+
+Findings, each with what was observed on screen versus what the plan promised:
+
+${JSON.stringify(group, null, 2)}
+
+These are runtime defects seen in a real browser, not review opinions. Fix each at
+the layer that owns it — a page that renders empty is rarely the page's fault. Run
+any scoped verification a finding declares, verbatim; never widen to an unfiltered
+suite run. Do not commit, and do not touch files outside the ones listed.
+
+Return the files you touched, what you fixed, and what you skipped and why.`,
+          {
+            label: `fix browser ${group[0]?.files?.[0] ?? 'flows'}`,
+            phase: 'Smoke',
+            model: 'sonnet',
+            schema: {
+              type: 'object',
+              required: ['filesTouched'],
+              properties: {
+                filesTouched: { type: 'array', items: { type: 'string' } },
+                fixed: { type: 'array', items: { type: 'string' } },
+                skipped: { type: 'array', items: { type: 'string' } },
+              },
+            },
+          },
+        ),
+      ),
+    )
+
+    const smokeFixed = [...new Set(fixed.filter(Boolean).flatMap(f => f.filesTouched ?? []))]
+    if (!smokeFixed.length) {
+      log('No smoke finding produced a change — nothing to re-check.')
+      break
+    }
+
+    await agent(
+      `Commit the browser-smoke fixes.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+Run every git command there; confirm with \`git rev-parse --show-toplevel\` first.
+
+Files the fixers reported touching:
+${smokeFixed.map(f => `- ${f}`).join('\n')}
+
+Run \`git status --porcelain\` and check each against it; a file listed above with no
+change here was written into another checkout — report it and commit nothing. Stage
+the rest EXPLICITLY by path, never \`git add -A\`. Mirror the repo's commit style, and
+say in the message that these came from browser verification. Do not push. Return
+status COMMITTED with the SHA and message.`,
+      { label: 'commit browser fixes', phase: 'Smoke', schema: COMMIT_SCHEMA, model: 'haiku', effort: 'low' },
+    )
+
+    recheck = pending.map(f => f.flow)
+  }
+
+  // Anything still failing after the rounds, plus anything the smoke could not do at
+  // all, has to leave a trace. A lens that ran and found something, or did not run,
+  // is worse than useless if the run reports neither.
+  const leftovers = (outcome?.concerns ?? []).length || pending.length
+  if (leftovers) {
+    await agent(
+      `Record what the browser smoke left behind, in the plan's follow-ups artifact.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+The artifact lives next to the plan at \`${planRef}\`, same basename, \`.followups.md\`
+suffix. Create it from the \`followups-template.md\` skeleton of the
+\`nimbou-skills:executing-plans\` skill if it does not exist yet; append to it if it
+does. Get today's date with \`date +%F\`.
+
+Flows still failing after the smoke's fix rounds — type \`browser-issue\`:
+
+${pending.length ? JSON.stringify(pending, null, 2) : '(none)'}
+
+Things the smoke could not do — type \`concern\`:
+
+${(outcome?.concerns ?? []).map(c => `- ${c}`).join('\n') || '(none)'}
+
+One bullet per item. Carry the flow sentence and the evidence path so a reader can
+see what was observed. Origem is \`browser-smoke\`. Then commit the artifact on its
+own, staged explicitly, and return status COMMITTED with the SHA and message.`,
+      { label: 'record browser findings', phase: 'Smoke', schema: COMMIT_SCHEMA, model: 'haiku', effort: 'low' },
+    )
+  }
+
+  return outcome
+}
+
+function smokePrompt(front, recheck) {
+  return `Verify in a real browser that this plan's promised behavior actually works.
+
+Use the \`nimbou-skills:browser-smoke\` skill, in **\`report\` mode** — you report, the
+caller owns the fix cycle and every commit. Follow the skill; the context it needs is
+below.
+
+    WORKTREE_ROOT = ${repoRoot}
+
+Run the dev server and every command inside WORKTREE_ROOT. A server started in
+another checkout serves code this branch does not contain.
+
+The plan is at \`${planRef}\`. Derive the flows from what it promises the user can do,
+not from the file list — a route that renders is not a feature that works.
+
+Frontend files this plan committed:
+${front.map(f => `- ${f}`).join('\n')}
+
+${
+    recheck
+      ? `This is a RE-CHECK after fixes. Run only these flows, which failed last round:
+${recheck.map(f => `- ${f}`).join('\n')}`
+      : 'Pick three to six flows, favouring the ones a user hits first.'
+  }
+
+Before any flow, health-check a route this plan did NOT touch. If it does not render,
+the environment is broken rather than the code: return status SKIPPED with the reason
+as a concern and no findings at all. The same applies when no browser driver is
+available — SKIPPED with a concern, never a fabricated pass.
+
+Every flow you report needs a screenshot path and its console output. A claim that a
+flow worked is not evidence that it ran.`
+}
+
 function implementerPrompt(group, waveLabel) {
   const multi = group.length > 1
   const files = [...new Set(group.flatMap(t => t.files ?? []))]
 
   return `You are implementing ${multi ? `${group.length} tasks that share a file` : 'exactly one task'} from an approved implementation plan (${waveLabel}).
 Other implementers are working on other tasks of the same wave, in parallel, in this
-same repository. Stay inside your file boundary.
+same checkout. Stay inside your file boundary.
+
+## Where You Work
+
+    WORKTREE_ROOT = ${repoRoot}
+
+This run may be happening in a git worktree rather than the project's main checkout.
+Before your first write, run \`git rev-parse --show-toplevel\`. If it does not print
+WORKTREE_ROOT exactly, every path you use must be built as
+\`WORKTREE_ROOT + '/' + <path relative to the repo>\` — do not rely on your working
+directory.
+
+Paths in the plan are repo-relative even when the plan wrote them as absolute. An
+absolute path in the plan that does not start with WORKTREE_ROOT belongs to a
+different checkout: strip its prefix and re-anchor it under WORKTREE_ROOT. Writing
+to it as written puts your work in a checkout this run will never commit, and the
+wave lands half-finished.
+
+Report every path in \`filesTouched\` relative to WORKTREE_ROOT.
 
 ## Your Task${multi ? 's' : ''}
 
-Your specification lives in the plan at \`${planPath}\`. Read ${multi ? 'each range below' : 'the range below'}
+Your specification lives in the plan at \`${planRef}\`. Read ${multi ? 'each range below' : 'the range below'}
 with the Read tool, using \`offset\` and \`limit\`, before doing anything else. Read
 ${multi ? 'those ranges' : 'that range'} and nothing else of the plan — the rest belongs to other implementers.
 
 ${group
   .map(
     (t, i) =>
-      `${multi ? `${i + 1}. ` : ''}**${t.title}** — \`Read("${planPath}", offset: ${t.specLines?.start ?? 1}, limit: ${Math.max(1, (t.specLines?.end ?? 1) - (t.specLines?.start ?? 1) + 1)})\``,
+      `${multi ? `${i + 1}. ` : ''}**${t.title}** — \`Read("${planRef}", offset: ${t.specLines?.start ?? 1}, limit: ${Math.max(1, (t.specLines?.end ?? 1) - (t.specLines?.start ?? 1) + 1)})\``,
   )
   .join('\n')}
 

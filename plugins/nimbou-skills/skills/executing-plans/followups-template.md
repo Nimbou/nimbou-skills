@@ -10,6 +10,7 @@ Skeleton for the `<plan>.followups.md` artifact that `nimbou-skills:executing-pl
 - `spec-deferred` — `⚠️ Deferred` items returned by the end-of-plan spec reviewer in `executing-plans`.
 - `guideline-issue` / `guideline-deferred` — findings from the `guidelines-gap-analyzer` pass `executing-plans` runs at the end of the run: architecture boundaries, naming rules, missed reuse, conventions. This is the lens TDD structurally cannot cover — a green suite says nothing about Prisma leaking into the application layer.
 - `review-critical` / `review-important` / `review-minor` — findings from `/code-review` run over the branch before merging. **`executing-plans` never writes these** — it runs no code reviewer. They exist so the artifact stays the single triage list for the plan: append them yourself after the review pass.
+- `browser-issue` — Flows that still failed on screen after the browser smoke's fix rounds (`executing-plans` Step 5, via `nimbou-skills:browser-smoke`). These are the only items in the list observed at runtime rather than read in the source, so carry the flow sentence and the screenshot path — a reader who cannot see what was on screen cannot act on it.
 - `concern` — Concerns raised during execution, by an implementer subagent in its report or by the controller itself (architectural doubt, file growing too large, write-set collision, refactor suggestion, etc.).
 - `pos-execucao` — Items inherited from the original plan's `## Pos-execucao` section (typical for `nuxt-plan` outputs).
 

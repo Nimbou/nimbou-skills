@@ -1,4 +1,4 @@
-# Prose Execution Path (Steps 2-4)
+# Prose Execution Path (Steps 2-5)
 
 The executable body of `nimbou-skills:executing-plans`, extracted so the skill itself
 stays a router.
@@ -15,6 +15,12 @@ Step 1 lives in `SKILL.md` and runs before anything here. Do not start at Step 2
 ---
 
 ## Step 2: Execute
+
+### 2.0 Anchor the run
+
+Before the first wave, run `git rev-parse --show-toplevel` and `git rev-parse --abbrev-ref HEAD`. That absolute path is `WORKTREE_ROOT`, and it goes verbatim into every implementer prompt, the commit step, and both reviewers. State it once in the run's opening report so the user can see which checkout is being written to.
+
+This is not ceremony. A subagent does not reliably inherit your working directory, and a plan that writes its paths as absolute is naming a checkout that may not be the one you are on. When part of a wave lands in the main checkout while you commit from a worktree, the commit succeeds and is silently missing those files — and the fracture surfaces two waves later as a contract that "diverged", pointing at the wrong problem.
 
 For each wave, in declared order:
 
@@ -36,6 +42,7 @@ declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `
 directly under the task heading. Read those fields; do not re-derive them from the prose.
 Each implementer gets:
 
+- `WORKTREE_ROOT` from 2.0, as an absolute path, with the instruction to verify it with `git rev-parse --show-toplevel` before its first write and to re-anchor any absolute path the plan wrote against a different checkout
 - the task's full body — either pasted verbatim, or handed as a `Read` of the plan file at the task's exact line range. The two are equivalent, and the range is cheaper: re-emitting a plan's prose just so it can be pasted back costs the whole document in output tokens, which are the expensive ones. When you pass a range, tell the implementer to `Grep` the plan for the task heading if the first line it reads is not that heading, and to report a blocker rather than implement a guess. `run-waves` takes the range path; a controller that already has the plan in context can just paste
 - `Files` as the exact set it owns, and an explicit statement that it must not touch any other file
 - `RED` **verbatim** — the same command run *before* implementation, expecting FAIL, plus the failure class the plan declared. The implementer writes the test, runs this, and confirms the failure is the declared one before writing a line of implementation
@@ -81,7 +88,10 @@ Rules:
 Wait for every implementer in the wave to return, then:
 
 1. Read each report.
-2. Confirm no implementer wrote outside its declared file set (`git status` against the union of declared files). Anything extra is a finding — decide whether to keep it or revert it, and record it as a `concern`.
+2. Reconcile `git status --porcelain`, **run in `WORKTREE_ROOT`**, against two lists: what the implementers reported touching, and what the plan declared for this wave. Three outcomes, and they are not the same finding:
+   - **Reported as touched, but no change here** — the work landed in another checkout. **Stop the wave and commit nothing.** This is the one that hides: the files exist, the implementer's report is honest, the verification it ran even passed, and only this checkout is empty. Recover the paths into `WORKTREE_ROOT` before rerunning; a commit here produces a branch whose code references files it does not contain.
+   - **Declared by the plan, touched by nobody** — a `concern`, not a stop. The task may have been merged, or the plan over-declared.
+   - **Changed but declared by nobody** — an implementer wrote outside its boundary. Decide whether to keep or revert it, and record a `concern`. Do not revert silently.
 3. Re-run **only** the verifications whose implementer came back with a claim rather than a transcript. An implementer that pasted actual runner output already ran that suite; re-running it doubles the wave's test time on the sequential critical path, and the commit is the one step every later wave waits on. `passou` is a claim; a runner transcript is evidence. When you do re-run, run the command **exactly as the plan declares** — it is already scoped to the files the wave changes. Never substitute an unfiltered test command (no bare `pnpm test`, `npm test`, `pytest`).
 4. Mark each task complete in TodoWrite.
 
@@ -91,7 +101,8 @@ If an implementer reports failure, or a verification cannot be satisfied, stop d
 
 **Commit once per wave**, immediately after every task in the wave is implemented and its verifications pass:
 
-- One commit per wave. Stage explicitly the files touched by the wave; never use `git add -A`.
+- One commit per wave, from `WORKTREE_ROOT`. Stage explicitly the files touched by the wave; never use `git add -A`.
+- **A wave with a missing reported file is not committable.** 2.3 already stopped it; do not stage "the part that is there" to keep momentum.
 - Mirror the repo's recent commit-message style (see `git log` on the current branch). Reference the wave (e.g., `Onda N — <título>`) and list the tasks included.
 - Do not review here. Spec review is advisory and happens once, at the end of the plan.
 
@@ -149,4 +160,16 @@ After `<plan>.followups.md` is committed (or confirmed empty), work through **al
 4. For each returned group: mark its entries resolved in `<plan>.followups.md` with a one-line resolution note and the commit that fixed it.
 5. **If an item requires a manual action** (human decision, external system change, environment config, infra adjustment, or anything the agent cannot execute): do **not** write it to the file. Surface it in the output under a clearly labelled "Ações manuais necessárias" section, describing what needs to be done and why the agent cannot do it.
 6. Commit all follow-up fixes together in a single commit (or one commit per logical group when fixes are unrelated). Stage explicitly — never `git add -A`.
-7. When all automatable items are resolved, announce: "Plano executado. Todos os follow-ups automatizáveis resolvidos." State which lenses ran — TDD red runs per task, spec compliance, boundary analysis — so the user can judge whether a `/code-review` pass over the branch is worth it before merging. If manual items were surfaced, list them once more in the final announcement so the user has them in one place.
+7. Proceed to Step 5. Only announce completion after it.
+
+## Step 5: Browser Smoke
+
+**Applies when the committed diff touched frontend surface** — any `*.vue`, or anything under `pages/`, `components/`, `layouts/`, `composables/`, `middleware/`, `assets/`, plus `nuxt.config.*` and stylesheets. The trigger is the diff, not the plan's origin: a backend plan that touched one SFC still put something on screen, and a frontend plan that only moved a util did not. When nothing matches, say so in one line and skip to the final announcement.
+
+This runs **after** the follow-up commits, over the state the branch actually ends in. It is the only lens in the whole run that looks at the application instead of at its source — red runs, spec compliance, and the boundary analyzer all pass on a change whose page renders blank.
+
+1. Dispatch **one** subagent with `nimbou-skills:browser-smoke` in **`report` mode**, giving it `WORKTREE_ROOT`, the plan path, and the frontend files the run committed. The skill owns the mechanics: driver selection, bringing the app up, the health check, deriving flows from the plan's promises, and evidence. `report` mode matters — the fix cycle and every commit stay here.
+2. **`SKIPPED` is not a failure.** No browser driver, or an app that never came up, says nothing about the code. Record the reason as a `concern` and stop the step. Never open a fix cycle on it, and never report the change as verified.
+3. **`FAIL` reopens the fix cycle, at most once.** Group the findings by file, dispatch one fixer per group in parallel, commit their work as its own commit, then re-run the smoke over **only the failing flows**. Two rounds total: the first fix often reveals the defect behind it, and a third round on a run this long costs more than it finds.
+4. Whatever still fails after those rounds goes into `<plan>.followups.md` as `browser-issue`, with the flow sentence and the screenshot path, committed on its own. Same for concerns the smoke raised.
+5. Then announce: "Plano executado. Todos os follow-ups automatizáveis resolvidos." State which lenses ran — TDD red runs per task, spec compliance, boundary analysis, and the browser smoke with its verdict — so the user can judge whether a `/code-review` pass over the branch is worth it before merging. If manual items were surfaced, list them once more so the user has them in one place.

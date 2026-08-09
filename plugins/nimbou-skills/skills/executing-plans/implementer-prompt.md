@@ -8,7 +8,7 @@ Use this template when the controller fans a wave's tasks out under `nimbou-skil
 
 **Agent type:** `[ROLE]` — the slug the plan declared for this task (`**Role:**` line in `nestjs-plan`, `Role` column in `nuxt-plan`). See the Role Routing table in `SKILL.md`. When the plan declared none, `[ROLE]` is `general-purpose` and the controller says so in the wave report.
 
-**Isolation:** the implementer never inherits the controller's session history. Everything it needs is constructed below.
+**Isolation:** the implementer never inherits the controller's session history — nor, reliably, its working directory. Everything it needs is constructed below, including the absolute path of the checkout it writes to.
 
 ```
 Task tool ([ROLE]):
@@ -16,7 +16,26 @@ Task tool ([ROLE]):
   prompt: |
     You are implementing exactly one task from an approved implementation plan.
     Other implementers are working on other tasks of the same wave, in parallel,
-    in this same repository. Stay inside your file boundary.
+    in this same checkout. Stay inside your file boundary.
+
+    ## Where You Work
+
+        WORKTREE_ROOT = [absolute path from `git rev-parse --show-toplevel` in the
+                         checkout the controller is executing this plan in]
+
+    This run may be happening in a git worktree rather than the project's main
+    checkout. Before your first write, run `git rev-parse --show-toplevel`. If it
+    does not print WORKTREE_ROOT exactly, build every path as
+    `WORKTREE_ROOT + '/' + <path relative to the repo>` — do not rely on your
+    working directory.
+
+    Paths in the plan are repo-relative even when the plan wrote them as absolute.
+    An absolute path in the plan that does not start with WORKTREE_ROOT belongs to
+    a different checkout: strip its prefix and re-anchor it under WORKTREE_ROOT.
+    Writing to it as written puts your work in a checkout this run will never
+    commit, and the wave lands half-finished.
+
+    Report every path relative to WORKTREE_ROOT.
 
     ## Your Task
 
@@ -134,6 +153,7 @@ Task tool ([ROLE]):
 
 **Rules for the controller dispatching this:**
 
+0. **Anchor every dispatch.** Resolve `WORKTREE_ROOT` once, before the wave, and paste the same absolute path into every implementer, the commit step, and the reviewers. A subagent does not reliably inherit your working directory, and the plan's paths mean nothing without a root. An implementer that writes into the main checkout while you commit from a worktree produces a wave that commits green and is missing half its files.
 1. **One task per dispatch.** Never bundle two plan tasks into one implementer to save an agent — that reintroduces the serialization this step exists to remove. The single exception is the write-set collision handled in Step 2.1.
 2. **`[ROLE]` comes from the plan, never from the file path.** Substituting a role you inferred yourself hides a planning bug the fallback would have surfaced.
 3. **Paste, do not reference.** The implementer has no access to your context, the plan file, or earlier waves' reports. A prompt saying "implement Task 3 from the plan" fails.

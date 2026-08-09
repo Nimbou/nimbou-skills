@@ -431,3 +431,56 @@ test('planners and executing-plans wire the Role: routing contract', () => {
   assert.match(executeSpec, /## Role Under Review/)
   assert.match(executeSpec, /\[ROLE\]/)
 })
+
+test('browser-smoke ships as a standalone skill and is wired into executing-plans', () => {
+  const files = [
+    'plugins/nimbou-skills/skills/browser-smoke/SKILL.md',
+    'plugins/nimbou-skills/skills/browser-smoke/reference/environment-discovery.md',
+  ]
+  for (const file of files) {
+    assert.equal(existsSync(resolve(root, file)), true, `${file} should exist`)
+  }
+
+  const smoke = read('plugins/nimbou-skills/skills/browser-smoke/SKILL.md')
+  assert.match(smoke, /^---\nname: browser-smoke/m)
+  assert.ok(shippedSkills.includes('browser-smoke'))
+
+  // The two rules that keep the lens honest: it never invents a pass, and it never
+  // blames the code for an environment that was never usable.
+  assert.match(smoke, /health-check|Health check/i)
+  assert.match(smoke, /route the change did NOT touch/i)
+  assert.match(smoke, /Chrome DevTools MCP/)
+  assert.match(smoke, /skip the smoke and say so loudly/i)
+  assert.match(smoke, /do not\s+report the change as verified/i)
+  assert.match(smoke, /screenshot/i)
+  assert.match(smoke, /A claim that a flow worked is not evidence that it ran/)
+  // Flows come from the promise, not the file list — the distinction the whole
+  // skill exists for.
+  assert.match(smoke, /Derive the flows from what was promised/i)
+  assert.match(smoke, /`report`/)
+  assert.match(smoke, /`fix`/)
+  // Boundary against the three skills it would otherwise duplicate.
+  assert.match(smoke, /nimbou-skills:nuxt-debug/)
+  assert.match(smoke, /nimbou-skills:nuxt-test/)
+  assert.match(smoke, /This skill writes no tests/)
+
+  const env = read('plugins/nimbou-skills/skills/browser-smoke/reference/environment-discovery.md')
+  assert.match(env, /Never assume 3000/i, 'a worktree collides with the main checkout on the default port')
+  assert.match(env, /Cleanup/)
+  assert.match(env, /Editing `\.env`/, 'mutating the project to make the app start makes the smoke its own variable')
+
+  // Step 5 must exist in the normative prose, not only in the workflow — Codex runs
+  // the prose path and would otherwise silently lose the lens.
+  const prose = read('plugins/nimbou-skills/skills/executing-plans/prose-execution.md')
+  assert.match(prose, /## Step 5: Browser Smoke/)
+  assert.match(prose, /`report` mode/)
+  assert.match(prose, /\*\*`SKIPPED` is not a failure\.\*\*/)
+  assert.match(prose, /at most once/, 'the fix cycle reopens twice, not forever')
+  assert.match(prose, /browser-issue/)
+
+  const template = read('plugins/nimbou-skills/skills/executing-plans/followups-template.md')
+  assert.match(template, /`browser-issue`/)
+
+  const router = read('plugins/nimbou-skills/skills/executing-plans/SKILL.md')
+  assert.match(router, /nimbou-skills:browser-smoke/)
+})

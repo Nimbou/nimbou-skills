@@ -31,6 +31,7 @@ This fork consolidates:
 - `dispatching-parallel-agents`
 - `test-driven-development`
 - `e2e-test-quality`
+- `browser-smoke` verifies a change's promised flows in a real browser, standalone or as `executing-plans` Step 5
 - `nestjs-debug` backend-first debugging for NestJS/Prisma work
 - `verification-before-completion`
 - `request-review`
@@ -153,9 +154,9 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `nestjs-refactor` is the structural cleanup workflow for existing NestJS backends that need SOLID and Clean Architecture restoration in bounded batches.
 - `nestjs-test` handles Gherkin-driven backend coverage, audit routing, and backend test stabilization.
 - `nestjs-debug` handles NestJS, Prisma, and boundary failures across controller, use-case, repository, and transaction layers.
-- `nuxt-debug` is the Codex browser-debugging flow; `nuxt-test` turns the result into bounded coverage.
+- `nuxt-debug` is the Codex browser-debugging flow; `nuxt-test` turns the result into bounded coverage; `browser-smoke` is neither — it verifies once, right after building, that what a change promised actually happens on screen, and writes no tests.
 - `nuxt-audit` is the single frontend review pass; `executing-plans` runs wave-structured plans by fanning each wave's tasks out to parallel implementer subagents, committing once per wave, and collecting non-blocking spec-compliance findings into an end-of-plan follow-ups artifact. It runs **no code review**: `/code-review` over the branch covers that axis better in one pass than N per-wave passes. The spec reviewer stays because it holds the plan — it is the only thing that can tell a requirement never implemented from one never requested.
-- `executing-plans` is split by harness: `SKILL.md` owns Step 1 and the routing decision, `prose-execution.md` holds Steps 2-4 for Codex, and `/nimbou-skills:run-waves` runs the same Steps 2-4 as a Claude Code workflow. Keeping the executable body out of `SKILL.md` is what stops Claude from walking the slow prose path by default.
+- `executing-plans` is split by harness: `SKILL.md` owns Step 1 and the routing decision, `prose-execution.md` holds Steps 2-5 for Codex, and `/nimbou-skills:run-waves` runs the same Steps 2-5 as a Claude Code workflow. Keeping the executable body out of `SKILL.md` is what stops Claude from walking the slow prose path by default.
 - `prose-execution.md` is normative. `workflows/run-waves.js` mirrors it; when the two disagree, the prose file wins. Step 1 always runs in conversation, since a workflow takes no user input mid-run.
 - `e2e-test-quality` covers broader end-to-end reliability beyond one Nuxt module slice.
 - This fork intentionally removed upstream bootstrap hooks and unsupported harness integrations.

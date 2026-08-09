@@ -49,8 +49,14 @@ async function runWorkflow(args, handlers) {
   return { result, calls }
 }
 
+// The parse agent establishes the checkout every later agent is anchored to. It is
+// a worktree path here on purpose: the run must never fall back to the main checkout.
+const WORKTREE = '/wt/feature-x'
+
 const twoWavePlan = {
   waveStructured: true,
+  repoRoot: WORKTREE,
+  branch: 'feature/x',
   planOrigin: 'nestjs-plan',
   posExecucao: [],
   waves: [
@@ -85,7 +91,7 @@ const GAP_REVIEW = /boundary lens/
 const WRITE_FOLLOWUPS = /Write the follow-ups artifact/
 
 const doneImplementer = { status: 'DONE', filesTouched: ['src/a.ts'], verification: 'pass' }
-const okCommit = { sha: 'sha', message: 'm' }
+const okCommit = { status: 'COMMITTED', sha: 'sha', message: 'm' }
 
 test('run-waves declares the meta block the workflow runtime requires', () => {
   assert.match(source, /^export const meta = \{/m)
@@ -206,6 +212,87 @@ test('run-waves drops the Role and says so when merged tasks declare different o
   assert.equal(merged.opts.agentType, undefined, 'two different Roles have no correct winner')
   assert.match(artifactPrompt, /declare different Roles/, 'the dropped routing must reach follow-ups')
   assert.match(artifactPrompt, /nestjs-controller-author/, 'and must name what was lost')
+})
+
+test('run-waves refuses to dispatch a wave without an absolute checkout to write into', async () => {
+  const rootless = JSON.parse(JSON.stringify(twoWavePlan))
+  delete rootless.repoRoot
+
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, rootless],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+  ])
+
+  assert.match(result.error, /repoRoot/)
+  assert.equal(
+    calls.filter((call) => (call.opts.label ?? '').startsWith('Onda')).length,
+    0,
+    'unanchored implementers resolve the plan against whatever checkout they inherit',
+  )
+})
+
+test('run-waves anchors every writing agent to the checkout the parse agent reported', async () => {
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  const anchored = ['Onda 1', 'commit Onda 1']
+  for (const label of anchored) {
+    const call = calls.find((c) => (c.opts.label ?? '').startsWith(label))
+    assert.match(call.prompt, new RegExp(`WORKTREE_ROOT = ${WORKTREE}`), `${label} must know where it writes`)
+    assert.match(call.prompt, /git rev-parse --show-toplevel/, `${label} must verify it before writing`)
+  }
+
+  const impl = calls.find((c) => (c.opts.label ?? '').startsWith('Onda 1'))
+  assert.match(impl.prompt, /re-anchor it under WORKTREE_ROOT/, 'plan paths written as absolute belong to another checkout')
+})
+
+test('run-waves stops the run when a wave was written into another checkout', async () => {
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda 1', { status: 'PARTIAL_WAVE', missingReported: ['src/b.ts'] }],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  assert.ok(result.stopped, 'a wave whose files are not in this checkout is a partial wave')
+  assert.match(result.stopped.blockers[0].blocker, /src\/b\.ts/)
+  assert.match(result.stopped.blockers[0].blocker, new RegExp(WORKTREE))
+  assert.equal(result.wavesCommitted.length, 0, 'nothing may be committed from a fractured wave')
+  assert.equal(
+    calls.filter((call) => (call.opts.label ?? '').startsWith('Onda 2')).length,
+    0,
+    'downstream waves consume contracts this one did not land',
+  )
+})
+
+test('run-waves records a declared-but-untouched file as a concern rather than a stop', async () => {
+  let artifactPrompt = ''
+  const { result } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda 1', { ...okCommit, missingDeclared: ['prisma/schema.prisma'] }],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+    [
+      WRITE_FOLLOWUPS,
+      (prompt) => {
+        artifactPrompt = prompt
+        return { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }
+      },
+    ],
+  ])
+
+  assert.ok(!result.stopped, 'a file nobody claimed to write is a planning gap, not a fracture')
+  assert.match(artifactPrompt, /prisma\/schema\.prisma/)
 })
 
 test('run-waves pins the spec reviewer to general-purpose instead of the default subagent', async () => {
@@ -665,12 +752,14 @@ test('run-waves hands implementers a plan line range instead of the task text', 
   const dto = calls.find((call) => (call.opts.label ?? '').includes('DTO'))
   // start 10, end 20 -> offset 10, limit 11. Re-emitting the task body as parse
   // output is the single largest token cost in the run; the range replaces it.
-  assert.match(dto.prompt, /Read\("docs\/plans\/x\.md", offset: 10, limit: 11\)/)
+  // The path is absolute for the same reason every write path is: a relative one
+  // resolves against whatever directory the implementer happened to inherit.
+  assert.match(dto.prompt, new RegExp(`Read\\("${WORKTREE}/docs/plans/x\\.md", offset: 10, limit: 11\\)`))
   assert.match(dto.prompt, /Grep` the plan for the heading/, 'drifted ranges need a recovery path')
 
   const review = calls.find((call) => (call.opts.label ?? '').startsWith('spec review'))
-  assert.match(review.prompt, /Read\("docs\/plans\/x\.md", offset: 10, limit: 11\)/)
-  assert.match(review.prompt, /Read\("docs\/plans\/x\.md", offset: 21, limit: 10\)/)
+  assert.match(review.prompt, new RegExp(`Read\\("${WORKTREE}/docs/plans/x\\.md", offset: 10, limit: 11\\)`))
+  assert.match(review.prompt, new RegExp(`Read\\("${WORKTREE}/docs/plans/x\\.md", offset: 21, limit: 10\\)`))
 })
 
 test('run-waves tiers its inline agents by category instead of inheriting the session model', async () => {
@@ -723,4 +812,149 @@ test('run-waves re-runs only the verifications an implementer failed to evidence
 
   const wave2 = calls.find((call) => (call.opts.label ?? '') === 'commit Onda 2 — Implementação')
   assert.match(wave2.prompt, /Skip verification/, 'a fully evidenced wave re-runs nothing')
+})
+
+// ── Browser smoke (Step 5) ───────────────────────────────────────────────────
+//
+// The last lens of the run, and the only one that looks at the application
+// instead of at its source. It runs after the follow-up commits, on the state the
+// branch actually ends in.
+
+const SMOKE = /browser-smoke/
+const frontPlan = JSON.parse(JSON.stringify(twoWavePlan))
+frontPlan.planOrigin = 'nuxt-plan'
+frontPlan.waves[1].tasks[0].files = ['components/AttachmentCard.vue']
+const frontImplementer = { status: 'DONE', filesTouched: ['components/AttachmentCard.vue'], verification: 'pass' }
+const cleanSmoke = { status: 'PASS', driver: 'chrome-devtools', flows: 3, findings: [] }
+
+test('run-waves skips the browser smoke when no wave touched the frontend', async () => {
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, twoWavePlan],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  assert.equal(calls.filter((call) => SMOKE.test(call.prompt)).length, 0, 'a backend-only plan has nothing to look at')
+  assert.equal(result.browserSmoke, null)
+})
+
+test('run-waves smokes the browser when a wave touched frontend files', async () => {
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, frontPlan],
+    ['commit Onda', okCommit],
+    ['Onda 2', frontImplementer],
+    ['Onda', doneImplementer],
+    ['browser smoke', cleanSmoke],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  const smoke = calls.find((call) => (call.opts.label ?? '').startsWith('browser smoke'))
+  assert.ok(smoke, 'a .vue in the committed diff is the trigger')
+  assert.match(smoke.prompt, /nimbou-skills:browser-smoke/, 'the workflow delegates to the skill, not to an inline recipe')
+  assert.match(smoke.prompt, /report/, 'the workflow owns the fix cycle, so the skill must not fix')
+  assert.match(smoke.prompt, new RegExp(`WORKTREE_ROOT = ${WORKTREE}`), 'the dev server must serve this checkout')
+  assert.match(smoke.prompt, new RegExp(`${WORKTREE}/docs/plans/x\\.md`), 'flows are derived from the plan text')
+  assert.equal(result.browserSmoke.status, 'PASS')
+})
+
+test('run-waves treats a skipped smoke as a concern instead of a failure', async () => {
+  let artifactPrompt = ''
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, frontPlan],
+    ['commit Onda', okCommit],
+    ['Onda 2', frontImplementer],
+    ['Onda', doneImplementer],
+    ['browser smoke', { status: 'SKIPPED', driver: 'none', concerns: ['nenhum driver de browser disponível'] }],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+    ['record browser', okCommit],
+  ])
+
+  assert.equal(result.browserSmoke.status, 'SKIPPED')
+  const record = calls.find((call) => (call.opts.label ?? '').startsWith('record browser'))
+  assert.match(record.prompt, /nenhum driver de browser disponível/, 'a lens that did not run must be visible')
+  assert.equal(
+    calls.filter((call) => (call.opts.label ?? '').startsWith('fix browser')).length,
+    0,
+    'a skipped smoke found nothing, so there is nothing to fix',
+  )
+})
+
+test('run-waves reopens the fix cycle for smoke findings and stops after two rounds', async () => {
+  const failing = {
+    status: 'FAIL',
+    driver: 'chrome-devtools',
+    flows: 2,
+    findings: [
+      {
+        flow: 'anexar arquivo e ver o thumbnail',
+        descricao: 'card renderiza sem thumbnail',
+        files: ['components/AttachmentCard.vue'],
+        verification: 'pnpm test -- AttachmentCard',
+      },
+    ],
+  }
+
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, frontPlan],
+    ['commit Onda', okCommit],
+    ['Onda 2', frontImplementer],
+    ['Onda', doneImplementer],
+    ['browser smoke', failing],
+    ['fix browser', { filesTouched: ['components/AttachmentCard.vue'], fixed: ['thumbnail'] }],
+    ['commit browser', okCommit],
+    ['record browser', okCommit],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  const smokes = calls.filter((call) => (call.opts.label ?? '').startsWith('browser smoke'))
+  assert.equal(smokes.length, 2, 'one smoke, one re-check after the fix — and no third')
+  assert.match(smokes[1].prompt, /anexar arquivo e ver o thumbnail/, 'the re-check runs the failing flows, not all of them')
+
+  assert.equal(calls.filter((call) => (call.opts.label ?? '').startsWith('fix browser')).length, 1)
+  assert.ok(calls.find((call) => (call.opts.label ?? '').startsWith('commit browser')), 'UI fixes get their own commit')
+
+  const record = calls.find((call) => (call.opts.label ?? '').startsWith('record browser'))
+  assert.match(record.prompt, /browser-issue/, 'what survived two rounds is a follow-up, not a silent pass')
+  assert.match(record.prompt, /card renderiza sem thumbnail/)
+  assert.equal(result.browserSmoke.status, 'FAIL')
+})
+
+test('run-waves runs the smoke even when the plan produced no follow-ups at all', async () => {
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, frontPlan],
+    ['commit Onda', okCommit],
+    ['Onda 2', frontImplementer],
+    ['Onda', doneImplementer],
+    ['browser smoke', cleanSmoke],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  assert.equal(result.followups, null, 'nothing was pending')
+  assert.ok(
+    calls.find((call) => (call.opts.label ?? '').startsWith('browser smoke')),
+    'a clean plan is exactly the one nobody checks on screen',
+  )
+  assert.equal(result.browserSmoke.status, 'PASS')
+})
+
+test('run-waves does not smoke a run that stopped before finishing', async () => {
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, frontPlan],
+    ['commit Onda 1', { status: 'PARTIAL_WAVE', missingReported: ['src/b.ts'] }],
+    ['commit Onda', okCommit],
+    ['Onda', frontImplementer],
+    ['browser smoke', cleanSmoke],
+  ])
+
+  assert.equal(
+    calls.filter((call) => (call.opts.label ?? '').startsWith('browser smoke')).length,
+    0,
+    'smoking a half-executed plan reports defects the plan never finished building',
+  )
 })
