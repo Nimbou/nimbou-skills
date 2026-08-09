@@ -1,0 +1,173 @@
+# Nuxt Design — Architecture: regras
+
+Referência de consulta de `nuxt-design-architecture`. Leia antes de decidir criar componente, extrair composable ou desenhar um contrato de comunicação.
+
+## Component Tiers
+
+| Tier                   | Dono de                                            | Exemplos                                            | Location típica                           |
+| ---------------------- | -------------------------------------------------- | --------------------------------------------------- | ----------------------------------------- |
+| **Primitive**          | Apresentação neutra, sem domínio                   | `AppButton`, `AppTextField`, `AppChip`              | `components/ui/`, `components/base/`      |
+| **Domain Component**   | Semântica de negócio, rendering + interação local  | `ProjectCard`, `OrderLineRow`, `InvoiceStatusBadge` | `components/<feature>/` próximo à feature |
+| **Page / Route Owner** | Route params, data loading, orquestração top-level | `pages/projects/[id].vue`                           | `pages/`                                  |
+| **Layout Shell**       | Chrome persistente (header, sidebar, grid base)    | `default.vue`, `admin.vue`                          | `layouts/`                                |
+
+Regras de tier:
+
+- Primitive **não conhece domínio**. Se o nome precisa do domínio pra fazer sentido (`ProjectButton`), é domain component.
+- Domain component **não conhece rota**. Recebe dados via props; não chama `useRoute` ou `navigateTo`.
+- Page **não acumula handlers filho-only**. Se o handler só afeta uma região, o handler vive naquela região.
+- Layout shell **não renderiza conteúdo de feature**. Só chrome.
+
+## Extraction Heuristics (quando extrair)
+
+Gatilhos para criar componente novo:
+
+- **Repetição semântica**: o mesmo markup com o mesmo papel aparece em **3+ locais**.
+- **Tamanho de SFC**: > **~150 linhas** → revisar; > **~300 linhas** → dividir.
+- **API pública crescendo**: **≥5 props** OR **≥2 slots nomeados** OR **≥3 emits** sugere componente com responsabilidade dupla.
+- **Lógica reativa cruzando view**: o mesmo `computed`/`watch` aparece em outra view → composable.
+- **Template com aninhamento `v-if`/`v-for` > 2**: quase sempre hora de extrair sub-componente ou config.
+
+Gatilhos para **NÃO** extrair:
+
+- **Especulação**: "pode ser reutilizado no futuro". O segundo consumidor real é o trigger.
+- **Prematura**: markup idêntico mas papel semântico diferente (cuidado: dois botões visualmente iguais fazendo coisas opostas não viram o mesmo componente).
+- **Micro-extração**: componente com 1 prop e 3 linhas de template. Fica inline.
+
+## SOLID por camada
+
+### SRP — Single Responsibility
+
+| Camada           | Responsabilidade única               |
+| ---------------- | ------------------------------------ |
+| Page             | Route + data + orquestração          |
+| Domain component | Renderização local + interação local |
+| Composable       | Estado reativo reutilizável          |
+| Util             | Transformação pura                   |
+
+Se uma função responde "faz X **e** Y", parta em duas.
+
+### OCP — Open for extension, closed for modification
+
+- **Slots antes de props condicionais**. Ao invés de `<Card :show-footer="true" :footer-text="..." />`, exponha `<Card><template #footer>...</template></Card>`.
+- Scoped slots para expor estado interno ao consumidor (lista que empresta cada item ao slot).
+
+### LSP — Liskov substitution
+
+- Componentes que aceitam o mesmo contrato de props são intercambiáveis.
+- Dois "tipos" de Card devem aceitar os mesmos slots e props, não surpresas pontuais.
+
+### ISP — Interface segregation
+
+- Props focados. Evite **god props** tipo `variant: 'primary' | 'secondary' | 'warning' | 'info' | 'compact' | 'dense' | 'raised' | 'flat'`.
+- Prefira **2 componentes** focados a **1** com `variant: string` gigante.
+
+### DIP — Dependency inversion
+
+- Componente **não** importa store, service ou SDK diretamente.
+- Dependências reativas entram via composable (`useProject()`, `useAuth()`).
+- Torna o componente testável em isolamento sem montar toda a infra.
+
+## Contratos de comunicação
+
+| Mecanismo                   | Quando                                                            |
+| --------------------------- | ----------------------------------------------------------------- |
+| **Props down + emits up**   | Default para parent ↔ child direto.                               |
+| **`defineModel` / v-model** | Componente gerencia valor bidirecional.                           |
+| **Named slots**             | Conteúdo composto ou customização estrutural.                     |
+| **Scoped slots**            | Componente empresta estado interno ao consumidor.                 |
+| **`provide` / `inject`**    | Cross-level regional, até ~3 níveis no mesmo subtree.             |
+| **Store (Pinia)**           | Estado que sobrevive navegação OU cruza árvores não relacionadas. |
+
+## Regra de níveis (prop drilling vs provide vs store)
+
+- **≤ 2 níveis**: props + emits. Simples, explícito.
+- **3 níveis no mesmo subtree**: `provide` + `inject` regional. Escopo do provider, não global.
+- **Multi-rota, cross-tree, estado de app**: store (Pinia).
+
+Não use store para uma única interação parent-child.
+Não use `provide` como atalho para evitar pensar na API de props.
+
+## Localidade de estado
+
+O estado deve viver no nível mais baixo que ainda atende todos os consumidores.
+
+- Se só um child precisa decidir e salvar algo local, o child é dono.
+- Se a page só orquestra rota, fetch inicial, tabs e ações de recurso, não empilhe handlers filho-only nela.
+- Se duas views ou regiões compartilham a mesma lógica stateful, extraia um composable antes de pensar em store.
+- Store é para estado cross-route, cross-tree, ou persistente na navegação.
+
+## Composable vs util vs config vs plugin
+
+| Qual usar quando... | Sinais                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| **Composable**      | Usa `ref`/`computed`/`watch`/lifecycle. Retorna estado reativo + funções. Nome começa com `use`. |
+| **Util**            | Função pura, stateless, sem reatividade. Entrada → saída determinística.                         |
+| **Config**          | Declarativo: `const columns = [{ key, label, sortable }, ...]`. Tabs, steps, colunas, menus.     |
+| **Plugin**          | Side-effect de app: diretiva global, interceptor de `$fetch`, registrar `i18n`.                  |
+
+Erros comuns:
+
+- Composable que retorna JSX/SFC → não é composable, é componente.
+- Util que toca `ref` ou `reactive` → não é util, é composable.
+- Config com funções e estado → não é config, é composable.
+
+## Página vs domain component
+
+- **Page orquestra**: carrega dados, lê/escreve route, compõe filhos, ações de alto nível.
+- **Domain component resolve internamente**: não bounce-back de toda ação. Emite só quando o parent é **realmente** dono da próxima decisão (ex: navegação entre rotas, mutação que afeta outras árvores).
+
+Teste rápido: se a page tem 20 handlers onde 15 só repassam pra outro filho, 15 estão no lugar errado.
+
+## Reuso antes de invenção
+
+- Antes de criar shell local para form, card, section, data table, dialog, empty state, filter bar, ou picker de entidade, procure wrappers e primitives já consolidados no projeto.
+- Se o projeto já tem autocomplete ou picker específico para uma entidade, reutilize isso antes de montar `v-autocomplete` com fetch manual.
+- Se o projeto já define grid/shell padrão de formulário, não reintroduza layout local equivalente só porque o markup parece curto.
+
+## Naming defaults
+
+Quando o projeto não declarar uma convenção local mais forte:
+
+- componentes de domínio ficam agrupados por feature ou `pathPrefix`
+- componentes shared ou primitives ficam na raiz do espaço compartilhado do projeto
+- páginas e route owners vivem sob `pages/`
+- identificadores de código ficam em inglês
+- strings de UI seguem o idioma do produto, não o idioma do código
+
+## Testabilidade como critério
+
+Critério de divisão que decide sem precisar opinar:
+
+- **Componente que não monta em isolamento** (requer montar toda a page, ou mock de 4 composables) quebra SRP. Divida.
+- **Composable que toca `document`, `window`, `navigator` sem guarda SSR** não é composable — é plugin ou util com side-effect.
+- **Composable que retorna template** não existe. É componente.
+
+Se testar dá trabalho desproporcional, a arquitetura está errada — não o teste.
+
+## Refactor triggers (hora de dividir)
+
+Sinais concretos:
+
+- Template > ~80 linhas.
+- `v-if` ou `v-for` aninhado > 2 níveis.
+- Script com mais de 2 conceitos distintos (dados + filtros + exportação).
+- Props crescem em **grupos temáticos** (3+ de paginação, 3+ de seleção) — cada grupo quer virar subcomponente ou composable.
+- Watchers duplicados em child e parent observando o mesmo estado.
+- Computed que depende de 5+ refs desconhecidos → composable isolado.
+- Emit bubbling atravessando 3+ níveis.
+
+## Anti-padrões
+
+- **Emit bubbling cross-level**: child → parent → grandparent → grandgrand. Use `provide` regional ou store.
+- **Composable retornando JSX/SFC**: é componente, não composable.
+- **Util reativo**: `ref` em util é sinal de composable mal nomeado.
+- **God props**: componente com 20+ props. Quebre em sub-componentes ou slots.
+- **`Mixin`**: em Vue 3, sempre composable.
+- **Store de uma prop**: criar Pinia store para uma única interação parent-child é overkill.
+- **Page-god**: page com 300+ linhas orquestrando tudo. Extraia seções para domain components.
+- **Prop drilling evitando inject**: 4 níveis passando a mesma prop quando um `provide` regional resolveria.
+- **`defineExpose` generalizado**: expor métodos internos como API. Prefira v-model, slots ou composable compartilhado.
+- **Shell local duplicado**: recriar form shells, detail wrappers, empty states, ou dialogs que o projeto já consolidou.
+- **Fetch espelhado**: page e composable buscando a mesma coisa sem ownership claro.
+- **Parent proxy**: parent recebe evento só para chamar handler que o child poderia resolver sozinho.
