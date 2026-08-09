@@ -25,12 +25,12 @@ Prefer live evidence from the browser before editing code.
 
 ### Primary path in Codex: Chrome DevTools MCP
 
-- use `mcp__chrome_devtools__take_snapshot` to inspect the rendered accessibility tree
-- use `mcp__chrome_devtools__list_console_messages` for hydration, runtime, and Vue warnings
-- use `mcp__chrome_devtools__list_network_requests` and `mcp__chrome_devtools__get_network_request` for failed API or asset calls
-- use `mcp__chrome_devtools__evaluate_script` to inspect `window`, DOM state, route params, and client-side data
-- use `mcp__chrome_devtools__performance_start_trace` and `mcp__chrome_devtools__performance_stop_trace` only when the bug is performance-sensitive
-- use `mcp__chrome_devtools__lighthouse_audit` only when the claim is UX, accessibility, or best-practices drift rather than logic failure
+- use `mcp__chrome-devtools__take_snapshot` to inspect the rendered accessibility tree
+- use `mcp__chrome-devtools__list_console_messages` for hydration, runtime, and Vue warnings
+- use `mcp__chrome-devtools__list_network_requests` and `mcp__chrome-devtools__get_network_request` for failed API or asset calls
+- use `mcp__chrome-devtools__evaluate_script` to inspect `window`, DOM state, route params, and client-side data
+- use `mcp__chrome-devtools__performance_start_trace` and `mcp__chrome-devtools__performance_stop_trace` only when the bug is performance-sensitive
+- use `mcp__chrome-devtools__lighthouse_audit` only when the claim is UX, accessibility, or best-practices drift rather than logic failure
 
 ### Secondary path: Playwright
 

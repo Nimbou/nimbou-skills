@@ -212,6 +212,11 @@ test('core and audit skills document their new guardrails', () => {
   assert.match(nestjsTestRules, /nestjs-debug/i)
   assert.match(nuxtDebug, /^---\nname: nuxt-debug/m)
   assert.match(nuxtDebug, /Chrome DevTools MCP/i)
+  // The server this repo installs is `chrome-devtools`, so its tools are
+  // `mcp__chrome-devtools__*`. An underscored prefix names a server that does not
+  // exist, and every tool call in this skill silently fails to resolve.
+  assert.match(nuxtDebug, /mcp__chrome-devtools__take_snapshot/)
+  assert.doesNotMatch(nuxtDebug, /mcp__chrome_devtools__/)
   assert.match(nuxtDebug, /Playwright/)
   assert.match(nuxtDebug, /hydration/i)
   assert.match(nuxtDebug, /NO FRONTEND FIXES BEFORE LIVE BROWSER EVIDENCE/)
