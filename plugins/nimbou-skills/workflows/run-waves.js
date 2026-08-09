@@ -354,13 +354,45 @@ for (let w = 0; w < waves.length; w++) {
     for (const f of task.files ?? []) owner.set(f, index)
   }
 
+  // Step 2.1b: coalesce by Role. Every implementer pays the same setup before its
+  // first write — CLAUDE.md, the nearest GUIDELINES.md, a neighbouring file for
+  // style, the ports it consumes. On tasks the planners size at "2-5 minutes" that
+  // setup IS the cost, and two authors of the same Role in one wave pay it twice
+  // for the same reads. Merging them pays it once. What is lost is overlap between
+  // sibling tasks, which was cheap in wall-clock (the wave already waits on the
+  // slowest Role) and expensive in tokens.
+  //
+  // Only groups where EVERY task declared the SAME Role merge. A group that fell
+  // back to general-purpose — unrouted, or a collision with conflicting Roles —
+  // stays on its own: it already carries a concern, and burying it inside a
+  // coalesced agent makes a planning bug harder to act on.
+  const COALESCE_LIMIT = 3
+  const openByRole = new Map()
+  const dispatchGroups = []
+  let coalesced = 0
+  for (const group of groups) {
+    const roles = [...new Set(group.map(t => t.agentType))]
+    const role = roles.length === 1 && roles[0] ? roles[0] : null
+    const open = role ? openByRole.get(role) : undefined
+    // A collision group is never split by the cap — it must stay with its file.
+    if (open && open.length + group.length <= COALESCE_LIMIT) {
+      open.push(...group)
+      coalesced++
+      continue
+    }
+    const fresh = [...group]
+    dispatchGroups.push(fresh)
+    if (role) openByRole.set(role, fresh)
+  }
+
   // A nestjs-test wave carries no Role by contract — it routes through the test
   // auditors, not through implementers. Only other waves owe one.
   const unrouted = wave.isNestjsTestWave ? [] : tasks.filter(t => !t.agentType)
 
   phase('Implement')
   log(
-    `${label}: ${groups.length} implementer(s) for ${tasks.length} task(s)` +
+    `${label}: ${dispatchGroups.length} implementer(s) for ${tasks.length} task(s)` +
+      (coalesced ? ` — ${coalesced} merged into a same-Role sibling` : '') +
       (unrouted.length ? ` — ${unrouted.length} without a declared Role, falling back to general-purpose` : ''),
   )
   for (const task of unrouted) {
@@ -368,7 +400,7 @@ for (let w = 0; w < waves.length; w++) {
   }
 
   const reports = await parallel(
-    groups.map(group => () =>
+    dispatchGroups.map(group => () =>
       agent(implementerPrompt(group, label), {
         label: `${label} · ${group.map(t => t.title).join(' + ')}`,
         phase: 'Implement',
@@ -385,7 +417,7 @@ for (let w = 0; w < waves.length; w++) {
     for (const c of r?.concerns ?? []) concerns.push(`${label}: ${c}`)
   }
 
-  const blocked = reports.map((r, i) => ({ r, group: groups[i] })).filter(({ r }) => !r || r.status === 'BLOCKED')
+  const blocked = reports.map((r, i) => ({ r, group: dispatchGroups[i] })).filter(({ r }) => !r || r.status === 'BLOCKED')
   if (blocked.length) {
     stoppedAt = {
       wave: label,
@@ -534,7 +566,7 @@ ${tasks
   .join('\n')}`,
     reports
       .map((r, i) => {
-        const who = groups[i].map(t => t.title).join(' + ')
+        const who = dispatchGroups[i].map(t => t.title).join(' + ')
         const claims = [
           `status: ${r.status}`,
           `files: ${(r.filesTouched ?? []).join(', ') || 'none reported'}`,
@@ -1231,9 +1263,18 @@ function implementerPrompt(group, waveLabel) {
   const multi = group.length > 1
   const files = [...new Set(group.flatMap(t => t.files ?? []))]
 
-  return `You are implementing ${multi ? `${group.length} tasks that share a file` : 'exactly one task'} from an approved implementation plan (${waveLabel}).
+  return `You are implementing ${multi ? `${group.length} tasks` : 'exactly one task'} from an approved implementation plan (${waveLabel}).
 Other implementers are working on other tasks of the same wave, in parallel, in this
-same checkout. Stay inside your file boundary.
+same checkout. Stay inside your file boundary.${
+    multi
+      ? `
+
+You hold more than one task because they share an owner: the same Role, or the same
+file. Do them **one at a time, in the order listed**, each complete — test first, then
+implementation, then its verification — before you open the next. They are separate
+tasks that happen to share your setup reads, not one merged task.`
+      : ''
+  }
 
 ## Where You Work
 
@@ -1272,7 +1313,18 @@ find the task, STOP and report it as a blocker rather than implementing a guess.
 
 ## Files You Own
 
-${files.map(f => `- ${f}`).join('\n')}
+${
+  multi
+    ? group
+        .map(t => `**${t.title}**\n${(t.files ?? []).map(f => `- ${f}`).join('\n') || '- none declared'}`)
+        .join('\n\n') +
+      `
+
+The list is split per task on purpose. Writing task A's file while doing task B puts
+a change in a commit whose message never mentions it, and the reviewer reads the two
+as one edit. Finish a task before touching the next one's files.`
+    : files.map(f => `- ${f}`).join('\n')
+}
 
 You may READ anything in the repository. You may WRITE only to the files above. If
 the task cannot be completed without writing outside that list, STOP and report the

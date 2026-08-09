@@ -1,10 +1,10 @@
 # Implementer Subagent Prompt Template
 
-Use this template when the controller fans a wave's tasks out under `nimbou-skills:executing-plans` (Step 2.2). **One dispatch per task**, all dispatched together in a single message so they run in parallel.
+Use this template when the controller fans a wave's tasks out under `nimbou-skills:executing-plans` (Step 2.2). **One dispatch per group from Step 2.1b**, all dispatched together in a single message so they run in parallel. A group is usually one task; it holds more when the tasks share an owner.
 
-**Purpose:** Implement exactly one task from the plan, inside a declared file boundary, driven by its own failing test, and prove both the red run and the green one.
+**Purpose:** Implement the task — or the two or three same-owner tasks — the controller assigned, each inside its declared file boundary, each driven by its own failing test, proving both the red run and the green one.
 
-**Precondition:** the controller already checked write sets (Step 2.1). Every implementer in a wave owns a disjoint set of files. If two tasks share a file, they were merged into one dispatch before reaching this template.
+**Precondition:** the controller already checked write sets (Step 2.1) and coalesced by Role (Step 2.1b). Every implementer in a wave owns a disjoint set of files. Tasks reaching this template together either share a file or share a Role — the controller resolved which before dispatching.
 
 **Agent type:** `[ROLE]` — the slug the plan declared for this task (`**Role:**` line in `nestjs-plan`, `Role` column in `nuxt-plan`). See the Role Routing table in `SKILL.md`. When the plan declared none, `[ROLE]` is `general-purpose` and the controller says so in the wave report.
 
@@ -154,7 +154,8 @@ Task tool ([ROLE]):
 **Rules for the controller dispatching this:**
 
 0. **Anchor every dispatch.** Resolve `WORKTREE_ROOT` once, before the wave, and paste the same absolute path into every implementer, the commit step, and the reviewers. A subagent does not reliably inherit your working directory, and the plan's paths mean nothing without a root. An implementer that writes into the main checkout while you commit from a worktree produces a wave that commits green and is missing half its files.
-1. **One task per dispatch.** Never bundle two plan tasks into one implementer to save an agent — that reintroduces the serialization this step exists to remove. The single exception is the write-set collision handled in Step 2.1.
+1. **Bundle only what shares an owner, up to three.** Two plan tasks ride one implementer when Step 2.1 found them writing the same file, or when Step 2.1b found them declaring the same `Role`. Nothing else. Bundling across Roles hands one agent two sets of boundary rules and loses the specialized routing; bundling past three collapses a heavy Role into one sequential lane the whole wave then waits on.
+   - **A bundle is not a merged task.** Give each task its own spec range, its own `Files`, its own `RED`, its own `Verificação`, and require them done one at a time in order. List the files per task — a union invites task A's file to change while task B is being written, which lands an edit the commit message never mentions.
 2. **`[ROLE]` comes from the plan, never from the file path.** Substituting a role you inferred yourself hides a planning bug the fallback would have surfaced.
 3. **Paste, do not reference.** The implementer has no access to your context, the plan file, or earlier waves' reports. A prompt saying "implement Task 3 from the plan" fails.
 4. **Contracts are mandatory for waves 2+.** A wave exists as a separate wave precisely because it consumes something an earlier wave produced. If you cannot name what this task consumes, the wave boundary was wrong.

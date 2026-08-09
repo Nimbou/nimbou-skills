@@ -38,9 +38,20 @@ Before dispatching anything, list the files each task in the wave declares it wi
   - **What happens to the Role.** The merged group keeps its `Role` when every task in it declared the same one. When they declare **different** Roles there is no correct winner, so the group falls back to `general-purpose` and you record the loss as a second `concern`, naming the Roles that were dropped. A collision therefore costs the specialized routing on top of the parallelism — one more reason it is a planning bug to fix rather than absorb.
 - **Single-task wave:** skip the dispatch. The controller implements it directly; a subagent buys nothing here.
 
+### 2.1b Coalesce what shares an owner
+
+Then merge the remaining groups by `Role`: **one implementer per Role per wave**, up to **three tasks each**.
+
+Every implementer pays the same setup before its first write — `CLAUDE.md`, the nearest `GUIDELINES.md`, a neighbouring file for style, the ports it consumes. The planners size tasks at "a small action, typically 2-5 minutes", so on a task that size the setup *is* the cost, and two authors of the same Role in one wave pay it twice for identical reads. What coalescing gives up is overlap between sibling tasks — cheap in wall-clock, since the wave already waits on its slowest Role, and expensive in tokens.
+
+- **Only groups where every task declared the same Role merge.** A group that fell back to `general-purpose` — unrouted, or a collision with conflicting Roles — stays on its own. It already carries a `concern`, and burying it inside a coalesced agent makes a planning bug harder to act on.
+- **A write-set collision group is never split by the cap.** It must stay with its file.
+- **Three is the cap, not a target.** Above it, a heavy Role would collapse into one long sequential lane and the wave would wait on it; a fourth same-Role task opens a second implementer.
+- **Coalescing is not merging.** Each task keeps its own spec range, its own `Files`, its own `RED`, its own `Verificação`, and is reported separately. What is shared is the setup, not the work.
+
 ### 2.2 Fan the wave's tasks out to implementer subagents
 
-Dispatch **one implementer subagent per task**, all in a **single message with multiple parallel `Agent` calls**.
+Dispatch **one implementer subagent per group from 2.1b**, all in a **single message with multiple parallel `Agent` calls**.
 
 Build each prompt from `./implementer-prompt.md`. Plans from `nestjs-plan` and `nuxt-plan`
 declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `RED`, `Verificação` —
@@ -49,7 +60,8 @@ Each implementer gets:
 
 - `WORKTREE_ROOT` from 2.0, as an absolute path, with the instruction to verify it with `git rev-parse --show-toplevel` before its first write and to re-anchor any absolute path the plan wrote against a different checkout
 - the task's full body — either pasted verbatim, or handed as a `Read` of the plan file at the task's exact line range. The two are equivalent, and the range is cheaper: re-emitting a plan's prose just so it can be pasted back costs the whole document in output tokens, which are the expensive ones. When you pass a range, tell the implementer to `Grep` the plan for the task heading if the first line it reads is not that heading, and to report a blocker rather than implement a guess. `run-waves` takes the range path; a controller that already has the plan in context can just paste
-- `Files` as the exact set it owns, and an explicit statement that it must not touch any other file
+- `Files` as the exact set it owns, and an explicit statement that it must not touch any other file. **When the group holds more than one task, list the files per task, not as a union** — and tell it to finish a task before touching the next one's files. A union invites task A's file to change while task B is being written, which lands an edit the commit message never mentions and the reviewer reads as one blurred change
+- when the group holds more than one task: the instruction to do them **one at a time, in the order given**, each complete — test first, implementation, its verification — before opening the next
 - `RED` **verbatim** — the same command run *before* implementation, expecting FAIL, plus the failure class the plan declared. The implementer writes the test, runs this, and confirms the failure is the declared one before writing a line of implementation
 - `Verificação` **verbatim** — implementers run it themselves. It is the command expecting PASS, run after
 - `Consome` pasted in as actual declarations, not referenced by name

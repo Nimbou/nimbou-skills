@@ -431,9 +431,83 @@ test('run-waves collapses tasks that share a file into one implementer', async (
 
   const waveOne = calls.filter((call) => (call.opts.label ?? '').startsWith('Onda 1'))
   assert.equal(waveOne.length, 1, 'two tasks writing src/a.ts are not parallel-safe')
-  assert.match(waveOne[0].prompt, /2 tasks that share a file/)
+  assert.match(waveOne[0].prompt, /implementing 2 tasks/)
+  assert.match(waveOne[0].prompt, /one at a time, in the order listed/)
 
   assert.ok(result.followups, 'the collision is recorded as a concern, which forces a follow-ups artifact')
+})
+
+test('run-waves coalesces same-Role tasks in a wave into one implementer', async () => {
+  // Three use-case tasks, disjoint files. Nothing forces them apart: they have the
+  // same owner and the same setup reads (CLAUDE.md, GUIDELINES.md, the ports). One
+  // implementer pays that once; three pay it three times for a wave that still waits
+  // on its slowest lane either way.
+  const sameRole = JSON.parse(JSON.stringify(twoWavePlan))
+  sameRole.waves[0].tasks = [
+    { title: 'UC one', specLines: { start: 10, end: 20 }, files: ['src/one.ts'], verification: 'pnpm test -- one', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'UC two', specLines: { start: 21, end: 30 }, files: ['src/two.ts'], verification: 'pnpm test -- two', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'UC three', specLines: { start: 31, end: 40 }, files: ['src/three.ts'], verification: 'pnpm test -- three', agentType: 'nimbou-skills:nestjs-usecase-author' },
+  ]
+
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, sameRole],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+    [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
+    ['commit follow-ups', { sha: 'shaF', message: 'docs' }],
+    ['review follow-ups', { findings: [] }],
+  ])
+
+  const waveOne = calls.filter((call) => (call.opts.label ?? '').startsWith('Onda 1'))
+  assert.equal(waveOne.length, 1, 'three tasks of one Role should ride one implementer')
+  assert.equal(waveOne[0].opts.agentType, 'nimbou-skills:nestjs-usecase-author', 'coalescing must not cost the Role')
+
+  // Each task keeps its own spec range and its own file list. Coalescing shares the
+  // setup, it does not merge the tasks into one blurred edit.
+  for (const line of ['UC one', 'UC two', 'UC three', 'src/one.ts', 'src/two.ts', 'src/three.ts']) {
+    assert.match(waveOne[0].prompt, new RegExp(line.replace('.', '\\.')), `prompt should still name ${line}`)
+  }
+
+  assert.ok(!result.followups, 'coalescing a clean wave raises no concern')
+})
+
+test('run-waves caps a coalesced implementer and never merges an unrouted task', async () => {
+  const wide = JSON.parse(JSON.stringify(twoWavePlan))
+  wide.waves[0].tasks = [
+    ...[1, 2, 3, 4].map((n) => ({
+      title: `Comp ${n}`,
+      specLines: { start: 10 * n, end: 10 * n + 5 },
+      files: [`src/c${n}.vue`],
+      verification: `pnpm test -- c${n}`,
+      agentType: 'nimbou-skills:vue-component-author',
+    })),
+    // No Role: a planning bug. It must stay its own dispatch so the concern it
+    // raises points at one task instead of being buried in a sibling's report.
+    { title: 'Orphan', specLines: { start: 90, end: 95 }, files: ['src/orphan.ts'], verification: 'pnpm test -- orphan' },
+  ]
+
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, wide],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+    [WRITE_FOLLOWUPS, { path: 'docs/plans/x.followups.md', automatable: [], manual: [] }],
+    ['commit follow-ups', { sha: 'shaF', message: 'docs' }],
+    ['review follow-ups', { findings: [] }],
+  ])
+
+  const waveOne = calls.filter((call) => (call.opts.label ?? '').startsWith('Onda 1'))
+  // 4 same-Role tasks cap at 3 per implementer -> 2 groups, plus the orphan alone.
+  assert.equal(waveOne.length, 3, 'the cap keeps a heavy Role from collapsing into one long lane')
+
+  const orphan = waveOne.find((call) => (call.opts.label ?? '').includes('Orphan'))
+  assert.ok(orphan, 'the unrouted task must still be dispatched')
+  assert.equal(orphan.opts.agentType, undefined, 'no Role means the general-purpose fallback')
+  assert.equal(orphan.opts.model, 'sonnet', 'the fallback is pinned, never inherited')
+  assert.doesNotMatch(orphan.prompt, /Comp \d/, 'an unrouted task is never folded into a routed sibling')
 })
 
 test('run-waves stops downstream waves when an implementer is BLOCKED', async () => {
@@ -602,9 +676,14 @@ test('prose-execution carries the full executable contract for Codex', () => {
   assert.match(prose, /## Step 2: Execute/)
   assert.match(prose, /## Step 3: Collect Reviews/)
   assert.match(prose, /## Step 4: Execute Follow-ups/)
-  assert.match(prose, /one implementer subagent per task/i)
+  assert.match(prose, /one implementer subagent per group from 2\.1b/i)
   assert.match(prose, /commit once per wave/i)
   assert.match(prose, /check the write sets/i)
+  // The prose is normative for both harnesses: the coalescing rule the workflow
+  // implements has to be readable here too, or Codex runs a different executor.
+  assert.match(prose, /Coalesce what shares an owner/i)
+  assert.match(prose, /one implementer per Role per wave/i)
+  assert.match(prose, /Coalescing is not merging/i)
   assert.match(prose, /implementer-prompt\.md/)
   assert.match(prose, /## Role Routing/)
   assert.match(prose, /Never infer a role from the file path/i)
@@ -613,7 +692,8 @@ test('prose-execution carries the full executable contract for Codex', () => {
   assert.match(prose, /This file is normative/i)
   assert.match(prose, /Step 1 lives in `SKILL\.md`/)
 
-  assert.match(implementer, /One dispatch per task/)
+  assert.match(implementer, /One dispatch per group from Step 2\.1b/)
+  assert.match(implementer, /Bundle only what shares an owner, up to three/)
   assert.match(implementer, /Files You Own/)
   assert.match(implementer, /Never let an implementer commit/)
 })
