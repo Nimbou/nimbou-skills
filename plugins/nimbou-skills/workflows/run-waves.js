@@ -23,6 +23,12 @@ export const meta = {
 // takes no user input mid-run.
 
 const planPath = typeof args === 'string' ? args : args?.planPath
+const allowDefaultBranch = typeof args === 'object' && args !== null && args.allowDefaultBranch === true
+
+// Implementing on a project's long-lived branch is where stray writes land: it is
+// the branch the main checkout is parked on, so an agent that resolves paths against
+// the wrong root lands there and looks plausible doing it.
+const DEFAULT_BRANCHES = ['main', 'master', 'dev', 'develop', 'staging', 'production']
 
 if (!planPath) {
   return { error: 'No plan path. Call with args: "docs/plans/<plan>.md" (or { planPath }).' }
@@ -37,6 +43,11 @@ const PLAN_SCHEMA = {
       description: 'absolute path of the checkout this run writes to — `git rev-parse --show-toplevel`',
     },
     branch: { type: 'string', description: '`git rev-parse --abbrev-ref HEAD` in that checkout' },
+    worktrees: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'every checkout of this repository, from `git worktree list --porcelain`, repoRoot included',
+    },
     planOrigin: { type: 'string', description: 'nestjs-plan | nuxt-plan | other' },
     waveStructured: { type: 'boolean' },
     posExecucao: { type: 'array', items: { type: 'string' } },
@@ -122,6 +133,11 @@ const COMMIT_SCHEMA = {
       description: 'files the plan declared for this wave that nobody touched and nobody reported',
     },
     undeclaredChanged: { type: 'array', items: { type: 'string' }, description: 'changed files nobody declared' },
+    strayIn: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'sibling checkouts found holding uncommitted changes to the missing paths',
+    },
   },
 }
 
@@ -203,6 +219,10 @@ later agent in this run is anchored to that absolute path, so it must be the
 checkout you are actually standing in — a worktree, when one was set up. Do not
 guess it from the plan's prose or from any absolute path written inside the plan.
 
+Also run \`git worktree list --porcelain\` and return every checkout path it names
+as worktrees, repoRoot included. Later steps search the siblings for work that was
+written into the wrong one.
+
 Waves live under \`## Ondas de Execução\` (or the legacy \`## Grupos de Execucao\`).
 Set waveStructured to false if neither heading exists — do not invent waves from a
 serial task list.
@@ -273,6 +293,21 @@ if (!repoRoot.startsWith('/')) {
       'Could not establish an absolute repoRoot for this run. Every implementer must be anchored to one checkout before any wave is dispatched.',
   }
 }
+
+const branch = (plan.branch ?? '').trim()
+if (!allowDefaultBranch && DEFAULT_BRANCHES.includes(branch)) {
+  return {
+    error: `${repoRoot} is on \`${branch}\`, a long-lived branch. Create a worktree or a feature branch and relaunch — or pass { planPath, allowDefaultBranch: true } if implementing here is deliberate.`,
+    reason:
+      'A run on a project default branch is almost always the main checkout rather than the intended worktree, which is exactly how a wave ends up half-written in the wrong place.',
+  }
+}
+
+// Sibling checkouts of the same repository. When a file goes missing from this one,
+// this is the list to search — naming what is missing without naming where it went
+// leaves the whole recovery to be done by hand.
+const siblings = (plan.worktrees ?? []).filter(w => w && w !== repoRoot)
+if (siblings.length) log(`${siblings.length} sibling checkout(s) will be searched if a wave's files go missing.`)
 
 // Hand agents the plan by absolute path too: a relative one resolves against
 // whatever directory the agent inherited, which is the same failure mode.
@@ -403,6 +438,15 @@ Do this:
      return it in missingReported, set status to PARTIAL_WAVE, and COMMIT NOTHING.
      The work exists somewhere this run will never commit. This is a stop, not a note:
      committing the rest produces a wave that references code that is not there.
+${
+      siblings.length
+        ? `     Then find it. Run \`git -C <checkout> status --porcelain\` in each sibling
+     checkout below and return, in strayIn, the ones showing changes to the missing
+     paths. Saying what is missing without saying where it went leaves the entire
+     recovery to be done by hand.
+${siblings.map(w => `       - ${w}`).join('\n')}`
+        : '     This repository has no sibling checkouts, so leave strayIn empty.'
+    }
    - A file the plan declared that nobody reported and nothing changed — return it in
      missingDeclared and carry on; it is a concern, not a stop.
    - A file changed that nobody declared — return it in undeclaredChanged and carry on.
@@ -438,13 +482,16 @@ Do not push. Do not commit anything outside this wave.`,
   // for, and one that only surfaces waves later as a "divergent contract".
   if (commit.status === 'PARTIAL_WAVE' || !commit.sha) {
     const missing = commit.missingReported ?? []
+    const stray = commit.strayIn ?? []
     stoppedAt = {
       wave: label,
       blockers: [
         {
           tasks: tasks.map(t => t.title),
           blocker: missing.length
-            ? `Wave written outside ${repoRoot}: ${missing.join(', ')} were reported as touched but show no change here. Move those paths into this checkout before rerunning; committing the rest would land a partial wave.`
+            ? `Wave written outside ${repoRoot}: ${missing.join(', ')} were reported as touched but show no change here.${
+                stray.length ? ` Found uncommitted in: ${stray.join(', ')}.` : ''
+              } Move those paths into this checkout before rerunning; committing the rest would land a partial wave.`
             : 'commit agent returned no SHA',
         },
       ],
@@ -788,7 +835,10 @@ if (stoppedAt) {
     wavesCommitted: executed,
     findings,
     concerns,
-    note: 'Execution stopped before the plan completed. No follow-ups artifact was written — fix the blocker and relaunch.',
+    // Cached agent results describe edits on disk. After a rescue — files moved
+    // between checkouts, a partial wave discarded — those edits no longer match, and
+    // a resume replays "done" for work that is no longer there.
+    note: 'Execution stopped before the plan completed. No follow-ups artifact was written — fix the blocker and relaunch. Do NOT relaunch with resumeFromRunId if any file was moved, reverted, or rescued between checkouts: the cache would replay implementer reports for edits that no longer exist. Start a fresh run instead.',
   }
 }
 

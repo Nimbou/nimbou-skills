@@ -484,3 +484,32 @@ test('browser-smoke ships as a standalone skill and is wired into executing-plan
   const router = read('plugins/nimbou-skills/skills/executing-plans/SKILL.md')
   assert.match(router, /nimbou-skills:browser-smoke/)
 })
+
+test('planners require a task to declare every file it tells the implementer to edit', () => {
+  // The 2026-08-09 run stopped on wave 1 because a task said to add the inverse side
+  // of a relation in `file.prisma` and no task listed that file. The implementer was
+  // right to refuse to widen its own boundary; the plan was wrong to make it choose.
+  const planners = [
+    'plugins/nimbou-skills/skills/nestjs-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/nuxt-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/fullstack-plan/SKILL.md',
+  ]
+
+  for (const file of planners) {
+    const body = read(file)
+    assert.match(body, /## Self-Review/, `${file} should have a self-review`)
+    assert.match(body, /Write-set completeness/i, `${file} must check that Files covers every edited path`)
+    assert.match(
+      body,
+      /every concrete file path[\s\S]{0,240}`Files`/i,
+      `${file} must tie paths named in the task body to its Files field`,
+    )
+  }
+})
+
+test('apply-review requires an inventory before a "single point" fix', () => {
+  const body = read('plugins/nimbou-skills/skills/apply-review/SKILL.md')
+  assert.match(body, /Enumerate Before Fixing/i)
+  assert.match(body, /grep the pattern/i, 'listing occurrences is the cheap step that gets skipped')
+  assert.match(body, /assert the whole set/i, 'the test for this fix is the inventory, not the reported case')
+})

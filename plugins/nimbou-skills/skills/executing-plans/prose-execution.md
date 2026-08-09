@@ -18,9 +18,14 @@ Step 1 lives in `SKILL.md` and runs before anything here. Do not start at Step 2
 
 ### 2.0 Anchor the run
 
-Before the first wave, run `git rev-parse --show-toplevel` and `git rev-parse --abbrev-ref HEAD`. That absolute path is `WORKTREE_ROOT`, and it goes verbatim into every implementer prompt, the commit step, and both reviewers. State it once in the run's opening report so the user can see which checkout is being written to.
+Before the first wave, run `git rev-parse --show-toplevel`, `git rev-parse --abbrev-ref HEAD`, and `git worktree list`. That absolute path is `WORKTREE_ROOT`, and it goes verbatim into every implementer prompt, the commit step, and both reviewers. State it, the branch, and the sibling checkouts once in the run's opening report so the user can see which checkout is being written to.
 
 This is not ceremony. A subagent does not reliably inherit your working directory, and a plan that writes its paths as absolute is naming a checkout that may not be the one you are on. When part of a wave lands in the main checkout while you commit from a worktree, the commit succeeds and is silently missing those files — and the fracture surfaces two waves later as a contract that "diverged", pointing at the wrong problem.
+
+Two checks before dispatching anything:
+
+- **Refuse a long-lived branch.** `main`, `master`, `dev`, `develop`, `staging`, `production` — a run sitting on one of these is almost always the main checkout rather than the worktree that was set up for this plan. Stop and ask, rather than implementing there. Only an explicit "yes, implement on this branch" from the user overrides it.
+- **Keep the sibling list.** Every other checkout `git worktree list` named is where a stray write can land. You need those paths in 2.3, and hunting them down after the fact is what turns a five-minute recovery into an afternoon.
 
 For each wave, in declared order:
 
@@ -89,7 +94,8 @@ Wait for every implementer in the wave to return, then:
 
 1. Read each report.
 2. Reconcile `git status --porcelain`, **run in `WORKTREE_ROOT`**, against two lists: what the implementers reported touching, and what the plan declared for this wave. Three outcomes, and they are not the same finding:
-   - **Reported as touched, but no change here** — the work landed in another checkout. **Stop the wave and commit nothing.** This is the one that hides: the files exist, the implementer's report is honest, the verification it ran even passed, and only this checkout is empty. Recover the paths into `WORKTREE_ROOT` before rerunning; a commit here produces a branch whose code references files it does not contain.
+   - **Reported as touched, but no change here** — the work landed in another checkout. **Stop the wave and commit nothing.** This is the one that hides: the files exist, the implementer's report is honest, the verification it ran even passed, and only this checkout is empty. Then **find it**: run `git -C <checkout> status --porcelain` in each sibling from 2.0 and name the one holding those paths. Report both — what is missing and where it went — and recover the paths into `WORKTREE_ROOT` before rerunning. A commit here produces a branch whose code references files it does not contain.
+     - **After any rescue, start a fresh run.** Do not resume from a previous run's cache: it replays implementer reports describing edits that were since moved or discarded, so the run reports "done" for files nobody wrote.
    - **Declared by the plan, touched by nobody** — a `concern`, not a stop. The task may have been merged, or the plan over-declared.
    - **Changed but declared by nobody** — an implementer wrote outside its boundary. Decide whether to keep or revert it, and record a `concern`. Do not revert silently.
 3. Re-run **only** the verifications whose implementer came back with a claim rather than a transcript. An implementer that pasted actual runner output already ran that suite; re-running it doubles the wave's test time on the sequential critical path, and the commit is the one step every later wave waits on. `passou` is a claim; a runner transcript is evidence. When you do re-run, run the command **exactly as the plan declares** — it is already scoped to the files the wave changes. Never substitute an unfiltered test command (no bare `pnpm test`, `npm test`, `pytest`).

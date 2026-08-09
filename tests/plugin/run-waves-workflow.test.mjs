@@ -958,3 +958,82 @@ test('run-waves does not smoke a run that stopped before finishing', async () =>
     'smoking a half-executed plan reports defects the plan never finished building',
   )
 })
+
+// ── Anti-recurrence guards ───────────────────────────────────────────────────
+//
+// From the 2026-08-09 post-mortem: implementers wrote into the main checkout
+// while the run committed from a worktree. The wave commit guard catches the
+// fracture; these three keep it from being reachable in the first place, and make
+// the recovery obvious when it is.
+
+test('run-waves refuses to implement on the default branch', async () => {
+  const onDev = { ...twoWavePlan, branch: 'dev', repoRoot: '/var/www/projeto' }
+
+  const { result, calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, onDev],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+  ])
+
+  assert.match(result.error, /dev/)
+  assert.match(result.error, /allowDefaultBranch/, 'the escape hatch has to be named, or the guard is just a wall')
+  assert.equal(
+    calls.filter((call) => (call.opts.label ?? '').startsWith('Onda')).length,
+    0,
+    'the main checkout sitting on its default branch is where stray writes land',
+  )
+})
+
+test('run-waves runs on the default branch when the caller opted in', async () => {
+  const onMain = { ...twoWavePlan, branch: 'main' }
+
+  const { calls } = await runWorkflow({ planPath: 'docs/plans/x.md', allowDefaultBranch: true }, [
+    [PARSE, onMain],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  assert.ok(calls.some((call) => (call.opts.label ?? '').startsWith('Onda 1')), 'an explicit opt-in is consent')
+})
+
+test('run-waves hands the commit guard the sibling checkouts to search', async () => {
+  const withSiblings = {
+    ...twoWavePlan,
+    worktrees: ['/var/www/projeto', '/var/www/projeto/.worktrees/feature-x'],
+  }
+
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, withSiblings],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  const commit = calls.find((call) => (call.opts.label ?? '').startsWith('commit Onda 1'))
+  assert.match(commit.prompt, /\/var\/www\/projeto\b/, 'the other checkout is where a missing file went')
+  assert.match(commit.prompt, /git -C/, 'the guard must be able to look there, not just here')
+})
+
+test('run-waves names the checkout that swallowed the work and warns off resume', async () => {
+  const { result } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, { ...twoWavePlan, worktrees: ['/var/www/projeto'] }],
+    [
+      'commit Onda 1',
+      { status: 'PARTIAL_WAVE', missingReported: ['prisma/schema.prisma'], strayIn: ['/var/www/projeto'] },
+    ],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  const blocker = result.stopped.blockers[0].blocker
+  assert.match(blocker, /prisma\/schema\.prisma/)
+  assert.match(blocker, /\/var\/www\/projeto/, 'saying what is missing without saying where wastes the recovery')
+  // Cached agent results describe edits that may no longer exist on disk after a
+  // rescue. Resuming on top of them reports "done" for files nobody wrote.
+  assert.match(result.note, /resumeFromRunId/)
+})

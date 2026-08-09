@@ -136,7 +136,8 @@ After writing the plan, check:
 1. **Contract closed:** every frontend `Consome` traces to approved `openapi.yaml`, and none names a backend task
 2. **No false serialization:** for every frontend task outside Onda 1, the reason it is not earlier is a contract it consumes — not a backend task landing
 3. **Write sets:** no two tasks in the same wave write the same file, across both stacks
-4. **Execution Contract:** every field on every task; no commit steps
+4. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
+5. **Execution Contract:** every field on every task; no commit steps
 5. **TDD shape:** Onda 1 contains no tests on either side. Every backend task carrying behavior owns its test and its implementation, and declares a `RED` failure class. Every frontend task declares `RED: n/a — frontend, coberto por review`. No `n/a` on a backend use-case, repository, or controller
 6. **Roles:** every slug exists in the owning platform planner's Role Mapping
 7. **Platform rules:** backend tasks respect `nestjs-plan` boundaries; frontend tasks respect `nuxt-plan` reuse and design resolution

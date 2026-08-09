@@ -193,7 +193,8 @@ After writing the complete plan, check:
 4. **Review checkpoints:** every wave ends with an explicit spec-compliance checkpoint
 5. **Boundary clarity:** page, component, and composable responsibilities are clear
 6. **Guideline clarity:** local wrapper reuse, state locality, and hardening obligations are represented where relevant
-7. **Verification clarity:** `/nuxt-catalog` and test suggestions still appear at the end, and every test suggestion is scoped to the routes/components/composables this plan changed (never the full suite)
+7. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
+8. **Verification clarity:** `/nuxt-catalog` and test suggestions still appear at the end, and every test suggestion is scoped to the routes/components/composables this plan changed (never the full suite)
 
 Fix issues inline before handing off the plan.
 

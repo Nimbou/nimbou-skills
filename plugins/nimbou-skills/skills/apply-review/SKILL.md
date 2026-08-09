@@ -116,6 +116,25 @@ FOR multi-item feedback:
   4. Verify no regressions
 ```
 
+## Enumerate Before Fixing "One Spot"
+
+When a finding — or your own diagnosis — says the defect lives in a single place, **list every occurrence before fixing any of them.** A `grep` for the pattern costs seconds; treating a count as an enumeration costs a second review round.
+
+```
+BEFORE fixing a "single point":
+  1. grep the pattern across the repo
+  2. Count what comes back
+  3. Fix the inventory, not the instance that was reported
+  4. Make the test assert the inventory too
+```
+
+Two failure shapes to watch for, both common:
+
+- **The count that was never counted.** "The four message outputs" turns out to be five. Nobody recounted after the fifth was added, and the fix covered four.
+- **The bound that fits exactly one case.** A limit raised by `+1` to accommodate the reported payload solves the reported payload and nothing else.
+
+The test written for this kind of fix should assert the whole set — every output, every branch, every caller — not the case that motivated it. A test that only reproduces the reported instance passes while the rest of the inventory stays broken.
+
 ## When To Push Back
 
 Push back when:
