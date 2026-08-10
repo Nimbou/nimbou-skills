@@ -179,6 +179,9 @@ These are plan failures:
 - `Create component as needed`
 - `Handle loading and errors` without saying where and how
 - `Reuse existing component` without naming it
+- a `#### Task N` heading left as a tombstone for work you cut — `(removed)`, `(merged into Task M)`. Every task heading is dispatched: without `Onda` it inherits the section's wave, without `Role` it falls back to `general-purpose` and is logged as a planning bug. Delete the heading and let the numbering skip
+- a `Role` field holding anything but a slug — the executor copies it verbatim into the agent type
+- a `Consome` written as *"the same declarations as Task N"* instead of the pasted declarations
 - `Test the page` without naming the recommended command or scope
 - Any test suggestion that runs the full Playwright suite or unfiltered `pnpm test`; the scope must always point to the routes/components/composables changed by this plan
 - vague references to composables, stores, or API data without ownership
@@ -189,7 +192,7 @@ After writing the complete plan, check:
 
 1. **Design coverage:** every approved UI requirement maps to files or waves
 2. **Topology clarity:** exact file ownership and dependency order are explicit
-3. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave; tasks inside a wave are genuinely parallel-safe
+3. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave, and no task consumes something a task in its **own** wave produces. Check it by reading, task by task, what each `Consome` names and which task *produces* it; a same-wave producer means merge the two or move the producer earlier. A shared composable or util created by task A and consumed by task B in the same wave is the usual shape, and `executing-plans` can hide it: it coalesces tasks of the same `Role` into one implementer that runs them in order, so the pair works whenever they land in the same lane and breaks when the cap splits them
 4. **Review checkpoints:** every wave ends with an explicit spec-compliance checkpoint
 5. **Boundary clarity:** page, component, and composable responsibilities are clear
 6. **Guideline clarity:** local wrapper reuse, state locality, and hardening obligations are represented where relevant

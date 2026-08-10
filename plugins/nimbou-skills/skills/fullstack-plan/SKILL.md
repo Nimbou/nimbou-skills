@@ -68,6 +68,26 @@ The default shape. Collapse or split only when a real contract dependency justif
 
 Both sides occupy Onda 2 at the same time. That is the whole point of the skill.
 
+### Dispatch is not task count
+
+`executing-plans` does **not** open one subagent per task. After the write-set check it
+coalesces by `Role`: **one implementer per `Role` per wave, up to three tasks each**,
+greedy in document order, and only among tasks that declared the *same* `Role`. Each task
+keeps its own `Files`, `RED` and `Verificação` and is reported separately — what is shared
+is the setup those tasks would each pay for.
+
+Two consequences the plan must be written against:
+
+- **Do not size a wave, or advise on its cost, by counting tasks.** A wave of fifteen
+  tasks across five roles is seven implementers, not fifteen. Writing "this wave is
+  expensive, consider slicing it" from the task count is advice about a run that does not
+  exist.
+- **Coalescing can hide an intra-wave dependency.** Tasks inside one implementer run
+  sequentially in the order given, so a task that consumes a sibling in the same wave will
+  *work* whenever the two land in the same lane in the right order, and break when the cap
+  pushes them into different lanes. The defect passes, then reappears after an unrelated
+  reordering. This is why Self-Review item 1 is first and why it is not optional.
+
 **Onda 1 carries no tests, on either side.** A test is consumed by no later wave, and splitting it away from its implementation hands RED to one agent and GREEN to another — test-first, not TDD. Backend tests live inside the task that implements the behavior.
 
 **The two stacks are not symmetric about TDD, deliberately.** Backend tasks are test-driven and declare `RED:`. Frontend tasks are not: the browser-level equivalent is a Playwright run, which is too slow and too coupled to serve as a short red-green cycle, and unit-testing a Vuetify component mostly asserts the framework. Frontend quality is covered by the `guidelines-gap-analyzer` pass and by `/code-review`, where reading the diff is cheap and asserting the visual result is expensive — the opposite of the backend's economics. Do not invent a frontend RED to make the table look balanced.
@@ -76,7 +96,7 @@ Both sides occupy Onda 2 at the same time. That is the whole point of the skill.
 
 ## Execution Contract
 
-Every task carries the fields `nimbou-skills:executing-plans` extracts, regardless of which stack it belongs to:
+Every task carries the fields `nimbou-skills:executing-plans` extracts, regardless of which stack it belongs to — with **one exception, stated here so it is not resolved by guessing**: a task in the `nestjs-test` final wave declares **no `Role`**, because it routes through the test auditors rather than an agent-author. `nestjs-plan` owns that rule and it wins. Omit the field; do not fill it with a justification, an `n/a`, or a parenthetical — the executor copies the field verbatim into the agent type, so prose there becomes a nonexistent agent. The reason belongs in the task body.
 
 ```md
 #### Task N: <nome>
@@ -133,16 +153,24 @@ Rules specific to a joint plan:
 
 After writing the plan, check:
 
-1. **Contract closed:** every frontend `Consome` traces to approved `openapi.yaml`, and none names a backend task
-2. **No false serialization:** for every frontend task outside Onda 1, the reason it is not earlier is a contract it consumes — not a backend task landing
-3. **Write sets:** no two tasks in the same wave write the same file, across both stacks
-4. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
-5. **Execution Contract:** every field on every task; no commit steps
-5. **TDD shape:** Onda 1 contains no tests on either side. Every backend task carrying behavior owns its test and its implementation, and declares a `RED` failure class. Every frontend task declares `RED: n/a — frontend, coberto por review`. No `n/a` on a backend use-case, repository, or controller
-6. **Roles:** every slug exists in the owning platform planner's Role Mapping
-7. **Platform rules:** backend tasks respect `nestjs-plan` boundaries; frontend tasks respect `nuxt-plan` reuse and design resolution
-8. **Final wave:** `nestjs-test` scoped to this plan's files with explicit suite paths — never an unfiltered `pnpm test`
-9. **Balance is not a goal:** waves with work on one side only are fine when the dependency graph says so
+1. **No intra-wave dependency, in either stack:** read every task's `Consome` and ask which task *produces* what it names. If that producer sits in the **same wave**, the plan is broken — merge the two tasks, or move the producer to an earlier wave. This check is not the same as item 2 and does not reduce to it: item 2 is about the frontend queueing behind the backend, and this one bites hardest **between two tasks of the same stack and the same `Role`**, which is exactly where it is hardest to see and most dangerous to miss (see *Dispatch is not task count* above).
+
+   Two shapes to watch, both real:
+   - a shared helper, service, or util created by task A and consumed by task B in the same wave. Fix: move the helper into the earlier wave. If it carries no behavior of its own — a composition over ports the consumers' own specs already cover — it can live in Onda 1 without a test, and the plan says so in its `RED: n/a` reason.
+   - a `Consome` written as *"the same declarations as Task N"* or *"the ones cited in Task N"*. Even when the real dependency is an earlier wave, the reference reads as a lateral one and leaves the implementer without the contract in hand. `Consome` is **pasted declarations**, never a pointer to a sibling.
+
+2. **Contract closed:** every frontend `Consome` traces to approved `openapi.yaml`, and none names a backend task
+3. **No false serialization:** for every frontend task outside Onda 1, the reason it is not earlier is a contract it consumes — not a backend task landing
+4. **Write sets:** no two tasks in the same wave write the same file, across both stacks
+5. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
+6. **Execution Contract:** every field on every task; no commit steps
+7. **No orphan task headings.** Every `#### Task N` heading is a task the executor will dispatch. A heading kept as a tombstone for work you cut — `#### Task N: (removed)`, `#### Task N: merged into Task M` — is parsed as a real task: it has no `Onda`, so it inherits the wave of the section it sits under, and it has no `Role`, so it is dispatched as `general-purpose` **and logged as a planning bug**. An implementer is opened to read the word "removed". Delete the heading and let the numbering skip; say so in a note if a reader would otherwise look for the missing number.
+8. **`Role` holds a slug, nothing else.** The executor copies the field verbatim into the agent type. A justification, a parenthetical, or an italicised "n/a" becomes a nonexistent agent type. When a task genuinely has no owner — only the `nestjs-test` final wave — **omit the field entirely** and put the reason in the body.
+9. **TDD shape:** Onda 1 contains no tests on either side. Every backend task carrying behavior owns its test and its implementation, and declares a `RED` failure class. Every frontend task declares `RED: n/a — frontend, coberto por review`. No `n/a` on a backend use-case, repository, or controller
+10. **Roles:** every slug exists in the owning platform planner's Role Mapping
+11. **Platform rules:** backend tasks respect `nestjs-plan` boundaries; frontend tasks respect `nuxt-plan` reuse and design resolution
+12. **Final wave:** `nestjs-test` scoped to this plan's files with explicit suite paths — never an unfiltered `pnpm test`
+13. **Balance is not a goal:** waves with work on one side only are fine when the dependency graph says so
 
 Fix issues inline before handing off.
 

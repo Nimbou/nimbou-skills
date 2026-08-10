@@ -187,6 +187,9 @@ These are plan failures:
 - `Add validation`, `handle edge cases`, `add proper error handling`
 - `Write tests for the above` without actual test code
 - `Similar to Task N`
+- a `#### Task N` heading left as a tombstone for work you cut — `(removed)`, `(merged into Task M)`. Every task heading is dispatched: without `Onda` it inherits the section's wave, without `Role` it falls back to `general-purpose` and is logged as a planning bug, and an implementer is opened to read the word "removed". Delete the heading and let the numbering skip
+- a `Role` field holding anything but a slug. The executor copies it verbatim into the agent type, so a justification or an italicised `n/a` becomes a nonexistent agent. The only task that may lack an owner is the `nestjs-test` final wave, and it **omits the field** rather than explaining itself in it
+- a `Consome` written as *"the same declarations as Task N"* instead of the pasted declarations. Even when the real dependency is an earlier wave, the pointer reads as a lateral one and leaves the implementer without the contract
 - references to types, functions, or methods not defined in any task
 - `Create DTO/use-case/repository as needed` without exact names and locations
 - `Use Prisma here` without defining which adapter or repository owns that access

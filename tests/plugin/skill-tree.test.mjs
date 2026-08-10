@@ -512,6 +512,85 @@ test('planners require a task to declare every file it tells the implementer to 
   }
 })
 
+test('planners forbid a task from consuming a sibling in its own wave', () => {
+  // The 2026-08-10 fullstack plan put a shared composition service inside the task
+  // that also implemented the first of its two consumers, and both consumers sat in
+  // the same wave. Nothing in the self-reviews caught it: the only serialization check
+  // compared frontend tasks against backend ones. Worse, `executing-plans` coalesces
+  // same-Role tasks into one implementer that runs them in order, so the pair would
+  // have worked whenever the cap put them in the same lane — a defect that passes and
+  // returns after an unrelated reordering.
+  const planners = [
+    'plugins/nimbou-skills/skills/nestjs-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/nuxt-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/fullstack-plan/SKILL.md',
+  ]
+
+  for (const file of planners) {
+    const body = read(file)
+    assert.match(
+      body,
+      /same wave|its \*\*own\*\* wave|own wave/i,
+      `${file} must tell the planner to check for a producer inside the same wave`,
+    )
+    assert.match(
+      body,
+      /same declarations as Task/i,
+      `${file} must reject a Consome written as a pointer to a sibling task`,
+    )
+  }
+})
+
+test('planners forbid tombstone task headings and prose in the Role field', () => {
+  // Both are parse hazards, not style: every `#### Task N` heading is dispatched, and
+  // `Role` is copied verbatim into the agent type. A heading kept to explain removed
+  // work opens an implementer to read the word "removed"; a justification written into
+  // `Role` becomes a nonexistent agent type.
+  const planners = [
+    'plugins/nimbou-skills/skills/nestjs-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/nuxt-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/fullstack-plan/SKILL.md',
+  ]
+
+  for (const file of planners) {
+    const body = read(file)
+    assert.match(body, /tombstone/i, `${file} must forbid a task heading kept for removed work`)
+    assert.match(
+      body,
+      /verbatim into the agent type/i,
+      `${file} must say why the Role field cannot hold prose`,
+    )
+  }
+})
+
+test('fullstack-plan warns that dispatch count is not task count', () => {
+  // `executing-plans` coalesces by Role (one implementer per Role per wave, cap three).
+  // A planner that sizes a wave by counting tasks advises on a run that does not exist.
+  const body = read('plugins/nimbou-skills/skills/fullstack-plan/SKILL.md')
+  assert.match(body, /Dispatch is not task count/i)
+  assert.match(
+    body,
+    /one implementer per `Role` per wave/i,
+    'fullstack-plan must state the coalescing rule it is warning about',
+  )
+  assert.match(
+    body,
+    /hide an intra-wave dependency|can be masked|masked/i,
+    'fullstack-plan must link coalescing to the intra-wave dependency hazard',
+  )
+})
+
+test('fullstack-plan resolves the final-wave Role exception instead of leaving it to guesswork', () => {
+  // fullstack-plan said every task carries every field; nestjs-plan said the nestjs-test
+  // wave declares no Role. The contradiction was resolved by filling Role with prose.
+  const body = read('plugins/nimbou-skills/skills/fullstack-plan/SKILL.md')
+  assert.match(
+    body,
+    /one exception[\s\S]{0,400}nestjs-test final wave|nestjs-test` final wave declares \*\*no `Role`\*\*/i,
+    'fullstack-plan must name the final-wave Role exception explicitly',
+  )
+})
+
 test('apply-review requires an inventory before a "single point" fix', () => {
   const body = read('plugins/nimbou-skills/skills/apply-review/SKILL.md')
   assert.match(body, /Enumerate Before Fixing/i)
