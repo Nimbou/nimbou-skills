@@ -147,6 +147,7 @@ Local templates, used by both paths:
 When execution completes or stops, report:
 
 - which waves were executed and committed, and how many implementer subagents ran in each
+- the run's total agent count, broken down by phase. The workflow returns it as `agentsDispatched`; on the prose path, count as you dispatch. A plan's task count is not its dispatch count, and the phases after the last wave — two reviewers over every commit, one fixer per file group, the smoke and its own fixes — are invisible from the plan. Report the number so the next plan can be shaped against it
 - what each reviewer returned (✅ / ❌ / ⚠️ Deferred), attributed per wave
 - that every task reported a red run, or which ones did not
 - which lenses ran (red runs, spec compliance, boundaries, browser smoke), so the user can judge whether `/code-review` over the branch is worth it before merging

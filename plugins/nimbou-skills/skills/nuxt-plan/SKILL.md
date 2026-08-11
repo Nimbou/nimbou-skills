@@ -105,6 +105,28 @@ redeclare the type it should have imported.
 Do **not** add a commit step to a task. `executing-plans` commits once per wave, after
 every task in it lands and verifies.
 
+### Dispatch is not task count
+
+`executing-plans` does not open one subagent per task. After the write-set check it
+coalesces by `Role`: **one implementer per `Role` per wave, up to three tasks each**,
+greedy in document order, among tasks declaring the *same* `Role`. A wave of nine
+tasks across three roles is three implementers, not nine.
+
+Two consequences for how you write the plan:
+
+- **Never size a wave, or advise on its cost, by counting tasks.** That is advice
+  about a run that will not happen.
+- **Order tasks of the same `Role` contiguously, in dependency order.** Coalescing is
+  greedy over the document, so a composable created by one task and consumed by a
+  sibling in the same wave works when the two land in one lane and breaks when the cap
+  of three pushes them apart. The real fix is the wave boundary (Self-Review item 3),
+  but the ordering is what keeps a correct plan from being fragile to it.
+
+A task is one coherent unit of frontend work — one SFC, one composable, one page's
+wiring — not one edit. Every implementer pays the same setup before its first write:
+`CLAUDE.md`, `DESIGN.md`/`GUIDELINES.md`, the component catalog, a neighboring file
+for style. Below that unit, the setup *is* the cost.
+
 ## Role Mapping
 
 Every row in `## Arquivos` MUST set a `Role` slug so `executing-plans` can route execution to the correct agent-author:

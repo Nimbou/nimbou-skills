@@ -318,6 +318,21 @@ const taskCount = waves.reduce((n, w) => n + (w.tasks?.length ?? 0), 0)
 log(`Anchored at ${repoRoot}${plan.branch ? ` (${plan.branch})` : ''} — every write and every commit happens there.`)
 log(`${waves.length} waves, ${taskCount} tasks. Waves run in order; tasks inside a wave run in parallel.`)
 
+// Task count is not dispatch count and never was — the executor coalesces by Role,
+// then adds phases the plan never mentions. Project the floor before spending it, so
+// a plan that will open thirty agents says so while there is still time to reshape it.
+const projectedImplementers = waves.reduce((n, w) => {
+  const roles = new Set()
+  let unrouted = 0
+  for (const t of w.tasks ?? []) (t.agentType ? roles.add(t.agentType) : unrouted++)
+  return n + Math.max(1, roles.size + unrouted)
+}, 0)
+log(
+  `Projected floor: ~${projectedImplementers} implementer(s) + ${waves.length} commit(s) + 2 reviewers ` +
+    `+ follow-up fixers + smoke. Both reviewers read every commit, so review cost tracks the ` +
+    `total diff, not the wave count — which is why a plan is worth reshaping before launch rather than after.`,
+)
+
 // ── Execute ──────────────────────────────────────────────────────────────────
 
 // Spec review payloads, one per committed wave. Collected during the run and
@@ -329,6 +344,14 @@ const reviewInputs = []
 const executed = []
 const concerns = []
 let stoppedAt = null
+
+// What this run actually spends, by phase. A wave-structured plan hides its cost
+// behind a task count that is not the dispatch count, and the phases after the
+// waves — two reviewers over every commit, one fixer per file group, the smoke and
+// its fixes — are invisible from the plan entirely. Counting them here is what makes
+// "was the workflow worth it" answerable from the report instead of from a bill.
+const tally = { parse: 1, implement: 0, commit: 0, review: 0, followups: 0, smoke: 0 }
+const tallyTotal = () => Object.values(tally).reduce((a, b) => a + b, 0)
 
 for (let w = 0; w < waves.length; w++) {
   const wave = waves[w]
@@ -356,8 +379,8 @@ for (let w = 0; w < waves.length; w++) {
 
   // Step 2.1b: coalesce by Role. Every implementer pays the same setup before its
   // first write — CLAUDE.md, the nearest GUIDELINES.md, a neighbouring file for
-  // style, the ports it consumes. On tasks the planners size at "2-5 minutes" that
-  // setup IS the cost, and two authors of the same Role in one wave pay it twice
+  // style, the ports it consumes. On a task sized at one behavior that setup is a
+  // large share of the cost, and two authors of the same Role in one wave pay it twice
   // for the same reads. Merging them pays it once. What is lost is overlap between
   // sibling tasks, which was cheap in wall-clock (the wave already waits on the
   // slowest Role) and expensive in tokens.
@@ -389,6 +412,7 @@ for (let w = 0; w < waves.length; w++) {
   // auditors, not through implementers. Only other waves owe one.
   const unrouted = wave.isNestjsTestWave ? [] : tasks.filter(t => !t.agentType)
 
+  tally.implement += dispatchGroups.length
   phase('Implement')
   log(
     `${label}: ${dispatchGroups.length} implementer(s) for ${tasks.length} task(s)` +
@@ -432,6 +456,7 @@ for (let w = 0; w < waves.length; w++) {
 
   // Step 2.4: commit once per wave.
   phase('Commit')
+  tally.commit += 1
   const files = [...new Set(reports.flatMap(r => r.filesTouched ?? []))]
 
   // The implementers already ran their verifications. Re-running every one of them
@@ -593,6 +618,7 @@ if (!stoppedAt && plan.planOrigin === 'nestjs-plan' && !waves.some(w => w.isNest
   const touched = [...new Set(executed.flatMap(e => e.files ?? []))]
 
   phase('Implement')
+  tally.implement += 1
   const testReport = await agent(
     `Run the plan's final verification wave using \`nimbou-skills:nestjs-test\`.
 
@@ -750,6 +776,7 @@ if (!reviewInputs.length) {
   // whether the diff respects the project's boundaries and conventions — the axis
   // a green test suite says nothing about, and the reason the run can stop paying
   // for a full `/code-review` on every plan.
+  tally.review += 2
   const [review, gaps] = await parallel([
     () =>
       agent(
@@ -811,9 +838,12 @@ red-run claim) or \`spec-deferred\` (out-of-scope nits, nearby pre-existing issu
 Every finding carries a concrete \`file:line\`, names the wave it belongs to, and
 suggests a next step. Vague findings are not actionable — concretize or drop them.
 Return an empty findings array when the diffs match the spec. Change nothing.`,
-        // Pinned to opus: dropping the session model here would quietly weaken the
-        // strongest check the run still performs.
-        { label: 'spec review', phase: 'Review', agentType: 'general-purpose', model: 'opus', schema: REVIEW_SCHEMA },
+        // Pinned to sonnet rather than left to inherit. This pass reads diffs against a
+        // spec it is handed as line ranges — recognition, not design — and it was the
+        // single most expensive agent in the run while it sat on opus. Inheriting is not
+        // the cheaper alternative: on an opus session it is the same bill, silently.
+        // Raise it back only if spec drift starts surviving this lens.
+        { label: 'spec review', phase: 'Review', agentType: 'general-purpose', model: 'sonnet', schema: REVIEW_SCHEMA },
       ),
     () =>
       agent(
@@ -865,6 +895,7 @@ if (stoppedAt) {
   return {
     stopped: stoppedAt,
     wavesCommitted: executed,
+    agentsDispatched: { ...tally, total: tallyTotal() },
     findings,
     concerns,
     // Cached agent results describe edits on disk. After a rescue — files moved
@@ -888,6 +919,7 @@ if (!items.length) {
   const browserSmoke = await runBrowserSmoke(executed.flatMap(e => e.files ?? []))
   return {
     wavesCommitted: executed,
+    agentsDispatched: { ...tally, total: tallyTotal() },
     followups: null,
     browserSmoke,
     message: 'Plano executado sem follow-ups pendentes.',
@@ -897,6 +929,7 @@ if (!items.length) {
 phase('Follow-ups')
 log(`${items.length} follow-up item(s) collected.`)
 
+tally.followups += 1
 const artifact = await agent(
   `Write the follow-ups artifact for the plan at \`${planRef}\`.
 
@@ -956,10 +989,18 @@ Commit the artifact on its own as a docs commit. Stage it explicitly.`,
   },
 )
 
-if (!artifact) return { wavesCommitted: executed, findings, concerns, error: 'Follow-ups artifact could not be written.' }
+if (!artifact)
+  return {
+    wavesCommitted: executed,
+    findings,
+    concerns,
+    agentsDispatched: { ...tally, total: tallyTotal() },
+    error: 'Follow-ups artifact could not be written.',
+  }
 
 const fixGroups = groupByFile(artifact.automatable ?? [])
 
+tally.followups += fixGroups.length
 const fixes = await parallel(
   fixGroups.map(group => () =>
     agent(
@@ -1013,6 +1054,7 @@ if (!fixedFiles.length) {
   const browserSmoke = await runBrowserSmoke(executed.flatMap(e => e.files ?? []))
   return {
     wavesCommitted: executed,
+    agentsDispatched: { ...tally, total: tallyTotal() },
     followups: artifact.path,
     followupCommit: null,
     browserSmoke,
@@ -1024,6 +1066,7 @@ if (!fixedFiles.length) {
   }
 }
 
+tally.commit += 1
 const followupCommit = await agent(
   `Commit the follow-up fixes just applied for the plan at \`${planRef}\`.
 
@@ -1051,8 +1094,16 @@ Do not push.`,
 
 const browserSmoke = await runBrowserSmoke([...executed.flatMap(e => e.files ?? []), ...fixedFiles])
 
+log(
+  `Run complete — ${tallyTotal()} agents dispatched: ${Object.entries(tally)
+    .filter(([, n]) => n)
+    .map(([k, n]) => `${n} ${k}`)
+    .join(', ')}.`,
+)
+
 return {
   wavesCommitted: executed,
+  agentsDispatched: { ...tally, total: tallyTotal() },
   followups: artifact.path,
   followupCommit,
   browserSmoke,
@@ -1103,6 +1154,7 @@ async function runBrowserSmoke(touched) {
   // third round on a run this long buys less than it costs. What survives is a
   // follow-up, recorded as such.
   for (let round = 1; round <= 2; round += 1) {
+    tally.smoke += 1
     const smoke = await agent(smokePrompt(front, recheck), {
       label: round === 1 ? 'browser smoke' : 'browser smoke (recheck)',
       phase: 'Smoke',
@@ -1126,6 +1178,7 @@ async function runBrowserSmoke(touched) {
 
     log(`${pending.length} flow(s) failed on screen — fixing and re-checking once.`)
 
+    tally.smoke += groupByFile(pending).length
     const fixed = await parallel(
       groupByFile(pending).map(group => () =>
         agent(
@@ -1171,6 +1224,7 @@ Return the files you touched, what you fixed, and what you skipped and why.`,
       break
     }
 
+    tally.commit += 1
     await agent(
       `Commit the browser-smoke fixes.
 
@@ -1197,6 +1251,7 @@ status COMMITTED with the SHA and message.`,
   // is worse than useless if the run reports neither.
   const leftovers = (outcome?.concerns ?? []).length || pending.length
   if (leftovers) {
+    tally.commit += 1
     await agent(
       `Record what the browser smoke left behind, in the plan's follow-ups artifact.
 

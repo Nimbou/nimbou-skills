@@ -580,6 +580,50 @@ test('fullstack-plan warns that dispatch count is not task count', () => {
   )
 })
 
+test('every planner states the coalescing rule and the ordering it implies', () => {
+  // fullstack-plan carried this alone, so the two planners that actually emit backend
+  // and frontend waves were free to size a wave by counting tasks — and to interleave
+  // same-Role tasks, which makes greedy coalescing split a producer from its consumer.
+  for (const plan of ['nestjs-plan', 'nuxt-plan', 'fullstack-plan']) {
+    const body = read(`plugins/nimbou-skills/skills/${plan}/SKILL.md`)
+    assert.match(body, /Dispatch is not task count/i, `${plan} must warn that dispatch is not task count`)
+    assert.match(body, /one implementer per `Role` per wave/i, `${plan} must state the coalescing rule`)
+  }
+
+  for (const plan of ['nestjs-plan', 'nuxt-plan']) {
+    const body = read(`plugins/nimbou-skills/skills/${plan}/SKILL.md`)
+    assert.match(
+      body,
+      /contiguously, in dependency order/i,
+      `${plan} must require same-Role tasks to be ordered contiguously — coalescing is greedy over the document`,
+    )
+  }
+})
+
+test('nestjs-plan sizes a task by behavior, not by a wall-clock estimate', () => {
+  // "typically 2-5 minutes" pushed the planner to slice one behavior into four tasks,
+  // which splits RED from GREEN across two implementers and pays setup twice.
+  const body = read('plugins/nimbou-skills/skills/nestjs-plan/SKILL.md')
+  assert.doesNotMatch(body, /2-5 minutes/i, 'task size must not be expressed as a duration')
+  assert.match(body, /one behavior with one RED/i, 'nestjs-plan must define the task unit as one behavior + one RED')
+})
+
+test('run-waves accounts for what it spends and projects it before spending', () => {
+  // A wave-structured plan hides its cost: task count is not dispatch count, and the
+  // phases after the last wave are invisible from the plan entirely.
+  const body = read('plugins/nimbou-skills/workflows/run-waves.js')
+  assert.match(body, /const tally = \{/, 'run-waves must keep a per-phase agent tally')
+  assert.match(body, /agentsDispatched/, 'run-waves must return the tally to the caller')
+  assert.match(body, /Projected floor/, 'run-waves must project the dispatch floor before the first wave')
+
+  const skill = read('plugins/nimbou-skills/skills/executing-plans/SKILL.md')
+  assert.match(
+    skill,
+    /agentsDispatched/,
+    'executing-plans Output Discipline must require reporting the run\'s agent count',
+  )
+})
+
 test('fullstack-plan resolves the final-wave Role exception instead of leaving it to guesswork', () => {
   // fullstack-plan said every task carries every field; nestjs-plan said the nestjs-test
   // wave declares no Role. The contradiction was resolved by filling Role with prose.
