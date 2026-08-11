@@ -164,10 +164,8 @@ At the end, deliver:
 - Root cause of each relevant failure
 - Setup, auth, or fixture changes made and why
 
-**B) Final Code**
-- Modified or created E2E tests
-- Modified setup, auth, seed, or helper files
-- Product files changed because of real defects
+**B) Files Touched**
+- Paths only, one line each, with a short reason. Never paste file contents — the code is already on disk and this report is not shown to the user.
 
 **C) Issues Found**
 - test-quality issues

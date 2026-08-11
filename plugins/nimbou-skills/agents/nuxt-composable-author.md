@@ -1,6 +1,6 @@
 ---
 name: nuxt-composable-author
-description: "Use this agent when a task creates or evolves a Vue/Nuxt composable or a util consumed by composables. Specialized in reactive contracts, state ownership, and keeping fetch/effect logic outside components.\n\n<example>\nContext: A page needs reactive data fetching that several components share.\nuser: \"Wave 1 task: build `useProposalDetails(id)` with loading, error, and refresh.\"\nassistant: \"I'll dispatch the nuxt-composable-author for the composable task.\"\n<commentary>\nReactive contract + state ownership belong in a composable; this agent owns it.\n</commentary>\n</example>\n\n<example>\nContext: A util pure function that a composable depends on.\nuser: \"Add `formatBillingCycle` util used by `useSubscriptionSummary`.\"\nassistant: \"I'll dispatch the nuxt-composable-author for the util task — it's adjacent to its consumer composable.\"\n<commentary>\nUtils consumed by composables are within scope; markup work is not.\n</commentary>\n</example>"
+description: "Create or evolve a Vue/Nuxt composable (or a util it consumes): reactive contract, state ownership, fetch/effect logic kept out of components."
 model: sonnet
 color: magenta
 memory: project

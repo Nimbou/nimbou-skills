@@ -41,13 +41,45 @@ This file map drives the task decomposition.
 
 ## Task Granularity
 
-Each step should be a small action, typically 2-5 minutes:
+**A task is one behavior with one RED — not one edit.** The red-green-refactor steps
+below are the *checklist inside* a task, not a way to slice it into four:
 
 - write the failing HTTP or use-case test
 - run it to prove it fails
 - implement the minimal controller, use-case, or repository code
 - rerun the test
-- commit
+
+Do not split those steps across tasks. A task whose RED belongs to a different task
+hands red to one agent and green to another — that is test-first, not TDD, and it
+costs two dispatches to do one thing badly.
+
+Nor is the commit a task: `executing-plans` commits once per wave, after every task
+in it lands and verifies.
+
+Size against the dispatch, not the clock. Every implementer pays the same setup
+before its first write — `CLAUDE.md`, the nearest `GUIDELINES.md`, a neighboring file
+for style, the ports it consumes. Below one behavior, that setup *is* the cost, and a
+task too small to justify it should have been folded into its sibling. Above it, an
+implementer holding two unrelated behaviors reports them as one and blurs which
+half broke.
+
+### Dispatch is not task count
+
+`executing-plans` does not open one subagent per task. After the write-set check it
+coalesces by `Role`: **one implementer per `Role` per wave, up to three tasks each**,
+greedy in document order, among tasks declaring the *same* `Role`. A wave of nine
+tasks across three roles is three implementers, not nine.
+
+Two consequences for how you write the plan:
+
+- **Never size a wave, or advise on its cost, by counting tasks.** That is advice
+  about a run that will not happen.
+- **Order tasks of the same `Role` contiguously, in dependency order.** Coalescing is
+  greedy over the document, so a task that consumes a same-wave sibling works when the
+  two land in one lane and breaks when the cap of three pushes them apart — a defect
+  that passes, then reappears after an unrelated reordering. The real fix is the wave
+  boundary (Self-Review), but the ordering is what keeps a correct plan from being
+  fragile to it.
 
 ## Plan Document Header
 

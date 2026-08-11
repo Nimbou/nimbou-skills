@@ -861,8 +861,10 @@ test('run-waves tiers its inline agents by category instead of inheriting the se
   for (const commit of byLabel('commit ')) assert.equal(commit.opts.model, 'haiku')
   assert.equal(byLabel('write followups')[0].opts.model, 'haiku')
 
-  // Judgement work stays pinned up.
-  for (const review of byLabel('spec review')) assert.equal(review.opts.model, 'opus')
+  // Review work stays pinned, but not inherited: this pass matches diffs against a spec
+  // it is handed as line ranges, and on an opus session inheriting costs the same as
+  // pinning opus, silently. Never `undefined` here — that is the expensive default.
+  for (const review of byLabel('spec review')) assert.equal(review.opts.model, 'sonnet')
 
   // The boundary lens carries no inline model: `guidelines-gap-analyzer` declares
   // its own tier, and overriding it here would silently outrank the agent file.
