@@ -137,7 +137,9 @@ Task tool ([ROLE]):
     one is not.
 
     **Verification:** the command you ran and its actual output. Paste the real
-    output — a claim that it passed is not evidence.
+    output — a claim that it passed is not evidence. Paste the summary lines and
+    any failures, not the full transcript; if the runner is chatty, redirect to a
+    file and quote the tail.
 
     **Concerns:** anything worth recording that you correctly did not act on —
     pre-existing issues, a file growing too large, an abstraction that smells

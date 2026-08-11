@@ -1,6 +1,6 @@
 ---
 name: 'prisma-repository-test-auditor'
-description: "Use this agent when you need to audit, fix, stabilize, or expand Prisma repository and persistence integration tests. This agent is specialized in Prisma-backed repositories, real relational test databases, transaction behavior, data integrity, and deterministic persistence coverage.\n\n<example>\nContext: A developer changed a repository query and wants confidence that filters, ordering, and relations still behave correctly against the real database.\nuser: \"I changed a Prisma repository and need to review the integration tests to ensure the filters still behave correctly.\"\nassistant: \"I’ll use the prisma-repository-test-auditor to audit and expand the repository integration tests.\"\n<commentary>\nA Prisma repository changed and needs real database integration coverage. Launch the prisma-repository-test-auditor for that repository or module.\n</commentary>\n</example>\n\n<example>\nContext: Tests started failing after schema or migration changes that affect persistence behavior.\nuser: \"After the last migration, the persistence tests for the billing module became inconsistent. I want to validate this against the real test database.\"\nassistant: \"I’ll use the prisma-repository-test-auditor to diagnose and stabilize the persistence tests with Prisma.\"\n<commentary>\nPersistence regressions after Prisma changes require focused repository-level diagnosis against the real test database. Launch the prisma-repository-test-auditor.\n</commentary>\n</example>"
+description: "Audit, fix, stabilize, or expand Prisma repository and persistence integration tests for one module: real test DB, transactions, data integrity, deterministic isolation."
 model: sonnet
 color: cyan
 memory: project
@@ -165,10 +165,8 @@ At the end, deliver:
 - Root cause of each relevant failure
 - Repository or fixture changes made and why
 
-**B) Final Code**
-- Modified or created repository integration tests
-- Modified fixture or cleanup helpers
-- Repository files changed because of real defects
+**B) Files Touched**
+- Paths only, one line each, with a short reason. Never paste file contents — the code is already on disk and this report is not shown to the user.
 
 **C) Issues Found**
 - Query bugs

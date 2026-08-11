@@ -46,6 +46,11 @@ digraph when_to_use {
 - Need to understand full system state
 - Agents would interfere with each other
 - You already have a full implementation plan that should be executed end-to-end
+- The answer is one file, symbol, or value you already know how to locate — `Read`/`Grep` costs a call, an agent costs a session
+- The whole search fits in 1–3 `Grep`/`Glob` calls
+- You already dispatched the same search — wait for it instead of racing it yourself
+
+**Granularity:** one agent per module or problem domain, not per item. Setup overhead dominates at 1:1. To continue work an agent already did, message that agent instead of spawning a fresh one that reloads everything.
 
 ## Boundary
 

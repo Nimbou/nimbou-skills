@@ -1,6 +1,6 @@
 ---
 name: prisma-schema-author
-description: "Use this agent when a task introduces or evolves Prisma schema and migrations under expand/migrate/contract discipline. Specialized in `schema.prisma`, generated migration files, and the data-model surface that other backend layers depend on.\n\n<example>\nContext: A backend plan task adds a new aggregate that needs a table, relations, and a safe migration.\nuser: \"Add the `proposal` aggregate with status enum and a one-to-many to `project`.\"\nassistant: \"I'll dispatch the prisma-schema-author to evolve the schema and generate the migration.\"\n<commentary>\nThe task lives entirely in the persistence schema layer and must respect expand/migrate/contract. Launch prisma-schema-author.\n</commentary>\n</example>\n\n<example>\nContext: A wave is producing the data contracts ahead of repositories and use-cases.\nuser: \"Wave 1 needs the `subscription` model with the new `billing_cycle` field.\"\nassistant: \"I'll dispatch the prisma-schema-author for the schema + migration task in Wave 1.\"\n<commentary>\nSchema-first wave on a NestJS plan; the agent owns this slice and nothing else.\n</commentary>\n</example>"
+description: "Introduce or evolve `schema.prisma` and its migrations under expand/migrate/contract discipline. Owns the data-model surface only."
 model: sonnet
 color: cyan
 memory: project

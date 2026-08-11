@@ -1,6 +1,6 @@
 ---
 name: 'nestjs-http-test-auditor'
-description: "Use this agent when you need to audit, fix, stabilize, or expand NestJS HTTP/controller tests for a specific module. This agent is specialized in route-level testing with NestJS, Supertest, guards, validation pipes, interceptors, exception filters, auth context, and response contracts.\n\n<example>\nContext: A developer changed a controller and wants reliable request/response coverage without drifting into repository internals.\nuser: \"I changed the auth controller and need to review the HTTP tests for this module.\"\nassistant: \"I’ll use the nestjs-http-test-auditor to audit and expand the module’s HTTP coverage.\"\n<commentary>\nA NestJS controller changed and needs route-level integration coverage. Launch the nestjs-http-test-auditor for the affected module.\n</commentary>\n</example>\n\n<example>\nContext: A developer needs stable tests around validation, auth, and error mapping for a set of endpoints.\nuser: \"I want to stabilize the user endpoint tests, especially validation, authorization, and error responses.\"\nassistant: \"I’ll use the nestjs-http-test-auditor to review the controller and HTTP test flow for that module.\"\n<commentary>\nRoute-level validation, auth, and error behavior need focused NestJS HTTP coverage. Launch the nestjs-http-test-auditor.\n</commentary>\n</example>"
+description: "Audit, fix, stabilize, or expand NestJS HTTP/controller tests for one module: routes, Supertest, guards, validation pipes, interceptors, exception filters, response contracts."
 model: sonnet
 color: teal
 memory: project
@@ -167,10 +167,8 @@ At the end, deliver:
 - Root cause of each relevant failure
 - Bootstrap or auth helper changes made and why
 
-**B) Final Code**
-- Modified or created controller/HTTP tests
-- Modified bootstrap or auth/request helpers
-- Controller or module files changed because of real defects
+**B) Files Touched**
+- Paths only, one line each, with a short reason. Never paste file contents — the code is already on disk and this report is not shown to the user.
 
 **C) Issues Found**
 - Controller bugs
