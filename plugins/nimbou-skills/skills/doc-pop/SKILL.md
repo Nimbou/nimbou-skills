@@ -155,6 +155,19 @@ whose destination the person does not know **is** an open flow, not a pending fi
 `vaiPara: null` to record that the branch exists and leads nowhere, hand over the
 markdown, and hold the JSON until someone answers it.
 
+**Test 3 — does every branching step say `decisao`?** Walk `etapas[]` once more and check
+`saidas.length >= 2 ⇒ natureza === "decisao"` (see `reference/deliverables.md`). This is
+a mechanical pass, not a judgement call — it is easy to get right reading step by step and
+easy to miss reading the whole flow for sense, because a waiting-and-chasing-up step
+*reads* correctly as `espera` even though it fails this check.
+
+If the target repository ships its own validator for this JSON (check its `CLAUDE.md` or
+README — a project may wire the same schema the import endpoint enforces into a CLI), run
+it before handing the JSON over. A green read-through is not the same guarantee: the
+validator catches structural rules — like Test 3 above — that no amount of careful
+reading replaces, and a single violation rejects the whole file at import time regardless
+of how faithfully the rest was mapped.
+
 ## Marking pending items
 
 Whatever the person could not answer becomes `[PENDENTE: ...]`, never filled with a

@@ -104,6 +104,17 @@ notices.
 - `natureza`: `manual` | `automatica` | `espera` | `decisao`. It describes **what the step
   does**, not who runs it — a decision taken by the system is `decisao` with
   `executadoPor` pointing at the system, never `automatica`.
+- **Any step with 2 or more `saidas` must be `natureza: "decisao"`.** The importer
+  enforces this structurally (only a `decisao` step may branch) and rejects the whole
+  file otherwise. This bites a specific, common shape: a waiting step that also chases
+  up and loops back on itself — "aguarda o documento, cobra, se chegou segue, se não
+  continua cobrando" — describes real waiting behaviour, so the instinct is `espera`.
+  Classify it `decisao` anyway; the wait/chase-up behaviour still belongs in `descricao`
+  and `prazo`, it just is not what `natureza` encodes. A `saidas[].vaiPara` pointing back
+  at the step's own `id` (self-loop) is normal for this shape and not itself a problem.
+  Before generating, walk every `etapas[]` entry once and check `saidas.length >= 2 ⇒
+  natureza === "decisao"` — a single step failing this rejects the entire import, so it
+  is worth a mechanical pass, not just a read-through.
 - `papeis[].tipo`: `pessoa` | `setor` | `sistema` | `externo` | `orgao` (conselho,
   comissão, colegiado) | `outro`. If nothing fits, use `outro` and explain in
   `tipoObservacao` — **never force the least-wrong label without recording it**, because
