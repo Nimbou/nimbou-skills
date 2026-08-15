@@ -62,6 +62,7 @@ This fork consolidates:
 - `nimbou-cms-seed` / `nimbou-cms-wire` load module content and wire it to the SPA
 - `nimbou-seo-migrate` builds the 301 redirect map for a domain cutover
 - `deploy-nimbou-site` deploys a nimbou site to cPanel shared hosting (FTP-only, MariaDB), first go-live or redeploy
+- `golive-nimbou-site` activates the SEO cutover on the real domain (canonical, real-domain 301 re-check, sitemap→Search Console)
 
 ## Repository Layout
 
