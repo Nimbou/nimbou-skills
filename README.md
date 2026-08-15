@@ -54,6 +54,15 @@ This fork consolidates:
 - `nuxt-test`
 - `nuxt-debug`
 
+### Nimbou-site skills (Laravel shell + Nuxt SPA + nimbou-cms)
+
+- `scaffold-nimbou-site` bootstraps a new site from the starter, green locally
+- `theming-nimbou-site` applies a client's visual identity to a scaffolded site
+- `laravel-think` / `laravel-plan` / `laravel-execute` design, plan and build a nimbou-cms content module
+- `nimbou-cms-seed` / `nimbou-cms-wire` load module content and wire it to the SPA
+- `nimbou-seo-migrate` builds the 301 redirect map for a domain cutover
+- `deploy-nimbou-site` deploys a nimbou site to cPanel shared hosting (FTP-only, MariaDB), first go-live or redeploy
+
 ## Repository Layout
 
 - `plugins/nimbou-skills/skills/` — shared skill library
