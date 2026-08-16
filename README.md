@@ -58,6 +58,7 @@ This fork consolidates:
 
 - `scaffold-nimbou-site` bootstraps a new site from the starter, green locally
 - `theming-nimbou-site` applies a client's visual identity to a scaffolded site
+- `port-redesign-nimbou-site` rebuilds pages faithful to a page-builder export (Duda/.dc.html, Framer, Webflow), CMS-driven, verified by DOM measurement
 - `laravel-think` / `laravel-plan` / `laravel-execute` design, plan and build a nimbou-cms content module
 - `nimbou-cms-seed` / `nimbou-cms-wire` load module content and wire it to the SPA
 - `nimbou-seo-migrate` builds the 301 redirect map for a domain cutover
