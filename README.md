@@ -17,7 +17,7 @@ This fork consolidates:
 
 ### Core workflow skills
 
-- `change-spec`
+- `change-plan`
 - `feat-spec`
 - `doc-domain`
 - `doc-gherkin`
@@ -155,8 +155,8 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 
 - `/design-md` and `/merge-pr` stay as Claude commands, with matching Codex mirrors in `.codex/skills/`.
 - `/design-md` validates generated `DESIGN.md` files with the official Google CLI via `design.md lint` (or `npx @google/design.md lint` as fallback).
-- `change-spec` handles mixed changes over existing flows and returns one combined frontend/backend plan with explicit impact mapping, without generating spec files.
-- `feat-spec` is the mixed-request entry point for new feature slices or new backend contracts. It closes the shared feature contract and ownership boundary first, then hands backend contract closure to `nestjs-think`. Frontend-only requests stay in `nuxt-think`; backend-only requests stay in `nestjs-think`.
+- `change-plan` is the single entry point for a small fullstack change (existing flow or a small new feature). It emits a `run-waves`-ready plan directly, with no domain-artifact gate, and escalates to `feat-spec` or `fullstack-plan` when a size threshold trips. It replaces the former `change-spec`.
+- `feat-spec` is the mixed-request entry point for a large new feature or a new backend contract. It closes the shared feature contract and ownership boundary first, then hands backend contract closure to `nestjs-think`. Frontend-only requests stay in `nuxt-think`; backend-only requests stay in `nestjs-think`.
 - `nestjs-think` keeps backend contract and persistence viability together, including Prisma/schema impact when relevant, instead of splitting data modeling into a separate default step.
 - `doc-openapi` publishes the canonical HTTP transport artifact beside `domain.md` and the approved `.feature` files after `nestjs-think` and before `nuxt-think`.
 - `doc-approval` turns a domain spec (`domain.md` + `*.feature`) into a non-technical approval PDF for a business sponsor, translating the Gherkin scenarios into plain business language and keeping the source HTML beside the spec for re-generation.

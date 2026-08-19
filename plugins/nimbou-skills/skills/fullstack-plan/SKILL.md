@@ -51,7 +51,7 @@ When you catch yourself putting a frontend task in a later wave *because a backe
 - **the contract was not actually closed** — the frontend needs something `openapi.yaml` does not specify. Go back and close it.
 - **the wave boundary is wrong** — the dependency is imagined. Move the task earlier.
 
-The same rule runs the other way: a backend task never waits on a frontend task. If it appears to, the ownership boundary from `feat-spec` or `change-spec` was not closed.
+The same rule runs the other way: a backend task never waits on a frontend task. If it appears to, the ownership boundary from `feat-spec` or `change-plan` was not closed.
 
 Real cross-stack dependencies exist in exactly one place: **end-to-end verification**, which needs both sides landed. That belongs in the final wave.
 
@@ -183,7 +183,7 @@ Fix issues inline before handing off.
 
 Upstream — this skill runs after all of them:
 
-- `nimbou-skills:feat-spec` or `nimbou-skills:change-spec` — closes the shared boundary and routes here
+- `nimbou-skills:feat-spec` or `nimbou-skills:change-plan` — closes the shared boundary and routes here (`change-plan` routes here only when the change escalates past its small-work threshold)
 - `nimbou-skills:nestjs-think` — backend contract and persistence viability
 - `nimbou-skills:doc-openapi` — publishes the `openapi.yaml` this plan depends on
 - `nimbou-skills:nuxt-think` — UI structure, reuse, state ownership
