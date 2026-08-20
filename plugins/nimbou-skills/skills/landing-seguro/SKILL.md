@@ -1,6 +1,6 @@
 ---
 name: landing-seguro
-description: Use quando o operador de uma corretora pede o conteúdo de uma landing page para um TIPO DE SEGURO (ex.: "landing de seguro de vida", "página de venda do seguro empresarial", "copy pra página de seguro auto", "gera a landing do seguro residencial"). Gera título, chamada, subtítulo, o que protege e FAQ para revisão humana, com coberturas pesquisadas e marcadas para confirmação, entregues em PDF. NÃO monta a página no CMS/Nuxt nem publica.
+description: 'Use quando o operador de uma corretora pede o conteúdo de uma landing page para um TIPO DE SEGURO (ex.: "landing de seguro de vida", "página de venda do seguro empresarial", "copy pra página de seguro auto", "gera a landing do seguro residencial"). Gera título, chamada, subtítulo, o que protege e FAQ para revisão humana, com coberturas pesquisadas e marcadas para confirmação, entregues em PDF. NÃO monta a página no CMS/Nuxt nem publica.'
 ---
 
 # Landing de Seguro
