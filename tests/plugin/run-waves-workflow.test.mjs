@@ -688,7 +688,7 @@ test('prose-execution carries the full executable contract for Codex', () => {
   assert.match(prose, /## Role Routing/)
   assert.match(prose, /Never infer a role from the file path/i)
   assert.match(prose, /What happens to the Role/)
-  assert.match(prose, /declared explicitly, never left to the default/)
+  assert.match(prose, /general `spawn_agent` message/)
   assert.match(prose, /This file is normative/i)
   assert.match(prose, /Step 1 lives in `SKILL\.md`/)
 
@@ -696,6 +696,41 @@ test('prose-execution carries the full executable contract for Codex', () => {
   assert.match(implementer, /Bundle only what shares an owner, up to three/)
   assert.match(implementer, /Files You Own/)
   assert.match(implementer, /Never let an implementer commit/)
+})
+
+test('the Codex execution path uses bounded Codex delegation and compact evidence', () => {
+  const prose = readFileSync(resolve(root, `${skillDir}/prose-execution.md`), 'utf8')
+  const implementer = readFileSync(resolve(root, `${skillDir}/implementer-prompt.md`), 'utf8')
+  const reviewer = readFileSync(resolve(root, `${skillDir}/spec-reviewer-prompt.md`), 'utf8')
+  const parallel = readFileSync(
+    resolve(root, 'plugins/nimbou-skills/skills/dispatching-parallel-agents/SKILL.md'),
+    'utf8',
+  )
+  const requestReview = readFileSync(
+    resolve(root, 'plugins/nimbou-skills/skills/request-review/SKILL.md'),
+    'utf8',
+  )
+  const nuxtPlan = readFileSync(resolve(root, 'plugins/nimbou-skills/skills/nuxt-plan/SKILL.md'), 'utf8')
+
+  for (const [name, content] of [
+    ['prose executor', prose],
+    ['implementer prompt', implementer],
+    ['reviewer prompt', reviewer],
+    ['parallel dispatcher', parallel],
+    ['review requester', requestReview],
+  ]) {
+    assert.match(content, /spawn_agent/, `${name} should name Codex delegation`)
+    assert.doesNotMatch(content, /subagent_type|TodoWrite|Task tool|Task\(/, `${name} must not require Claude-only tools`)
+  }
+
+  assert.match(prose, /available\s+agent slots minus one/i)
+  assert.match(prose, /batches of at most that size/i)
+  assert.match(implementer, /codex-role-briefs\.md/)
+  assert.match(implementer, /at most 20 lines or 1,500 characters/i)
+  assert.match(reviewer, /plan path, exact task line ranges, and commit SHAs/i)
+  assert.doesNotMatch(reviewer, /\[FULL TEXT of every task/i)
+  assert.match(nuxtPlan, /one spec-compliance pass after all waves/i)
+  assert.match(nuxtPlan, /\*\*RED:\*\*/)
 })
 
 test('both planners declare the same Execution Contract the executor extracts', () => {
@@ -776,7 +811,7 @@ test('the pipeline routes cross-stack work to fullstack-plan', () => {
   const read = (p) => readFileSync(resolve(root, `plugins/nimbou-skills/skills/${p}/SKILL.md`), 'utf8')
 
   assert.match(read('feat-spec'), /planning ends in `fullstack-plan`, not in the platform planners/)
-  assert.match(read('change-spec'), /hand the wave structure to `nimbou-skills:fullstack-plan`/)
+  assert.match(read('change-plan'), /`nimbou-skills:executing-plans`/)
 
   for (const skill of ['nestjs-think', 'nuxt-think']) {
     assert.match(

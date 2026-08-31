@@ -5,7 +5,7 @@ description: Use when completing tasks, implementing major features, or before m
 
 # Request Review
 
-Dispatch `nimbou-skills:code-reviewer` to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+Dispatch one general `spawn_agent` reviewer using `code-reviewer.md` to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
 
 **Core principle:** Review early, review often.
 
@@ -32,9 +32,9 @@ BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
 HEAD_SHA=$(git rev-parse HEAD)
 ```
 
-**2. Dispatch code-reviewer subagent:**
+**2. Dispatch the reviewer:**
 
-Use Task tool with `nimbou-skills:code-reviewer`, fill template at `code-reviewer.md`
+Use `spawn_agent` with a concise message built from `code-reviewer.md`. Include the base and head SHAs rather than pasting the full diff; the reviewer reads it locally. Do not dispatch this reviewer while a wave's implementers are still active.
 
 **Placeholders:**
 
@@ -94,14 +94,13 @@ You: [Fix progress indicators]
 
 **Subagent-Driven Development:**
 
-- Review after EACH task
-- Catch issues before they compound
-- Fix before moving to next task
+- Review after a completed, bounded batch
+- Catch issues before the next dependent batch
+- Fix before moving to dependent work
 
 **Executing Plans:**
 
-- Review after each batch (3 tasks)
-- Get feedback, apply, continue
+- Defer to `executing-plans`: it performs one spec review and one boundary review after all waves, not a review per batch
 
 **Ad-Hoc Development:**
 

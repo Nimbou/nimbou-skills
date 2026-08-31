@@ -100,7 +100,7 @@ test('shared specification skills are shipped with the tree', () => {
   assert.ok(shippedSkills.includes('doc-domain'))
   assert.ok(shippedSkills.includes('doc-gherkin'))
   assert.ok(shippedSkills.includes('doc-openapi'))
-  assert.ok(shippedSkills.includes('change-spec'))
+  assert.ok(shippedSkills.includes('change-plan'))
   assert.ok(shippedSkills.includes('feat-spec'))
   assert.ok(shippedSkills.includes('request-review'))
   assert.ok(shippedSkills.includes('apply-review'))
@@ -432,7 +432,8 @@ test('planners and executing-plans wire the Role: routing contract', () => {
   assert.match(execute, /Never infer a role from the file path/i)
 
   assert.match(executeImplementer, /\[ROLE\]/)
-  assert.match(executeImplementer, /Task tool \(\[ROLE\]\):/)
+  assert.match(executeImplementer, /spawn_agent:/)
+  assert.match(executeImplementer, /codex-role-briefs\.md/)
   assert.match(executeSpec, /## Role Under Review/)
   assert.match(executeSpec, /\[ROLE\]/)
 })

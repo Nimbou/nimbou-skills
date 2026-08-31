@@ -75,7 +75,7 @@ This file map drives the waves.
   3. **Onda 3 — Integração de página e estados:** page composition, loading/empty/error/success wiring, responsive checks.
   4. **Onda Final — Verificação:** run `/nuxt-catalog` (validate -> generate) and the suggested test scope (e.g., `/test <route>`). Test runs MUST be limited to the routes/components/composables this plan changed — never `/test` over the whole app or unscoped `pnpm test`.
 - Collapse waves when there is no contract dependency between them. Two single-task waves with no dependency should be one wave.
-- After each wave, the executor MUST automatically dispatch a spec-compliance review over the wave's diff. Mark each checkpoint inside the plan; do not leave it implicit. Code review is not a per-wave step — `/code-review` runs over the branch before merging.
+- `executing-plans` performs one spec-compliance pass and one boundary pass after all waves. Do not add per-wave review checkpoints to the plan. Code review is not a per-wave step — `/code-review` runs over the branch before merging.
 - Make the handoff between page, components, and composables explicit.
 - Call out any local anti-pattern avoidance that the execution must preserve, such as not duplicating fetch ownership between page and composable or not introducing store state for simple parent-child communication.
 
@@ -91,6 +91,7 @@ to infer is a field it can infer wrong.
 | `**Onda:**` | The wave number. Must match the `Onda` column of the file's row in `## Arquivos`. |
 | `**Files:**` | Every file this task WRITES, comma-separated — its write set. Two tasks in the same wave must not share a file. |
 | `**Consome:**` | The contracts consumed from earlier waves — composable signatures, prop APIs, shared types — **pasted as actual declarations**, not referenced by name. Write `nada` only for Onda 1. |
+| `**RED:**` | `n/a — frontend, covered by review and browser smoke`. Frontend tasks do not invent a unit-level red run merely to mirror backend TDD. |
 | `**Verificação:**` | The single command that proves the task is done, scoped to the files it changed. Never `/test` over the whole app, never an unscoped `pnpm test`. |
 
 `## Arquivos` stays as the overview table; the per-task fields are what actually drives
@@ -215,7 +216,7 @@ After writing the complete plan, check:
 1. **Design coverage:** every approved UI requirement maps to files or waves
 2. **Topology clarity:** exact file ownership and dependency order are explicit
 3. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave, and no task consumes something a task in its **own** wave produces. Check it by reading, task by task, what each `Consome` names and which task *produces* it; a same-wave producer means merge the two or move the producer earlier. A shared composable or util created by task A and consumed by task B in the same wave is the usual shape, and `executing-plans` can hide it: it coalesces tasks of the same `Role` into one implementer that runs them in order, so the pair works whenever they land in the same lane and breaks when the cap splits them
-4. **Review checkpoints:** every wave ends with an explicit spec-compliance checkpoint
+4. **Review checkpoint:** one spec-compliance pass after all waves; no per-wave reviewer dispatch
 5. **Boundary clarity:** page, component, and composable responsibilities are clear
 6. **Guideline clarity:** local wrapper reuse, state locality, and hardening obligations are represented where relevant
 7. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.

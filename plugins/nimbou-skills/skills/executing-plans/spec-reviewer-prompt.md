@@ -9,9 +9,9 @@ Use this template when dispatching the spec compliance reviewer subagent at the 
 **Non-blocking by design:** This reviewer runs after execution has finished. Its output never gates execution. **All buckets — `✅`, `❌`, and `⚠️ Deferred` — are advisory** and feed `<plan>.followups.md` (Step 3 of `executing-plans`). `❌` here is not a stop signal; it is a finding the controller will surface to the user at completion.
 
 ```
-Task tool (general-purpose):
-  description: "Review spec compliance for the plan (all waves, parallel implementers)"
-  prompt: |
+spawn_agent:
+  task_name: "review-plan-spec"
+  message: |
     You are reviewing whether a plan's implementation matches its specification.
 
     The work was performed by one implementer subagent per task, running in
@@ -43,6 +43,7 @@ Task tool (general-purpose):
     each one against that role's boundary, not a generic one:
 
     [One line per task: `Task N — [ROLE]`, using the slug the plan declared.
+     Include the matching compact ownership brief from `codex-role-briefs.md`.
      Write `Task N — general-purpose (no Role declared)` when the plan had none.]
 
     A `[ROLE]` that wrote outside its layer is a finding even when the behavior is
@@ -52,20 +53,18 @@ Task tool (general-purpose):
 
     ## What Was Requested
 
-    [FULL TEXT of every task's requirements inside this wave — paste verbatim,
-     keeping each task clearly labeled (Task 1, Task 2, ...). Include any
-     wave-level constraints from the plan.]
+    [Plan path, exact task line ranges, and commit SHAs. Read the bounded plan ranges
+     and inspect the committed diffs yourself; do not ask the controller to paste them.]
 
     ## What the Implementers Claim Was Changed
 
-    [Each implementer's report — files touched, behavior changed, verification
-     output, concerns. Keep it grouped by task, one block per implementer.]
+    [Each implementer's compact report — files touched, behavior changed, command and
+     exit-code summaries, concerns. Keep it grouped by task, one block per implementer.]
 
     ## Diff Under Review
 
-    [Output of `git diff` (or per-file diff) scoped to this wave's combined
-     output — every task in the wave at once. Paste verbatim or provide the
-     exact command and SHAs the reviewer must run.]
+    [Use the supplied SHAs to run `git diff` and open only relevant files. Do not ask
+     the controller to paste a diff that you can read locally.]
 
     ## CRITICAL: Do Not Trust the Reports
 

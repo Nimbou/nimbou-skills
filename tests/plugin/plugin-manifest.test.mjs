@@ -24,7 +24,7 @@ test('skills tree ships the unified skill set directly', () => {
   assert.ok(shippedSkills.includes('executing-plans'))
   assert.ok(shippedSkills.includes('fullstack-plan'))
   assert.ok(shippedSkills.includes('e2e-test-quality'))
-  assert.ok(shippedSkills.includes('change-spec'))
+  assert.ok(shippedSkills.includes('change-plan'))
   assert.ok(shippedSkills.includes('feat-spec'))
   assert.ok(shippedSkills.includes('doc-domain'))
   assert.ok(shippedSkills.includes('doc-gherkin'))
@@ -92,7 +92,7 @@ test('specification skills and think orchestrators document the domain-centered 
     'plugins/nimbou-skills/skills/doc-domain/SKILL.md',
     'plugins/nimbou-skills/skills/doc-gherkin/SKILL.md',
     'plugins/nimbou-skills/skills/doc-openapi/SKILL.md',
-    'plugins/nimbou-skills/skills/change-spec/SKILL.md',
+    'plugins/nimbou-skills/skills/change-plan/SKILL.md',
     'plugins/nimbou-skills/skills/nuxt-think/SKILL.md',
     'plugins/nimbou-skills/skills/nestjs-think/SKILL.md',
     'plugins/nimbou-skills/skills/feat-spec/SKILL.md',
@@ -105,7 +105,7 @@ test('specification skills and think orchestrators document the domain-centered 
   const domainSkill = read('plugins/nimbou-skills/skills/doc-domain/SKILL.md')
   const gherkinSkill = read('plugins/nimbou-skills/skills/doc-gherkin/SKILL.md')
   const openapiSkill = read('plugins/nimbou-skills/skills/doc-openapi/SKILL.md')
-  const changeSpec = read('plugins/nimbou-skills/skills/change-spec/SKILL.md')
+  const changePlan = read('plugins/nimbou-skills/skills/change-plan/SKILL.md')
   const nuxtThink = read('plugins/nimbou-skills/skills/nuxt-think/SKILL.md')
   const nestjsThink = read('plugins/nimbou-skills/skills/nestjs-think/SKILL.md')
   const featSpec = read('plugins/nimbou-skills/skills/feat-spec/SKILL.md')
@@ -132,7 +132,7 @@ test('specification skills and think orchestrators document the domain-centered 
   assert.match(nuxtThink, /`docs\/domain\/<domain>\/\*\.feature` approved\./i)
   assert.match(nuxtThink, /`docs\/domain\/<domain>\/openapi\.yaml` approved when the feature changes HTTP\./i)
   assert.match(nuxtThink, /use `feat-spec` when the request changes both frontend and backend/i)
-  assert.match(nuxtThink, /use `change-spec` when the request changes both frontend and backend in an existing flow/i)
+  assert.match(nuxtThink, /use `change-plan` when a small change or bugfix touches both frontend and backend/i)
 
   assert.match(nestjsThink, /docs\/domain\/<domain>\//)
   assert.match(nestjsThink, /use `doc-domain` to create or update `docs\/domain\/<domain>\/domain\.md`/i)
@@ -150,17 +150,13 @@ test('specification skills and think orchestrators document the domain-centered 
   assert.match(nestjsThink, /`doc-openapi` is ready to publish `docs\/domain\/<domain>\/openapi\.yaml` when the feature changes HTTP\./i)
   assert.match(nestjsThink, /persistence viability, Prisma\/schema impact/i)
   assert.match(nestjsThink, /use `feat-spec` when the request changes both frontend and backend/i)
-  assert.match(nestjsThink, /use `change-spec` when the request changes both frontend and backend in an existing flow/i)
+  assert.match(nestjsThink, /use `change-plan` when a small change or bugfix touches both frontend and backend/i)
 
-  assert.match(changeSpec, /^---\nname: change-spec/m)
-  assert.match(changeSpec, /changes both frontend and backend in an existing flow/i)
-  assert.match(changeSpec, /return a single frontend\/backend plan in chat/i)
-  assert.match(changeSpec, /do not create or update `docs\/domain\/<domain>\/domain\.md`/i)
-  assert.match(changeSpec, /consume them as constraints instead of generating files/i)
-  assert.match(changeSpec, /impact checklist/i)
-  assert.match(changeSpec, /contracts, UI states, jobs, permissions, tests, migrations, and compatibility/i)
-  assert.match(changeSpec, /## Ondas de Execução/i)
-  assert.match(changeSpec, /`executing-plans` for implementation/i)
+  assert.match(changePlan, /^---\nname: change-plan/m)
+  assert.match(changePlan, /\*\*small\*\* fullstack change/i)
+  assert.match(changePlan, /replaces `change-spec`/i)
+  assert.match(changePlan, /inline contract block/i)
+  assert.match(changePlan, /`executing-plans`/i)
 
   assert.match(featSpec, /^---\nname: feat-spec/m)
   assert.match(featSpec, /feature changes both frontend and backend/i)
@@ -267,7 +263,7 @@ test('README documents backend-first core and prefixed NestJS and Nuxt skills', 
   assert.match(readme, /merge-pr/)
   assert.match(readme, /\.codex\/skills\//)
   assert.match(readme, /e2e-test-quality/)
-  assert.match(readme, /change-spec/)
+  assert.match(readme, /change-plan/)
   assert.match(readme, /feat-spec/)
   assert.match(readme, /doc-domain/)
   assert.match(readme, /doc-gherkin/)
@@ -277,7 +273,7 @@ test('README documents backend-first core and prefixed NestJS and Nuxt skills', 
   assert.match(readme, /apply-review/)
   assert.match(
     readme,
-    /### Core workflow skills[\s\S]*- `change-spec`[\s\S]*- `feat-spec`[\s\S]*?### NestJS-specific skills/s,
+    /### Core workflow skills[\s\S]*- `change-plan`[\s\S]*- `feat-spec`[\s\S]*?### NestJS-specific skills/s,
   )
   assert.match(readme, /nestjs-think/)
   assert.match(readme, /nestjs-plan/)
@@ -289,7 +285,7 @@ test('README documents backend-first core and prefixed NestJS and Nuxt skills', 
   assert.match(readme, /nuxt-test/)
   assert.match(readme, /nuxt-debug/)
   assert.match(readme, /mixed-request entry point/i)
-  assert.match(readme, /`change-spec` handles mixed changes over existing flows/i)
+  assert.match(readme, /`change-plan` is the single entry point for a small fullstack change/i)
   assert.match(readme, /closes the shared feature contract and ownership boundary first/i)
   assert.match(readme, /hands backend contract closure to `nestjs-think`/i)
   assert.match(readme, /keeps backend contract and persistence viability together/i)

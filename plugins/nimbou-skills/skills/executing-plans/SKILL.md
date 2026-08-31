@@ -71,10 +71,10 @@ here, in conversation, first.**
 2. Review it critically
 3. Raise any blockers or missing assumptions before starting
 4. Confirm wave structure: the plan must contain `## Ondas de Execução` (or the legacy `## Grupos de Execucao`). If it does not, **stop** and ask the plan author to regenerate the plan via `nimbou-skills:nestjs-plan` or `nimbou-skills:nuxt-plan`. Do not fall back to a serial task list.
-5. Detect plan origin: if the header references `nestjs-plan` or the plan path matches a backend slice, the final wave MUST run `nimbou-skills:nestjs-test` scoped strictly to the files the plan touched. Add the dispatch to TodoWrite if the plan author forgot it. Never let the final wave widen into an unfiltered `pnpm test` run.
+5. Detect plan origin: if the header references `nestjs-plan` or the plan path matches a backend slice, the final wave MUST run `nimbou-skills:nestjs-test` scoped strictly to the files the plan touched. Record that addition in the run checklist if the plan author forgot it. Never let the final wave widen into an unfiltered `pnpm test` run.
 6. Detect `## Pos-execucao` (typical for `nuxt-plan` output). Capture those items now to seed the follow-ups artifact in Step 3.
 7. Establish the checkout. Run `git rev-parse --show-toplevel`, `git rev-parse --abbrev-ref HEAD`, and `git worktree list`, and state the path, the branch, and the sibling checkouts in your opening message. **Refuse to implement on a long-lived branch** — `main`, `master`, `dev`, `develop`, `staging`, `production` — without explicit user consent: a run sitting on one is almost always the main checkout instead of the worktree set up for this plan. That absolute path is `WORKTREE_ROOT` — every implementer, commit, and reviewer in the run is anchored to it, because subagents do not reliably inherit a working directory and plans often write their paths as absolute. Both paths do this: the workflow re-derives it in its parse step, the prose path in Step 2.0.
-8. Create TodoWrite (one entry per wave, plus one entry per task inside each wave, plus the post-wave commit, plus a single "collect spec review" entry, plus Step 3) and proceed only when the plan is executable.
+8. Create one progress entry per wave, its tasks, the post-wave commit, review collection, and follow-ups using the harness's native plan tracker when available. If none exists, keep that checklist in the controller's run report. Proceed only when the plan is executable.
 
 ## Boundary
 

@@ -27,6 +27,18 @@ Two checks before dispatching anything:
 - **Refuse a long-lived branch.** `main`, `master`, `dev`, `develop`, `staging`, `production` — a run sitting on one of these is almost always the main checkout rather than the worktree that was set up for this plan. Stop and ask, rather than implementing there. Only an explicit "yes, implement on this branch" from the user overrides it.
 - **Keep the sibling list.** Every other checkout `git worktree list` named is where a stray write can land. You need those paths in 2.3, and hunting them down after the fact is what turns a five-minute recovery into an afternoon.
 
+### Codex delegation and capacity
+
+Use `spawn_agent` for every delegation in this file. A role is prompt context, not
+an agent type: read the matching compact brief in `./codex-role-briefs.md` and include
+it in the worker message.
+
+Before each fan-out, determine the number of agent slots the current Codex environment
+exposes. The controller occupies one slot, so the maximum active workers is **available
+agent slots minus one**, with a minimum of one when the capacity is not exposed. Launch
+groups in **batches of at most that size**; wait for a whole batch before launching the
+next. Never ask a worker to delegate further.
+
 For each wave, in declared order:
 
 ### 2.1 Check the write sets
@@ -51,7 +63,9 @@ Every implementer pays the same setup before its first write — `CLAUDE.md`, th
 
 ### 2.2 Fan the wave's tasks out to implementer subagents
 
-Dispatch **one implementer subagent per group from 2.1b**, all in a **single message with multiple parallel `Agent` calls**.
+Dispatch **one implementer subagent per group from 2.1b** with `spawn_agent`, in batches
+bounded by the available worker capacity. Groups in the same batch run in parallel;
+later batches remain part of the same wave and start only after the prior batch returns.
 
 Build each prompt from `./implementer-prompt.md`. Plans from `nestjs-plan` and `nuxt-plan`
 declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `RED`, `Verificação` —
@@ -59,15 +73,15 @@ directly under the task heading. Read those fields; do not re-derive them from t
 Each implementer gets:
 
 - `WORKTREE_ROOT` from 2.0, as an absolute path, with the instruction to verify it with `git rev-parse --show-toplevel` before its first write and to re-anchor any absolute path the plan wrote against a different checkout
-- the task's full body — either pasted verbatim, or handed as a `Read` of the plan file at the task's exact line range. The two are equivalent, and the range is cheaper: re-emitting a plan's prose just so it can be pasted back costs the whole document in output tokens, which are the expensive ones. When you pass a range, tell the implementer to `Grep` the plan for the task heading if the first line it reads is not that heading, and to report a blocker rather than implement a guess. `run-waves` takes the range path; a controller that already has the plan in context can just paste
+- the plan path and the task's exact line range. The worker reads that range itself; do not paste the task body unless filesystem access is unavailable. Re-emitting a plan's prose costs context without adding evidence. When the first line is not the task heading, tell the worker to search the plan for the heading and report a blocker rather than implement a guess
 - `Files` as the exact set it owns, and an explicit statement that it must not touch any other file. **When the group holds more than one task, list the files per task, not as a union** — and tell it to finish a task before touching the next one's files. A union invites task A's file to change while task B is being written, which lands an edit the commit message never mentions and the reviewer reads as one blurred change
 - when the group holds more than one task: the instruction to do them **one at a time, in the order given**, each complete — test first, implementation, its verification — before opening the next
 - `RED` **verbatim** — the same command run *before* implementation, expecting FAIL, plus the failure class the plan declared. The implementer writes the test, runs this, and confirms the failure is the declared one before writing a line of implementation
 - `Verificação` **verbatim** — implementers run it themselves. It is the command expecting PASS, run after
 - `Consome` pasted in as actual declarations, not referenced by name
-- the required report shape: files touched, behavior changed, **red run output**, verification output, concerns
+- the required compact report shape: files touched, behavior changed, red and green command/exit code/summary, concerns
 
-**The red run is reported, not assumed.** Instruct every implementer to return the actual output of its `RED` command and one line on why that output proves the test was real. A failure caused by an unresolvable provider, a missing module, or a parse error exercised no behavior — that is a red run to fix before implementing, not one to report. A task that declared `RED: n/a` reports that string with the plan's reason.
+**The red run is reported, not assumed.** Instruct every implementer to return its command, exit code, and the relevant assertion/error excerpt (at most 20 lines or 1,500 characters), plus one line on why that output proves the test was real. A failure caused by an unresolvable provider, a missing module, or a parse error exercised no behavior — that is a red run to fix before implementing, not one to report. A task that declared `RED: n/a` reports that string with the plan's reason.
 
 This is the whole reason the field exists. The Iron Law in `nimbou-skills:test-driven-development` is unenforceable while the red run lives only in prose: an implementer that writes test and implementation together still comes back green, and nothing downstream can tell the difference. A reported red run is the only artifact that distinguishes them.
 
@@ -80,7 +94,7 @@ The controller does **not** write implementation code during a fan-out wave. It 
 
 ## Role Routing
 
-`nestjs-plan` declares a `**Role:**` line per task; `nuxt-plan` declares a `Role` column per file row. That slug **is** the implementer's `subagent_type` — the planners write it specifically so this skill can route without guessing.
+`nestjs-plan` declares a `**Role:**` line per task; `nuxt-plan` declares a `Role` column per file row. In Codex, that slug selects the compact ownership brief in `./codex-role-briefs.md`, which the controller includes in a general `spawn_agent` message.
 
 | Role slug | Owns |
 |---|---|
@@ -111,7 +125,7 @@ Wait for every implementer in the wave to return, then:
    - **Declared by the plan, touched by nobody** — a `concern`, not a stop. The task may have been merged, or the plan over-declared.
    - **Changed but declared by nobody** — an implementer wrote outside its boundary. Decide whether to keep or revert it, and record a `concern`. Do not revert silently.
 3. Re-run **only** the verifications whose implementer came back with a claim rather than a transcript. An implementer that pasted actual runner output already ran that suite; re-running it doubles the wave's test time on the sequential critical path, and the commit is the one step every later wave waits on. `passou` is a claim; a runner transcript is evidence. When you do re-run, run the command **exactly as the plan declares** — it is already scoped to the files the wave changes. Never substitute an unfiltered test command (no bare `pnpm test`, `npm test`, `pytest`).
-4. Mark each task complete in TodoWrite.
+4. Mark each task complete in the harness's native plan tracker, or in the controller's run checklist when no tracker exists.
 
 If an implementer reports failure, or a verification cannot be satisfied, stop downstream waves. Report the exact file/task/wave that blocked the flow. **Do not commit a partially completed wave.** Reviewer ❌ findings never trigger this stop — they go to follow-ups.
 
@@ -126,9 +140,9 @@ If an implementer reports failure, or a verification cannot be satisfied, stop d
 
 ### 2.5 Record the wave for review, then move on
 
-Right after the commit lands, record in TodoWrite — under the "collect spec review" entry — the wave's label, its commit SHA, the `specLines` ranges of its tasks, and what its implementers claimed. That is the payload Step 3 will hand to the reviewer.
+Right after the commit lands, record in the run checklist the wave's label, its commit SHA, the `specLines` ranges of its tasks, and each implementer's compact evidence. That is the payload Step 3 will hand to the reviewer.
 
-Do **not** dispatch a reviewer per wave. **One** spec compliance reviewer runs at the end, over every committed wave at once — `Agent` with `subagent_type: general-purpose` (declared explicitly, never left to the default), prompt built from `./spec-reviewer-prompt.md`. Its job is to detect Missing/Extra/Misunderstanding findings and `⚠️ Deferred` items.
+Do **not** dispatch a reviewer per wave. **One** spec-compliance reviewer runs at the end over every committed wave at once, with `spawn_agent` and the prompt built from `./spec-reviewer-prompt.md`. Its job is to detect Missing/Extra/Misunderstanding findings and `⚠️ Deferred` items.
 
 Why one pass and not N: the reviewer is the run's most expensive agent, and N reviewers each re-read the plan and re-establish context for a diff that only makes full sense alongside the others. A single pass also sees cross-wave drift — a contract set in wave 1 and quietly reshaped in wave 3 — which no per-wave reviewer can see. The cost is that findings arrive at the end rather than alongside the next wave; that is acceptable because reviews were never blocking anyway.
 
@@ -152,9 +166,9 @@ Do not flatten the wave topology unless the user approves it. Do not invent seri
 
 After **all** waves have finished and committed (including the final `nestjs-test` wave when applicable):
 
-1. Dispatch both reviewers concurrently over every wave recorded in Step 2.5, in order:
+1. Dispatch both reviewers with `spawn_agent` over every wave recorded in Step 2.5. Run them in the same bounded batch when capacity permits; otherwise run them serially:
    - **Spec compliance** — give it each wave's label, commit SHA, task spec ranges, and implementer claims, including each task's reported red run, and instruct it to read the diffs rather than trust the claims. Auditing the red-run claims against the diff is part of its job: implementation committed with no test, or a red run whose failure could not have exercised the behavior, is a `spec-issue`. **Do not drop a wave** — an early wave's diff is as reviewable as the last one, and cross-wave drift is only visible when all of them are in scope.
-   - **Boundary lens** — `Agent` with `subagent_type: nimbou-skills:guidelines-gap-analyzer` over the same commits. Give it the SHAs and nothing from the plan. Its findings are `guideline-issue` / `guideline-deferred`.
+   - **Boundary lens** — a general `spawn_agent` worker given the `guidelines-gap-analyzer` brief and the same SHAs, but nothing from the plan. Its findings are `guideline-issue` / `guideline-deferred`.
 2. Collect deferred items from these sources:
    - **Every finding** returned by either reviewer — `❌ Issues found` and `⚠️ Deferred (non-blocking)` alike. Since review is non-blocking here, both buckets land as follow-ups.
    - Concerns raised during execution — by an implementer subagent in its report, or by the controller itself (architectural doubt, file growing too large, write-set collision, refactor suggestion, anything `DONE_WITH_CONCERNS`-equivalent).
@@ -174,7 +188,7 @@ After `<plan>.followups.md` is committed (or confirmed empty), work through **al
 
 1. Triage the follow-ups list by severity: `spec-issue` first, then `guideline-issue`, then `concern`, then the two deferred buckets, then `pos-execucao`. When you have already appended `/code-review` findings, `review-critical` sorts above `spec-issue` and `review-important` / `review-minor` below `guideline-issue`.
 2. Split the automatable items into **groups by file**. Two items touching the same file belong to the same group; items touching disjoint files are independent.
-3. Dispatch **one subagent per group, in parallel**, in a single message. Each gets the findings for its files, the affected file paths, and the scoped verification command for those files. Severity ordering still governs what lands inside a group's prompt first, but groups themselves do not wait on each other — they are disjoint by construction.
+3. Dispatch **one subagent per group** with `spawn_agent`, in capacity-bounded batches. Each gets the findings for its files, the affected file paths, and the scoped verification command for those files. Severity ordering still governs what lands inside a group's prompt first, but groups themselves do not wait on each other within a batch — they are disjoint by construction.
 4. For each returned group: mark its entries resolved in `<plan>.followups.md` with a one-line resolution note and the commit that fixed it.
 5. **If an item requires a manual action** (human decision, external system change, environment config, infra adjustment, or anything the agent cannot execute): do **not** write it to the file. Surface it in the output under a clearly labelled "Ações manuais necessárias" section, describing what needs to be done and why the agent cannot do it.
 6. Commit all follow-up fixes together in a single commit (or one commit per logical group when fixes are unrelated). Stage explicitly — never `git add -A`.
@@ -186,8 +200,8 @@ After `<plan>.followups.md` is committed (or confirmed empty), work through **al
 
 This runs **after** the follow-up commits, over the state the branch actually ends in. It is the only lens in the whole run that looks at the application instead of at its source — red runs, spec compliance, and the boundary analyzer all pass on a change whose page renders blank.
 
-1. Dispatch **one** subagent with `nimbou-skills:browser-smoke` in **`report` mode**, giving it `WORKTREE_ROOT`, the plan path, and the frontend files the run committed. The skill owns the mechanics: driver selection, bringing the app up, the health check, deriving flows from the plan's promises, and evidence. `report` mode matters — the fix cycle and every commit stay here.
+1. Dispatch **one** `spawn_agent` worker with `nimbou-skills:browser-smoke` in **`report` mode**, giving it `WORKTREE_ROOT`, the plan path, and the frontend files the run committed. Instruct it to read the `browser-smoke` skill before acting. That skill owns the mechanics: driver selection, bringing the app up, the health check, deriving flows from the plan's promises, and evidence. `report` mode matters — the fix cycle and every commit stay here.
 2. **`SKIPPED` is not a failure.** No browser driver, or an app that never came up, says nothing about the code. Record the reason as a `concern` and stop the step. Never open a fix cycle on it, and never report the change as verified.
-3. **`FAIL` reopens the fix cycle, at most once.** Group the findings by file, dispatch one fixer per group in parallel, commit their work as its own commit, then re-run the smoke over **only the failing flows**. Two rounds total: the first fix often reveals the defect behind it, and a third round on a run this long costs more than it finds.
+3. **`FAIL` reopens the fix cycle, at most once.** Group the findings by file, dispatch one fixer per group with `spawn_agent` in capacity-bounded batches, commit their work as its own commit, then re-run the smoke over **only the failing flows**. Two rounds total: the first fix often reveals the defect behind it, and a third round on a run this long costs more than it finds.
 4. Whatever still fails after those rounds goes into `<plan>.followups.md` as `browser-issue`, with the flow sentence and the screenshot path, committed on its own. Same for concerns the smoke raised.
 5. Then announce: "Plano executado. Todos os follow-ups automatizáveis resolvidos." State which lenses ran — TDD red runs per task, spec compliance, boundary analysis, and the browser smoke with its verdict — so the user can judge whether a `/code-review` pass over the branch is worth it before merging. If manual items were surfaced, list them once more so the user has them in one place.

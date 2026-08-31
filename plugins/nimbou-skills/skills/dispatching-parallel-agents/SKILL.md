@@ -13,7 +13,7 @@ This is a coordination pattern, not a full development workflow. It is for split
 
 When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
 
-**Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
+**Core principle:** Dispatch one agent per independent problem domain, but never exceed the worker capacity available to the current Codex session.
 
 ## When to Use
 
@@ -77,15 +77,19 @@ Each agent gets:
 - **Constraints:** Don't change other code
 - **Expected output:** Summary of what you found and fixed
 
-### 3. Dispatch in Parallel
+### 3. Dispatch in Bounded Parallel Batches
 
 ```typescript
-// In Claude Code / AI environment
-Task("Fix agent-tool-abort.test.ts failures")
-Task("Fix batch-completion-behavior.test.ts failures")
-Task("Fix tool-approval-race-conditions.test.ts failures")
-// All three run concurrently
+// Codex: the controller uses one slot.
+const workerLimit = Math.max(1, availableAgentSlots - 1)
+
+spawn_agent({ task_name: 'abort-tests', message: 'Fix agent-tool-abort.test.ts failures' })
+spawn_agent({ task_name: 'batch-tests', message: 'Fix batch-completion-behavior.test.ts failures' })
+// Wait for this batch before launching more than workerLimit groups.
 ```
+
+If the capacity is not exposed, use one worker. Never have a dispatched worker spawn
+more workers: nested delegation makes the capacity and write ownership unknowable.
 
 ### 4. Review and Integrate
 
@@ -99,7 +103,7 @@ When agents return:
 
 Good agent prompts are:
 1. **Focused** - One clear problem domain
-2. **Self-contained** - All context needed to understand the problem
+2. **Self-contained** - Include exact paths, failing output, write boundary, and expected report
 3. **Specific about output** - What should the agent return?
 
 ```markdown
@@ -129,7 +133,7 @@ Return: Summary of what you found and what you fixed.
 **✅ Specific:** "Fix agent-tool-abort.test.ts" - focused scope
 
 **❌ No context:** "Fix the race condition" - agent doesn't know where
-**✅ Context:** Paste the error messages and test names
+**✅ Context:** Pass the error messages, test names, and exact file boundary
 
 **❌ No constraints:** Agent might refactor everything
 **✅ Constraints:** "Do NOT change production code" or "Fix tests only"
@@ -169,14 +173,15 @@ Agent 3 → Fix tool-approval-race-conditions.test.ts
 
 **Integration:** All fixes independent, no conflicts, full suite green
 
-**Time saved:** 3 problems solved in parallel vs sequentially
+**Time saved:** Independent work overlaps without oversubscribing the current session.
 
 ## Key Benefits
 
 1. **Parallelization** - Multiple investigations happen simultaneously
 2. **Focus** - Each agent has narrow scope, less context to track
 3. **Independence** - Agents don't interfere with each other
-4. **Speed** - 3 problems solved in time of 1
+4. **Capacity control** - Batches never consume slots reserved for the controller
+5. **Speed** - 3 problems solved in time of 1
 
 ## Verification
 
@@ -184,7 +189,7 @@ After agents return:
 1. **Review each summary** - Understand what changed
 2. **Check for conflicts** - Did agents edit same code?
 3. **Run full suite** - Verify all fixes work together
-4. **Spot check** - Agents can make systematic errors
+5. **Spot check** - Agents can make systematic errors
 
 ## Real-World Impact
 
