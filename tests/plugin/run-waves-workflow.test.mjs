@@ -444,9 +444,9 @@ test('run-waves coalesces same-Role tasks in a wave into one implementer', async
   // on its slowest lane either way.
   const sameRole = JSON.parse(JSON.stringify(twoWavePlan))
   sameRole.waves[0].tasks = [
-    { title: 'UC one', specLines: { start: 10, end: 20 }, files: ['src/one.ts'], verification: 'pnpm test -- one', agentType: 'nimbou-skills:nestjs-usecase-author' },
-    { title: 'UC two', specLines: { start: 21, end: 30 }, files: ['src/two.ts'], verification: 'pnpm test -- two', agentType: 'nimbou-skills:nestjs-usecase-author' },
-    { title: 'UC three', specLines: { start: 31, end: 40 }, files: ['src/three.ts'], verification: 'pnpm test -- three', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'UC one', specLines: { start: 10, end: 20 }, files: ['src/one.ts'], verification: 'pnpm test -- one', estimate: 'curta', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'UC two', specLines: { start: 21, end: 30 }, files: ['src/two.ts'], verification: 'pnpm test -- two', estimate: 'curta', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'UC three', specLines: { start: 31, end: 40 }, files: ['src/three.ts'], verification: 'pnpm test -- three', estimate: 'curta', agentType: 'nimbou-skills:nestjs-usecase-author' },
   ]
 
   const { result, calls } = await runWorkflow('docs/plans/x.md', [
@@ -473,6 +473,34 @@ test('run-waves coalesces same-Role tasks in a wave into one implementer', async
   assert.ok(!result.followups, 'coalescing a clean wave raises no concern')
 })
 
+test('run-waves isolates medium and long tasks of the same Role while bundling short tasks', async () => {
+  const adaptive = JSON.parse(JSON.stringify(twoWavePlan))
+  adaptive.waves[0].tasks = [
+    { title: 'Short one', specLines: { start: 10, end: 20 }, files: ['src/short-one.ts'], verification: 'pnpm test -- short-one', estimate: 'curta', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'Short two', specLines: { start: 21, end: 30 }, files: ['src/short-two.ts'], verification: 'pnpm test -- short-two', estimate: 'curta', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'Medium', specLines: { start: 31, end: 40 }, files: ['src/medium.ts'], verification: 'pnpm test -- medium', estimate: 'media', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'Long', specLines: { start: 41, end: 50 }, files: ['src/long.ts'], verification: 'pnpm test -- long', estimate: 'longa', agentType: 'nimbou-skills:nestjs-usecase-author' },
+  ]
+
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, adaptive],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  const waveOne = calls.filter((call) => (call.opts.label ?? '').startsWith('Onda 1'))
+  assert.equal(waveOne.length, 3, 'short work shares setup; medium and long work must use independent lanes')
+
+  const medium = waveOne.find((call) => (call.opts.label ?? '').includes('Medium'))
+  const long = waveOne.find((call) => (call.opts.label ?? '').includes('Long'))
+  assert.ok(medium)
+  assert.ok(long)
+  assert.doesNotMatch(medium.prompt, /Short one|Short two|Long/, 'a medium task must not wait behind sibling work')
+  assert.doesNotMatch(long.prompt, /Short one|Short two|Medium/, 'a long task must not wait behind sibling work')
+})
+
 test('run-waves caps a coalesced implementer and never merges an unrouted task', async () => {
   const wide = JSON.parse(JSON.stringify(twoWavePlan))
   wide.waves[0].tasks = [
@@ -481,6 +509,7 @@ test('run-waves caps a coalesced implementer and never merges an unrouted task',
       specLines: { start: 10 * n, end: 10 * n + 5 },
       files: [`src/c${n}.vue`],
       verification: `pnpm test -- c${n}`,
+      estimate: 'curta',
       agentType: 'nimbou-skills:vue-component-author',
     })),
     // No Role: a planning bug. It must stay its own dispatch so the concern it
@@ -681,7 +710,7 @@ test('prose-execution carries the full executable contract for Codex', () => {
   assert.match(prose, /check the write sets/i)
   // The prose is normative for both harnesses: the coalescing rule the workflow
   // implements has to be readable here too, or Codex runs a different executor.
-  assert.match(prose, /Coalesce what shares an owner/i)
+  assert.match(prose, /Coalesce only short work that shares an owner/i)
   assert.match(prose, /one implementer per Role per wave/i)
   assert.match(prose, /Coalescing is not merging/i)
   assert.match(prose, /implementer-prompt\.md/)
@@ -693,7 +722,7 @@ test('prose-execution carries the full executable contract for Codex', () => {
   assert.match(prose, /Step 1 lives in `SKILL\.md`/)
 
   assert.match(implementer, /One dispatch per group from Step 2\.1b/)
-  assert.match(implementer, /Bundle only what shares an owner, up to three/)
+  assert.match(implementer, /Bundle only what shares an owner and is short, up to three/)
   assert.match(implementer, /Files You Own/)
   assert.match(implementer, /Never let an implementer commit/)
 })
@@ -743,7 +772,7 @@ test('both planners declare the same Execution Contract the executor extracts', 
 
   for (const [name, plan] of [['nestjs-plan', nestjsPlan], ['nuxt-plan', nuxtPlan]]) {
     assert.match(plan, /## Execution Contract/, `${name} should declare the contract`)
-    for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
+    for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Estimativa:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
       assert.match(plan, new RegExp(field), `${name} should declare ${field}`)
     }
     assert.match(plan, /`Consome` is mandatory from Onda 2 on/, `${name} should require consumed contracts`)
@@ -758,6 +787,17 @@ test('both planners declare the same Execution Contract the executor extracts', 
   assert.match(planFormat, /Consome/)
 })
 
+test('change-plan carries Estimativa into its run-waves-ready contract', () => {
+  const generator = readFileSync(
+    resolve(root, 'plugins/nimbou-skills/skills/change-plan/plan-generation.md'),
+    'utf8',
+  )
+
+  assert.match(generator, /Execution Contract/)
+  assert.match(generator, /`Estimativa`/, 'small fullstack plans must give the executor its fan-out signal')
+  assert.match(generator, /`curta`/, 'the supported estimate values must be discoverable at the planning point')
+})
+
 test('the parser reads the contract fields instead of re-deriving them', () => {
   assert.match(source, /Read those fields; do not\s*\n?re-derive them from the prose/)
   assert.match(source, /the \\`\*\*Files:\*\*\\` field, split on commas/)
@@ -767,6 +807,7 @@ test('the parser reads the contract fields instead of re-deriving them', () => {
   // from one that wrote test and implementation together. It is now its own field.
   assert.match(source, /the \\`\*\*RED:\*\*\\` field, verbatim/)
   assert.match(source, /must never be merged into it/, 'RED and Verificação are separate fields')
+  assert.match(source, /the \\`\*\*Estimativa:\*\*\\` field, verbatim/)
   assert.match(source, /Never\s*\n?invent a \\`consumes\\` value/)
   assert.match(source, /Assign each task to a wave by its \\`\*\*Onda:\*\*\\` field/)
 })
@@ -795,7 +836,7 @@ test('fullstack-plan composes the platform planners instead of duplicating them'
   assert.match(plan, /Unbalanced sides are normal and correct/)
 
   // It must emit what the executor extracts.
-  for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
+  for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Estimativa:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
     assert.match(plan, new RegExp(field), `fullstack-plan should carry ${field}`)
   }
   assert.match(plan, /No task declares a commit step/)

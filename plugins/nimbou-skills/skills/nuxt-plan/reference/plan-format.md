@@ -8,7 +8,7 @@ Return it directly in the chat by default. Only turn it into a saved Markdown do
 - `## Contexto` for the concrete frontend slice being implemented
 - `## Decisoes Fechadas` for resolved reuse, ownership, and state decisions
 - `## Arquivos` with exact paths, wave assignment, **and `Role`** (role slug per file)
-- `## Ondas de Execução` with parallel-by-default tasks per wave, each task carrying the five Execution Contract fields (`Role`, `Onda`, `Files`, `Consome`, `Verificação`), and a spec-compliance checkpoint after each wave
+- `## Ondas de Execução` with parallel-by-default tasks per wave, each task carrying the six Execution Contract fields (`Role`, `Onda`, `Files`, `Consome`, `Estimativa`, `Verificação`), and a spec-compliance checkpoint after each wave
 - `## Riscos e Validacoes` for responsive, data, or interaction risks
 - `## Pos-execucao` for catalog verification and testing follow-up
 
@@ -52,6 +52,7 @@ Each task under `## Ondas de Execução` carries:
 **Onda:** N
 **Files:** `<arquivos que a task ESCREVE, separados por vírgula>`
 **Consome:** `<declarações coladas das ondas anteriores>` | `nada`
+**Estimativa:** `curta` | `media` | `longa`
 **Verificação:** `<comando escopado que prova a task pronta>`
 ```
 

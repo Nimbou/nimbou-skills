@@ -50,15 +50,17 @@ Before dispatching anything, list the files each task in the wave declares it wi
   - **What happens to the Role.** The merged group keeps its `Role` when every task in it declared the same one. When they declare **different** Roles there is no correct winner, so the group falls back to `general-purpose` and you record the loss as a second `concern`, naming the Roles that were dropped. A collision therefore costs the specialized routing on top of the parallelism — one more reason it is a planning bug to fix rather than absorb.
 - **Single-task wave:** skip the dispatch. The controller implements it directly; a subagent buys nothing here.
 
-### 2.1b Coalesce what shares an owner
+### 2.1b Coalesce only short work that shares an owner
 
-Then merge the remaining groups by `Role`: **one implementer per Role per wave**, up to **three tasks each**.
+After retaining any mandatory write-set collision group, merge only groups whose tasks all declare `**Estimativa:** curta` and the same `Role`: **one implementer per Role per wave**, up to **three short tasks each**.
+`media` and `longa` tasks each keep an independent implementer when their write sets
+are disjoint.
 
-Every implementer pays the same setup before its first write — `CLAUDE.md`, the nearest `GUIDELINES.md`, a neighbouring file for style, the ports it consumes. The planners size tasks at "a small action, typically 2-5 minutes", so on a task that size the setup *is* the cost, and two authors of the same Role in one wave pay it twice for identical reads. What coalescing gives up is overlap between sibling tasks — cheap in wall-clock, since the wave already waits on its slowest Role, and expensive in tokens.
+Every implementer pays the same setup before its first write — `CLAUDE.md`, the nearest `GUIDELINES.md`, a neighbouring file for style, the ports it consumes. The planners size tasks at "a small action, typically 2-5 minutes", so on a task that size the setup *is* the cost, and two authors of the same Role in one wave pay it twice for identical reads. Coalescing short work pays that setup once. Medium and long work stays isolated: putting it behind a same-Role sibling manufactures a sequential critical path and makes the entire wave wait for it.
 
-- **Only groups where every task declared the same Role merge.** A group that fell back to `general-purpose` — unrouted, or a collision with conflicting Roles — stays on its own. It already carries a `concern`, and burying it inside a coalesced agent makes a planning bug harder to act on.
+- **Only short groups where every task declared the same Role merge.** A group that fell back to `general-purpose` — unrouted, or a collision with conflicting Roles — stays on its own. It already carries a `concern`, and burying it inside a coalesced agent makes a planning bug harder to act on.
 - **A write-set collision group is never split by the cap.** It must stay with its file.
-- **Three is the cap, not a target.** Above it, a heavy Role would collapse into one long sequential lane and the wave would wait on it; a fourth same-Role task opens a second implementer.
+- **Three is the cap, not a target.** It applies only to `curta` tasks. `media` and `longa` tasks do not enter a shared lane, even when their Role matches.
 - **Coalescing is not merging.** Each task keeps its own spec range, its own `Files`, its own `RED`, its own `Verificação`, and is reported separately. What is shared is the setup, not the work.
 
 ### 2.2 Fan the wave's tasks out to implementer subagents
@@ -68,7 +70,7 @@ bounded by the available worker capacity. Groups in the same batch run in parall
 later batches remain part of the same wave and start only after the prior batch returns.
 
 Build each prompt from `./implementer-prompt.md`. Plans from `nestjs-plan` and `nuxt-plan`
-declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `RED`, `Verificação` —
+declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `Estimativa`, `RED`, `Verificação` —
 directly under the task heading. Read those fields; do not re-derive them from the prose.
 Each implementer gets:
 

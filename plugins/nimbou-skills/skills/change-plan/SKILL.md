@@ -7,7 +7,7 @@ description: Use when a small change or bugfix touches both the NestJS backend a
 
 ## Overview
 
-Single entry point for a **small** fullstack change (NestJS + Nuxt). When the work is small, this skill produces one wave-structured plan that `run-waves`/`executing-plans` runs directly — no separate spec step, no domain-artifact gate. When the work is not small, it routes to the heavier path instead of under-planning it.
+Single entry point for a **small** fullstack change (NestJS + Nuxt). When the work is small, this skill produces one wave-structured plan that `run-waves`/`executing-plans` runs directly — no separate spec step, no domain-artifact gate. Its tasks still declare `Estimativa` so the executor can choose setup-sharing only for short work. When the work is not small, it routes to the heavier path instead of under-planning it.
 
 This skill **replaces `change-spec`**. It covers what `change-spec` covered (evolving an existing flow) and, additionally, small new features that span both stacks.
 

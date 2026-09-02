@@ -65,10 +65,9 @@ half broke.
 
 ### Dispatch is not task count
 
-`executing-plans` does not open one subagent per task. After the write-set check it
-coalesces by `Role`: **one implementer per `Role` per wave, up to three tasks each**,
-greedy in document order, among tasks declaring the *same* `Role`. A wave of nine
-tasks across three roles is three implementers, not nine.
+`executing-plans` coalesces only `Estimativa: curta` tasks by `Role`: one implementer per `Role` per wave may hold up to three
+short tasks of the same role, sharing setup. `media` and `longa` tasks with disjoint
+write sets use independent implementers, so a slow sibling does not serialize the wave.
 
 Two consequences for how you write the plan:
 
@@ -108,6 +107,7 @@ Every plan MUST start with this header:
 **Onda:** N
 **Files:** `src/modules/.../create-invoice.use-case.ts`, `src/modules/.../create-invoice.spec.ts`
 **Consome:** `nada`
+**Estimativa:** `media`
 **RED:** `pnpm test -- --runInBand src/modules/.../create-invoice.spec.ts` — espera FAIL por comportamento ausente (`DuplicateInvoiceReferenceError` não lançado), não por import, DI ou sintaxe
 **Verificação:** `pnpm test -- --runInBand src/modules/.../create-invoice.spec.ts`
 
@@ -175,6 +175,7 @@ a field the executor has to infer is a field it can infer wrong.
 | `**Onda:**` | The wave number this task belongs to. Explicit — never leave the executor to infer wave membership from prose. |
 | `**Files:**` | Every file this task WRITES, comma-separated. This is the task's write set: two tasks in the same wave must not share a file. Files the task only reads do not belong here. |
 | `**Consome:**` | The contracts this task consumes from earlier waves — types, signatures, routes, DTOs, schema fields — **pasted as actual declarations**, not referenced by name. Write `nada` only for Onda 1. |
+| `**Estimativa:**` | `curta`, `media`, or `longa`, based on implementation plus its scoped verification. Only `curta` tasks of the same Role may share an implementer; never downgrade work to create artificial parallelism. |
 | `**RED:**` | The command that runs the task's test **before** any implementation exists, plus the class of failure it must produce. Same scoped path as `Verificação`. Write `n/a — <motivo>` when the task carries no testable behavior. |
 | `**Verificação:**` | The single command that proves the task is done, expecting PASS. Scoped path always; a bare `pnpm test` is a planning failure. |
 
@@ -268,7 +269,7 @@ After writing the complete plan, check:
 9. **Wave shape:** every later wave is justified by a real contract dependency on an earlier wave; tasks inside a wave are genuinely parallel-safe (no shared file writes, no implicit ordering)
 10. **Deletion ownership:** a task that deletes a file owns **every** consumer of it, or lands in a later wave than the last consumer to be migrated. Grep the symbol before planning the delete — a helper with two importers where you assumed one leaves the wave committed with an import pointing at nothing. If the last consumer is out of scope, the deletion is out of scope too: say so instead of deleting
 11. **Assertion dependencies:** a task whose test asserts behavior another task implements must be in a **later** wave, not the same one. Same-wave tasks run in parallel, so an e2e that exercises a route *and* the read path feeding it will go red on ordering rather than on a defect — and the wave commits looking broken. Read each test task's assertions and place the task after everything they touch
-12. **Execution Contract:** every task carries `Role`, `Onda`, `Files`, `Consome`, `RED`, and `Verificação`. No task declares a commit step. `Consome` is non-empty for every task outside Onda 1, and holds pasted declarations rather than names. `RED` declares a failure class, not a literal error string
+12. **Execution Contract:** every task carries `Role`, `Onda`, `Files`, `Consome`, `Estimativa`, `RED`, and `Verificação`. No task declares a commit step. `Consome` is non-empty for every task outside Onda 1, and holds pasted declarations rather than names. `RED` declares a failure class, not a literal error string
 13. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
 14. **Final wave:** the final wave dispatches `nimbou-skills:nestjs-test` with scope restricted to the files this plan touched — every controller, use-case, repository, and migration introduced anywhere in the plan, **and nothing else**. The verification command must include explicit suite paths; an unfiltered `pnpm test` is a planning failure.
 

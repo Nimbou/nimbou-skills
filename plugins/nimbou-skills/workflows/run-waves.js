@@ -83,6 +83,10 @@ const PLAN_SCHEMA = {
                     'the RED field verbatim: the command that must FAIL before implementation, plus the failure class it must produce. The literal string "n/a — <reason>" when the task carries no testable behavior.',
                 },
                 consumes: { type: 'string', description: 'contracts from earlier waves this task depends on' },
+                estimate: {
+                  type: 'string',
+                  description: 'curta | media | longa. Only curta tasks of the same Role may share one implementer.',
+                },
                 agentType: { type: 'string', description: 'role-specialized agent named by the plan, if any' },
               },
             },
@@ -254,6 +258,10 @@ re-derive them from the prose.** For every task in every wave, return:
   exception reviewable.
 - consumes: the \`**Consome:**\` field, verbatim. Return it omitted when the field
   says \`nada\`.
+- estimate: the \`**Estimativa:**\` field, verbatim: \`curta\`, \`media\`, or
+  \`longa\`. Do not infer it from the number of files or the task title. Omit it
+  when the plan genuinely lacks the field; legacy tasks keep the executor's existing
+  coalescing behavior.
 
 When a task is missing one of these fields, return what the field would hold if you
 can read it unambiguously from the task body, and leave it out otherwise. Never
@@ -322,10 +330,20 @@ log(`${waves.length} waves, ${taskCount} tasks. Waves run in order; tasks inside
 // then adds phases the plan never mentions. Project the floor before spending it, so
 // a plan that will open thirty agents says so while there is still time to reshape it.
 const projectedImplementers = waves.reduce((n, w) => {
-  const roles = new Set()
+  const shortByRole = new Map()
+  let isolated = 0
   let unrouted = 0
-  for (const t of w.tasks ?? []) (t.agentType ? roles.add(t.agentType) : unrouted++)
-  return n + Math.max(1, roles.size + unrouted)
+  for (const t of w.tasks ?? []) {
+    if (!t.agentType) {
+      unrouted++
+    } else if (isShortTask(t)) {
+      shortByRole.set(t.agentType, (shortByRole.get(t.agentType) ?? 0) + 1)
+    } else {
+      isolated++
+    }
+  }
+  const shortLanes = [...shortByRole.values()].reduce((sum, count) => sum + Math.ceil(count / 3), 0)
+  return n + Math.max(1, shortLanes + isolated + unrouted)
 }, 0)
 log(
   `Projected floor: ~${projectedImplementers} implementer(s) + ${waves.length} commit(s) + 2 reviewers ` +
@@ -377,15 +395,15 @@ for (let w = 0; w < waves.length; w++) {
     for (const f of task.files ?? []) owner.set(f, index)
   }
 
-  // Step 2.1b: coalesce by Role. Every implementer pays the same setup before its
+  // Step 2.1b: coalesce short tasks by Role. Every implementer pays the same setup before its
   // first write — CLAUDE.md, the nearest GUIDELINES.md, a neighbouring file for
   // style, the ports it consumes. On a task sized at one behavior that setup is a
   // large share of the cost, and two authors of the same Role in one wave pay it twice
-  // for the same reads. Merging them pays it once. What is lost is overlap between
-  // sibling tasks, which was cheap in wall-clock (the wave already waits on the
-  // slowest Role) and expensive in tokens.
+  // for the same reads. Merging short work pays it once. Medium and long work stays
+  // isolated: putting it behind a same-Role sibling would manufacture a sequential
+  // critical path and make the entire wave wait for it.
   //
-  // Only groups where EVERY task declared the SAME Role merge. A group that fell
+  // Only short groups where EVERY task declared the SAME Role merge. A group that fell
   // back to general-purpose — unrouted, or a collision with conflicting Roles —
   // stays on its own: it already carries a concern, and burying it inside a
   // coalesced agent makes a planning bug harder to act on.
@@ -396,7 +414,8 @@ for (let w = 0; w < waves.length; w++) {
   for (const group of groups) {
     const roles = [...new Set(group.map(t => t.agentType))]
     const role = roles.length === 1 && roles[0] ? roles[0] : null
-    const open = role ? openByRole.get(role) : undefined
+    const mayShareSetup = role && group.every(isShortTask)
+    const open = mayShareSetup ? openByRole.get(role) : undefined
     // A collision group is never split by the cap — it must stay with its file.
     if (open && open.length + group.length <= COALESCE_LIMIT) {
       open.push(...group)
@@ -405,7 +424,7 @@ for (let w = 0; w < waves.length; w++) {
     }
     const fresh = [...group]
     dispatchGroups.push(fresh)
-    if (role) openByRole.set(role, fresh)
+    if (mayShareSetup) openByRole.set(role, fresh)
   }
 
   // A nestjs-test wave carries no Role by contract — it routes through the test
@@ -416,7 +435,7 @@ for (let w = 0; w < waves.length; w++) {
   phase('Implement')
   log(
     `${label}: ${dispatchGroups.length} implementer(s) for ${tasks.length} task(s)` +
-      (coalesced ? ` — ${coalesced} merged into a same-Role sibling` : '') +
+      (coalesced ? ` — ${coalesced} short task(s) merged into a same-Role sibling` : '') +
       (unrouted.length ? ` — ${unrouted.length} without a declared Role, falling back to general-purpose` : ''),
   )
   for (const task of unrouted) {
@@ -754,6 +773,12 @@ function groupRole(group, waveLabel) {
     )
   }
   return null
+}
+
+function isShortTask(task) {
+  // Old approved plans do not carry Estimativa. Keep their historical grouping
+  // behavior; newly generated plans must declare the field explicitly.
+  return !task.estimate || String(task.estimate).trim().toLocaleLowerCase('pt-BR') === 'curta'
 }
 
 function collectSpecReview(label, sha, requested, reported) {

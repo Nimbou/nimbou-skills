@@ -81,7 +81,7 @@ This file map drives the waves.
 
 ## Execution Contract
 
-Every task under `## Ondas de Execução` MUST carry these five fields. They are what
+Every task under `## Ondas de Execução` MUST carry these six fields. They are what
 `nimbou-skills:executing-plans` extracts to dispatch the task — a field the executor has
 to infer is a field it can infer wrong.
 
@@ -92,6 +92,7 @@ to infer is a field it can infer wrong.
 | `**Files:**` | Every file this task WRITES, comma-separated — its write set. Two tasks in the same wave must not share a file. |
 | `**Consome:**` | The contracts consumed from earlier waves — composable signatures, prop APIs, shared types — **pasted as actual declarations**, not referenced by name. Write `nada` only for Onda 1. |
 | `**RED:**` | `n/a — frontend, covered by review and browser smoke`. Frontend tasks do not invent a unit-level red run merely to mirror backend TDD. |
+| `**Estimativa:**` | `curta`, `media`, or `longa`, including the scoped verification. Only `curta` tasks of the same Role may share one implementer; do not minimize it merely to increase fan-out. |
 | `**Verificação:**` | The single command that proves the task is done, scoped to the files it changed. Never `/test` over the whole app, never an unscoped `pnpm test`. |
 
 `## Arquivos` stays as the overview table; the per-task fields are what actually drives
@@ -108,10 +109,9 @@ every task in it lands and verifies.
 
 ### Dispatch is not task count
 
-`executing-plans` does not open one subagent per task. After the write-set check it
-coalesces by `Role`: **one implementer per `Role` per wave, up to three tasks each**,
-greedy in document order, among tasks declaring the *same* `Role`. A wave of nine
-tasks across three roles is three implementers, not nine.
+`executing-plans` coalesces only `Estimativa: curta` tasks by `Role`: one implementer per `Role` per wave may hold up to three
+short tasks of the same role, sharing setup. `media` and `longa` tasks with disjoint
+write sets use independent implementers, so a slow sibling does not serialize the wave.
 
 Two consequences for how you write the plan:
 
@@ -168,6 +168,7 @@ Create a project details page using the existing status badge and a new sidebar.
 **Onda:** 1
 **Files:** `composables/useProjectFilters.ts`
 **Consome:** `nada`
+**Estimativa:** `curta`
 **Verificação:** `pnpm test -- composables/useProjectFilters.spec.ts`
 
 ### Onda 2 — Componentes e configs independentes (paralelo)
@@ -177,6 +178,7 @@ Create a project details page using the existing status badge and a new sidebar.
 **Onda:** 2
 **Files:** `components/projects/ProjectSidebar.vue`
 **Consome:** `useProjectFilters(): { status: Ref<Status[]>, toggle(s: Status): void }`
+**Estimativa:** `media`
 **Verificação:** `pnpm test -- components/projects/ProjectSidebar.spec.ts`
 
 ### Onda 3 — Integração de página (paralelo dentro da onda)

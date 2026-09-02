@@ -2,7 +2,7 @@
 
 Use this template when the controller fans a wave's tasks out under `nimbou-skills:executing-plans` (Step 2.2). **One dispatch per group from Step 2.1b**, launched with `spawn_agent` in capacity-bounded batches. A group is usually one task; it holds more when the tasks share an owner.
 
-**Purpose:** Implement the task — or the two or three same-owner tasks — the controller assigned, each inside its declared file boundary, each driven by its own failing test, proving both the red run and the green one.
+**Purpose:** Implement the task — or the short same-owner tasks — the controller assigned, each inside its declared file boundary, each driven by its own failing test, proving both the red run and the green one.
 
 **Precondition:** the controller already checked write sets (Step 2.1) and coalesced by Role (Step 2.1b). Every implementer in a wave owns a disjoint set of files. Tasks reaching this template together either share a file or share a Role — the controller resolved which before dispatching.
 
@@ -150,7 +150,7 @@ spawn_agent:
 **Rules for the controller dispatching this:**
 
 0. **Anchor every dispatch.** Resolve `WORKTREE_ROOT` once, before the wave, and paste the same absolute path into every implementer, the commit step, and the reviewers. A subagent does not reliably inherit your working directory, and the plan's paths mean nothing without a root. An implementer that writes into the main checkout while you commit from a worktree produces a wave that commits green and is missing half its files.
-1. **Bundle only what shares an owner, up to three.** Two plan tasks ride one implementer when Step 2.1 found them writing the same file, or when Step 2.1b found them declaring the same `Role`. Nothing else. Bundling across Roles hands one agent two sets of boundary rules and loses the specialized routing; bundling past three collapses a heavy Role into one sequential lane the whole wave then waits on.
+1. **Bundle only what shares an owner and is short, up to three.** Two plan tasks ride one implementer when Step 2.1 found them writing the same file, or when Step 2.1b found them declaring the same `Role` and `Estimativa: curta`. Nothing else. Bundling across Roles hands one agent two sets of boundary rules and loses the specialized routing; `media` and `longa` tasks stay independent so they do not create a sequential critical path.
    - **A bundle is not a merged task.** Give each task its own spec range, its own `Files`, its own `RED`, its own `Verificação`, and require them done one at a time in order. List the files per task — a union invites task A's file to change while task B is being written, which lands an edit the commit message never mentions.
 2. **`[ROLE]` comes from the plan, never from the file path.** Use its exact brief from `codex-role-briefs.md`; substituting a role you inferred yourself hides a planning bug the fallback would have surfaced.
 3. **Pass an exact range, not copied prose.** Give the plan path, task heading, and line range. The worker reads that bounded range; a prompt saying only "implement Task 3" still fails.

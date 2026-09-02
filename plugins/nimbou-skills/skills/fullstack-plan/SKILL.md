@@ -71,17 +71,18 @@ Both sides occupy Onda 2 at the same time. That is the whole point of the skill.
 ### Dispatch is not task count
 
 `executing-plans` does **not** open one subagent per task. After the write-set check it
-coalesces by `Role`: **one implementer per `Role` per wave, up to three tasks each**,
-greedy in document order, and only among tasks that declared the *same* `Role`. Each task
-keeps its own `Files`, `RED` and `Verificação` and is reported separately — what is shared
-is the setup those tasks would each pay for.
+coalesces only **short** work by `Role`: one implementer per `Role` per wave may receive up to three
+`Estimativa: curta` tasks of the same `Role`. `media` and `longa` tasks always get an
+independent lane when their write sets are disjoint. Each task keeps its own `Files`,
+`RED` and `Verificação` and is reported separately — short tasks share setup; heavier
+tasks do not wait behind a sibling just because they have the same owner.
 
 Two consequences the plan must be written against:
 
-- **Do not size a wave, or advise on its cost, by counting tasks.** A wave of fifteen
-  tasks across five roles is seven implementers, not fifteen. Writing "this wave is
-  expensive, consider slicing it" from the task count is advice about a run that does not
-  exist.
+- **Do not size a wave, or advise on its cost, by counting tasks.** The dispatch count
+  depends on Roles, `Estimativa`, and write-set collisions — not merely task count.
+  Writing "this wave is expensive, consider slicing it" from the task count is advice
+  about a run that does not exist.
 - **Coalescing can hide an intra-wave dependency.** Tasks inside one implementer run
   sequentially in the order given, so a task that consumes a sibling in the same wave will
   *work* whenever the two land in the same lane in the right order, and break when the cap
@@ -104,6 +105,7 @@ Every task carries the fields `nimbou-skills:executing-plans` extracts, regardle
 **Onda:** N
 **Files:** `<files this task WRITES, comma-separated>`
 **Consome:** `<pasted declarations>` | `nada`
+**Estimativa:** `curta` | `media` | `longa`
 **RED:** `<command that must FAIL before implementation>` — <failure class it must produce>
 **Verificação:** `<scoped command that proves the task done, expecting PASS>`
 ```
