@@ -5,6 +5,13 @@ description: Use when you have an approved wave-structured plan and want it exec
 
 # Executing Plans
 
+## Expensive-check policy
+
+Do not create or execute Playwright/browser E2E coverage, and do not run `typecheck`,
+unless the user explicitly requested that exact category of work. Treat a command
+copied from a plan or template as insufficient authorization: if the plan does not
+record the explicit request, omit the command and report it as intentionally skipped.
+
 ## Overview
 
 Load the plan, review it critically, confirm it is wave-structured, then hand it to an executor. Inside a wave, implementer subagents run in parallel: short same-Role tasks may share setup, while medium and long tasks get their own lanes whenever their write sets are disjoint. Each wave is committed as soon as its tasks land and verify. Every task is driven by its own failing test, and the red run is reported as evidence. Two **non-blocking** reviewers run once at the end — spec compliance against the plan, and a boundary lens over the diff; their findings never gate progression, they accumulate into `<plan>.followups.md`. Those follow-ups are then executed, not just filed. Last, when the plan touched frontend files, a browser smoke verifies the promised flows on screen. Full code review is deliberately **not** part of this skill: run `/code-review` over the branch when the change warrants a further pass.

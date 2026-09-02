@@ -50,7 +50,7 @@ In order:
 1. **Chrome DevTools MCP** — the primary path. Same tools `nimbou-skills:nuxt-debug`
    uses: snapshot, console messages, network requests, evaluate script. The server
    name is project-configured; look for tools matching `mcp__chrome*devtools__*`.
-2. **Playwright MCP**, when it is connected and DevTools MCP is not.
+2. **Playwright MCP**, only when the user explicitly requests Playwright/browser E2E.
 3. **Nothing.** Then **skip the smoke and say so loudly**: record
    `front alterado, validação em browser não executada: nenhum driver de browser disponível`
    as a concern, surface it in the report, and exit. Do not install a browser

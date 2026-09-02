@@ -83,9 +83,9 @@ Ask the user explicitly which suites to run. Do not infer from the diff.
 Use `AskUserQuestion`, single-select, four options:
 
 1. **`nestjs-test`** — backend HTTP and persistence coverage.
-2. **`nuxt-test`** — frontend Playwright coverage.
-3. **Ambos** — both suites.
-4. **Nenhum** — skip Step 4 (acceptable for doc-only or config-only changes).
+2. **`nuxt-test`** — frontend Playwright coverage, only when explicitly requested by the user.
+3. **Ambos** — both suites, only when the Playwright portion was explicitly requested.
+4. **Nenhum** — skip Step 4 (acceptable for doc-only or config-only changes, and the default for Playwright when it was not requested).
 
 Record the choice and continue.
 

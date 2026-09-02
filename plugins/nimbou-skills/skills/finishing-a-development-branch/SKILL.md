@@ -28,7 +28,7 @@ Guide completion of development work by presenting clear options and handling ch
 4. Run the test runner with explicit paths only, e.g.:
    ```bash
    pnpm test -- --runInBand <scoped-suite-paths>
-   # or pnpm playwright test <scoped-spec-paths>
+   # Playwright/browser E2E only when explicitly requested by the user
    ```
    Bare `pnpm test` / `npm test` / `pytest` / `go test ./...` are forbidden here.
 5. If the diff is empty, skip Step 1 and continue.

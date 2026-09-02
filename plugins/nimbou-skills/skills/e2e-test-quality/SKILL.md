@@ -5,7 +5,9 @@ description: Use when auditing, fixing, stabilizing, or expanding bounded end-to
 
 # E2E Test Quality
 
-Dispatch `e2e-quality-auditor` when a browser-driven end-to-end flow needs trustworthy, deterministic test coverage.
+Dispatch `e2e-quality-auditor` only when the user explicitly asks for browser-driven
+end-to-end coverage or its audit. Do not infer that request from ordinary implementation
+or a frontend change.
 
 **Core principle:** Audit one bounded user flow at a time. Keep selectors, waits, auth, data setup, and end-to-end assertions explicit.
 

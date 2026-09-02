@@ -15,6 +15,14 @@ Two separate plans — one from `nestjs-plan`, one from `nuxt-plan` — execute 
 
 **Announce at start:** "I'm using the fullstack-plan skill to produce one joint plan."
 
+## Expensive-check policy
+
+Do not add, create, or execute Playwright/browser E2E coverage in a plan, final wave,
+`Verificação`, or post-execution handoff unless the user explicitly requests that E2E
+work. Do not add or execute `typecheck` unless the user explicitly requests it either.
+These are opt-in checks; do not infer that frontend work or a changed route authorizes
+them. Use a smaller relevant proof when one is needed.
+
 ## Boundary
 
 This skill owns **wave topology across the two stacks**, and nothing else.
@@ -64,7 +72,7 @@ The default shape. Collapse or split only when a real contract dependency justif
 | 1 — Contratos | DTOs, domain contracts and ports, Prisma migration expand-step | types derived from `openapi.yaml`, fixtures |
 | 2 — Implementação | use-cases, domain services, repository adapters — each with its test, written first, in the same task | components, composables, utils |
 | 3 — Wiring | controllers, guards, filters, interceptors, module composition | page and layout integration, route wiring |
-| Final — Verificação | `nestjs-test` scoped strictly to the files this plan changed | catalog verification and scoped `/test` in `## Pos-execucao` |
+| Final — Verificação | `nestjs-test` scoped strictly to the files this plan changed | catalog verification; a test command only when explicitly requested |
 
 Both sides occupy Onda 2 at the same time. That is the whole point of the skill.
 

@@ -13,6 +13,13 @@ Assume the engineer is competent but does not know the domain, layering rules, o
 
 **Announce at start:** "I'm using the nestjs-plan skill to create the implementation plan."
 
+## Expensive-check policy
+
+Do not put Playwright/browser E2E work in a plan or execute it as part of planning
+unless the user explicitly requests it. Do not include or run `typecheck` unless the
+user explicitly requests it. Keep ordinary verification scoped to the behavior and
+files being changed.
+
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 - User preferences override this default.
 

@@ -14,6 +14,14 @@ By default, return the plan in the chat as a structured response. Do not write a
 
 **Announce at start:** "I'm using the nuxt-plan skill to create the frontend implementation plan."
 
+## Expensive-check policy
+
+Do not add, create, or execute Playwright/browser E2E coverage in this plan, including
+`Verificação`, `## Pos-execucao`, or a handoff, unless the user explicitly requests
+that E2E work. Do not include or run `typecheck` unless the user explicitly requests
+it. Prefer catalog validation, review, browser smoke without Playwright, or another
+small relevant check when appropriate.
+
 Read `reference/plan-format.md` before writing the plan.
 
 When the target project has relevant `DESIGN.md` and `GUIDELINES.md` files, consume them as input constraints. In a monorepo, default to the relevant app-level files and let a closer feature-level file override them.
@@ -73,7 +81,7 @@ This file map drives the waves.
   1. **Onda 1 — Contratos compartilhados:** shared types, composables that expose APIs consumed elsewhere, route file when it owns the data contract for child components.
   2. **Onda 2 — Componentes e configs independentes:** isolated components, feature-local utils, configs. Parallel.
   3. **Onda 3 — Integração de página e estados:** page composition, loading/empty/error/success wiring, responsive checks.
-  4. **Onda Final — Verificação:** run `/nuxt-catalog` (validate -> generate) and the suggested test scope (e.g., `/test <route>`). Test runs MUST be limited to the routes/components/composables this plan changed — never `/test` over the whole app or unscoped `pnpm test`.
+  4. **Onda Final — Verificação:** run `/nuxt-catalog` (validate -> generate). Add a test command only when the user explicitly requests it; any such test must be limited to the routes/components/composables this plan changed — never `/test` over the whole app or unscoped `pnpm test`.
 - Collapse waves when there is no contract dependency between them. Two single-task waves with no dependency should be one wave.
 - `executing-plans` performs one spec-compliance pass and one boundary pass after all waves. Do not add per-wave review checkpoints to the plan. Code review is not a per-wave step — `/code-review` runs over the branch before merging.
 - Make the handoff between page, components, and composables explicit.
@@ -94,7 +102,7 @@ to infer is a field it can infer wrong.
 | `**RED:**` | `n/a — frontend, covered by review and browser smoke`. Frontend tasks do not invent a unit-level red run merely to mirror backend TDD. |
 | `**Estimativa:**` | `curta`, `media`, or `longa`, including the scoped verification. Only `curta` tasks of the same Role may share one implementer; do not minimize it merely to increase fan-out. |
 | `**RED:**` | Always `n/a — frontend, coberto por review`. Frontend work is verified by the scoped command, review, and browser smoke rather than a unit-level red-green cycle. |
-| `**Verificação:**` | The single command that proves the task is done, scoped to the files it changed. Never `/test` over the whole app, never an unscoped `pnpm test`. |
+| `**Verificação:**` | The smallest command that proves the task is done, scoped to the files it changed. Do not use Playwright/browser E2E or `typecheck` unless the user explicitly requested it. Never `/test` over the whole app or an unscoped `pnpm test`. |
 
 `## Arquivos` stays as the overview table; the per-task fields are what actually drives
 execution. When the two disagree, that is a planning bug — fix the table.
@@ -171,7 +179,7 @@ Create a project details page using the existing status badge and a new sidebar.
 **Consome:** `nada`
 **Estimativa:** `curta`
 **RED:** `n/a — frontend, coberto por review`
-**Verificação:** `pnpm test -- composables/useProjectFilters.spec.ts`
+**Verificação:** `pnpm run nuxt-catalog -- --check`
 
 ### Onda 2 — Componentes e configs independentes (paralelo)
 
@@ -182,7 +190,7 @@ Create a project details page using the existing status badge and a new sidebar.
 **Consome:** `useProjectFilters(): { status: Ref<Status[]>, toggle(s: Status): void }`
 **Estimativa:** `media`
 **RED:** `n/a — frontend, coberto por review`
-**Verificação:** `pnpm test -- components/projects/ProjectSidebar.spec.ts`
+**Verificação:** `pnpm run nuxt-catalog -- --check`
 
 ### Onda 3 — Integração de página (paralelo dentro da onda)
 
@@ -194,7 +202,7 @@ Create a project details page using the existing status badge and a new sidebar.
 
 ## Pos-execucao
 - [ ] /nuxt-catalog
-- [ ] Sugestao: /test projects
+- [ ] Sugestao de teste: somente se solicitada explicitamente pelo usuário
 ```
 
 This is a response format, not a file requirement.
@@ -211,7 +219,7 @@ These are plan failures:
 - a `Role` field holding anything but a slug — the executor copies it verbatim into the agent type
 - a `Consome` written as *"the same declarations as Task N"* instead of the pasted declarations
 - `Test the page` without naming the recommended command or scope
-- Any test suggestion that runs the full Playwright suite or unfiltered `pnpm test`; the scope must always point to the routes/components/composables changed by this plan
+- Any Playwright/browser E2E or `typecheck` suggestion without an explicit user request; any explicitly requested test must stay scoped to the routes/components/composables changed by this plan
 - vague references to composables, stores, or API data without ownership
 
 ## Self-Review
@@ -225,7 +233,7 @@ After writing the complete plan, check:
 5. **Boundary clarity:** page, component, and composable responsibilities are clear
 6. **Guideline clarity:** local wrapper reuse, state locality, and hardening obligations are represented where relevant
 7. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
-8. **Verification clarity:** `/nuxt-catalog` and test suggestions still appear at the end, and every test suggestion is scoped to the routes/components/composables this plan changed (never the full suite)
+8. **Verification clarity:** `/nuxt-catalog` appears at the end. Playwright/browser E2E and `typecheck` appear only when explicitly requested; any explicitly requested test stays scoped to the routes/components/composables changed by this plan (never the full suite)
 9. **Deletion ownership:** a task that deletes a component, composable, or util owns **every** consumer of it, or lands in a later wave than the last consumer to be migrated. Grep the component name before planning the delete — the catalog's `usedBy` is generated and can be stale, so it is a hint, not the check. The consumer that gets missed is almost never in the feature's own folder: it is some other route that adopted the component for an unrelated reason, and deleting under it leaves the wave committed with a page that fails to resolve. When that consumer belongs to a slice this feature has no mandate over, the deletion is out of scope too — say so, and leave the component in place rather than degrading someone else's screen to tidy up yours.
 
 Fix issues inline before handing off the plan.

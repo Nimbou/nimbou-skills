@@ -12,6 +12,12 @@ Return it directly in the chat by default. Only turn it into a saved Markdown do
 - `## Riscos e Validacoes` for responsive, data, or interaction risks
 - `## Pos-execucao` for catalog verification and testing follow-up
 
+## Expensive-check policy
+
+Do not include Playwright/browser E2E creation or execution, nor `typecheck`, in a
+plan by default. They may appear only when the user explicitly requests the respective
+check. This applies to task-level `Verificação` fields and `## Pos-execucao` alike.
+
 ## Role per file
 
 The `## Arquivos` table has columns `| Acao | Caminho | Onda | Role | Depende de |`. Every row MUST set `Role` to one of:
@@ -65,7 +71,7 @@ commits once per wave.
 
 - Parallel within a wave is the default. Tasks share a wave when they have no contract dependency on each other.
 - A new wave is justified only when its tasks consume a contract, composable signature, prop API, or shared type produced by an earlier wave.
-- Page integration belongs to the last implementation wave; catalog verification and `/test` suggestions live in `## Pos-execucao`.
+- Page integration belongs to the last implementation wave; catalog verification lives in `## Pos-execucao`. Add test suggestions only when the user explicitly requests them.
 - Every wave ends with an explicit spec-compliance checkpoint over the wave's diff. Code review is not per-wave: `/code-review` runs over the branch before merging.
 
 ## Questions to close before planning
@@ -73,4 +79,4 @@ commits once per wave.
 - Which exact route or page file owns the work?
 - Which exact component and composable file names are being created or modified?
 - Which files share a wave (no contract dependency) and which must move to a later wave?
-- Which test scope matters most after implementation?
+- Has the user explicitly requested an E2E check or `typecheck`? If not, do not plan either.

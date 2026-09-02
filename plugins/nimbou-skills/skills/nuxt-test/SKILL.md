@@ -10,6 +10,8 @@ Read `reference/test-conventions.md` before changing tests.
 ## Purpose
 
 This skill owns module-bounded Playwright and E2E discipline for Nuxt/Vuetify work.
+Use it only when the user explicitly asks to create, stabilize, or execute that E2E
+coverage; do not route ordinary frontend implementation here by inference.
 
 Map a bounded route, page, or feature slice, run only its relevant E2E coverage, stabilize selectors and waits, and add the smallest possible frontend hooks only when the UI does not expose a stable observable contract.
 

@@ -1,6 +1,6 @@
 ---
 name: nuxt-debug
-description: Use for Nuxt/Vuetify browser bugs, hydration issues, or flaky frontend behavior before proposing fixes. Prefer Chrome DevTools MCP evidence first and use Playwright only when scripted reproduction is required.
+description: Use for Nuxt/Vuetify browser bugs, hydration issues, or flaky frontend behavior before proposing fixes. Prefer Chrome DevTools MCP evidence first; use Playwright only on the user's explicit request when scripted reproduction is required.
 ---
 
 # Nuxt Systematic Debugging
@@ -34,14 +34,17 @@ Prefer live evidence from the browser before editing code.
 
 ### Secondary path: Playwright
 
-Use Playwright, Playwright MCP, or the project's Playwright suite only when:
+Use Playwright, Playwright MCP, or the project's Playwright suite only when the user
+explicitly requests it and:
 - the bug needs scripted reproduction
 - the same interaction must be repeated
 - timing or state transitions need assertions
 - the failure already exists in E2E coverage
 - a visual or multi-step regression needs a repeatable script
 
-If DevTools MCP is unavailable in the current harness, fall back to Playwright plus application logs. Do not require `js_repl`, helper scripts, or a repo-specific browser wrapper that does not exist in this project.
+If DevTools MCP is unavailable in the current harness, use application logs. Fall back to
+Playwright only when the user explicitly requested it. Do not require `js_repl`, helper
+scripts, or a repo-specific browser wrapper that does not exist in this project.
 
 ## When To Use
 

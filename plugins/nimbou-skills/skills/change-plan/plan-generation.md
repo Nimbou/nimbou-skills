@@ -13,6 +13,9 @@ This plan is a `fullstack-plan` output with three deltas. Follow `nimbou-skills:
 
 Backend tasks follow `nimbou-skills:nestjs-plan` (Role Mapping, Clean Architecture, Prisma ownership, TDD `RED`). Frontend tasks follow `nimbou-skills:nuxt-plan` (Role Mapping, reuse, design resolution, `RED: n/a — frontend, coberto por review`). When this file and a platform planner disagree about a platform rule, the platform planner wins.
 
+Playwright/browser E2E and `typecheck` are opt-in: omit them from the plan and do not
+execute them unless the user explicitly requested the respective check.
+
 ## The three deltas
 
 1. **No Precondition Gate.** `fullstack-plan` requires approved `domain.md`, `.feature`, and `openapi.yaml`. This path requires none of them. Do not create domain artifacts and do not block waiting for them.
