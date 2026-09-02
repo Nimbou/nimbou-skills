@@ -156,6 +156,10 @@ test('specification skills and think orchestrators document the domain-centered 
   assert.match(changePlan, /\*\*small\*\* fullstack change/i)
   assert.match(changePlan, /replaces `change-spec`/i)
   assert.match(changePlan, /inline contract block/i)
+  assert.match(changePlan, /touches backend and frontend of an existing flow/i)
+  assert.match(changePlan, /Single entry point for a \*\*small\*\* fullstack change/i)
+  assert.match(changePlan, /no domain-artifact gate/i)
+  assert.match(changePlan, /Routing Gate/i)
   assert.match(changePlan, /`executing-plans`/i)
 
   assert.match(featSpec, /^---\nname: feat-spec/m)

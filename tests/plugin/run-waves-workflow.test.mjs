@@ -473,6 +473,25 @@ test('run-waves coalesces same-Role tasks in a wave into one implementer', async
   assert.ok(!result.followups, 'coalescing a clean wave raises no concern')
 })
 
+test('run-waves keeps legacy same-Role tasks without Estimativa coalesced', async () => {
+  const legacy = JSON.parse(JSON.stringify(twoWavePlan))
+  legacy.waves[0].tasks = [
+    { title: 'Legacy one', specLines: { start: 10, end: 20 }, files: ['src/legacy-one.ts'], verification: 'pnpm test -- legacy-one', agentType: 'nimbou-skills:nestjs-usecase-author' },
+    { title: 'Legacy two', specLines: { start: 21, end: 30 }, files: ['src/legacy-two.ts'], verification: 'pnpm test -- legacy-two', agentType: 'nimbou-skills:nestjs-usecase-author' },
+  ]
+
+  const { calls } = await runWorkflow('docs/plans/x.md', [
+    [PARSE, legacy],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  const waveOne = calls.filter((call) => (call.opts.label ?? '').startsWith('Onda 1'))
+  assert.equal(waveOne.length, 1, 'plans written before Estimativa keep their existing grouping behavior')
+})
+
 test('run-waves isolates medium and long tasks of the same Role while bundling short tasks', async () => {
   const adaptive = JSON.parse(JSON.stringify(twoWavePlan))
   adaptive.waves[0].tasks = [
@@ -772,7 +791,7 @@ test('both planners declare the same Execution Contract the executor extracts', 
 
   for (const [name, plan] of [['nestjs-plan', nestjsPlan], ['nuxt-plan', nuxtPlan]]) {
     assert.match(plan, /## Execution Contract/, `${name} should declare the contract`)
-    for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Estimativa:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
+    for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Estimativa:\\*\\*', '\\*\\*RED:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
       assert.match(plan, new RegExp(field), `${name} should declare ${field}`)
     }
     assert.match(plan, /`Consome` is mandatory from Onda 2 on/, `${name} should require consumed contracts`)
@@ -799,6 +818,7 @@ test('change-plan carries Estimativa into its run-waves-ready contract', () => {
 })
 
 test('the parser reads the contract fields instead of re-deriving them', () => {
+  assert.match(source, /seven labelled fields/)
   assert.match(source, /Read those fields; do not\s*\n?re-derive them from the prose/)
   assert.match(source, /the \\`\*\*Files:\*\*\\` field, split on commas/)
   assert.match(source, /the \\`\*\*Verificação:\*\*\\` field, verbatim/)
@@ -836,7 +856,7 @@ test('fullstack-plan composes the platform planners instead of duplicating them'
   assert.match(plan, /Unbalanced sides are normal and correct/)
 
   // It must emit what the executor extracts.
-  for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Estimativa:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
+  for (const field of ['\\*\\*Role:\\*\\*', '\\*\\*Onda:\\*\\*', '\\*\\*Files:\\*\\*', '\\*\\*Consome:\\*\\*', '\\*\\*Estimativa:\\*\\*', '\\*\\*RED:\\*\\*', '\\*\\*Verificação:\\*\\*']) {
     assert.match(plan, new RegExp(field), `fullstack-plan should carry ${field}`)
   }
   assert.match(plan, /No task declares a commit step/)
@@ -853,6 +873,8 @@ test('the pipeline routes cross-stack work to fullstack-plan', () => {
 
   assert.match(read('feat-spec'), /planning ends in `fullstack-plan`, not in the platform planners/)
   assert.match(read('change-plan'), /`nimbou-skills:executing-plans`/)
+  assert.match(read('change-plan'), /This skill \*\*replaces `change-spec`\*\*/)
+  assert.match(read('change-plan'), /produces one wave-structured plan/)
 
   for (const skill of ['nestjs-think', 'nuxt-think']) {
     assert.match(

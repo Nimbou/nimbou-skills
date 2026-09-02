@@ -236,7 +236,7 @@ happens to sit in the document. When a task has no \`**Onda:**\` field, fall bac
 the heading it sits under.
 
 Plans from \`nestjs-plan\` and \`nuxt-plan\` declare an Execution Contract per task —
-five labelled fields directly under the task heading. **Read those fields; do not
+seven labelled fields directly under the task heading. **Read those fields; do not
 re-derive them from the prose.** For every task in every wave, return:
 - title: the task heading, verbatim, without its \`#\` markers
 - specLines: the 1-indexed line range of the task's body in the plan file. \`start\`
