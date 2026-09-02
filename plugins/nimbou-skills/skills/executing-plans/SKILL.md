@@ -7,10 +7,12 @@ description: Use when you have an approved wave-structured plan and want it exec
 
 ## Expensive-check policy
 
-Do not create or execute Playwright/browser E2E coverage, and do not run `typecheck`,
-unless the user explicitly requested that exact category of work. Treat a command
-copied from a plan or template as insufficient authorization: if the plan does not
-record the explicit request, omit the command and report it as intentionally skipped.
+Do not create or execute **frontend** Playwright/browser E2E coverage unless the user
+explicitly requested that work. Backend verification may use Playwright when the plan
+calls for it. Do not run `typecheck` unless the user explicitly requested it. Treat a
+frontend command copied from a plan or template as insufficient authorization: if the
+plan does not record the explicit request, omit it and report it as intentionally
+skipped.
 
 ## Overview
 

@@ -15,10 +15,10 @@ Assume the engineer is competent but does not know the domain, layering rules, o
 
 ## Expensive-check policy
 
-Do not put Playwright/browser E2E work in a plan or execute it as part of planning
-unless the user explicitly requests it. Do not include or run `typecheck` unless the
-user explicitly requests it. Keep ordinary verification scoped to the behavior and
-files being changed.
+Backend verification may use the test level that fits the contract, including
+Playwright when appropriate. Do not include or run `typecheck` unless the user
+explicitly requests it. Keep ordinary verification scoped to the behavior and files
+being changed.
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 - User preferences override this default.

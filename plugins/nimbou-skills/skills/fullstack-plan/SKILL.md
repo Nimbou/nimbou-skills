@@ -17,11 +17,11 @@ Two separate plans — one from `nestjs-plan`, one from `nuxt-plan` — execute 
 
 ## Expensive-check policy
 
-Do not add, create, or execute Playwright/browser E2E coverage in a plan, final wave,
-`Verificação`, or post-execution handoff unless the user explicitly requests that E2E
-work. Do not add or execute `typecheck` unless the user explicitly requests it either.
-These are opt-in checks; do not infer that frontend work or a changed route authorizes
-them. Use a smaller relevant proof when one is needed.
+Do not add, create, or execute **frontend** Playwright/browser E2E coverage in a plan,
+final wave, `Verificação`, or post-execution handoff unless the user explicitly
+requests that E2E work. Backend verification, including backend Playwright when it
+fits the contract, remains available. Do not add or execute `typecheck` unless the
+user explicitly requests it. Use a smaller relevant frontend proof when one is needed.
 
 ## Boundary
 

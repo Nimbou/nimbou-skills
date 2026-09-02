@@ -13,9 +13,9 @@ Turn an **approved `laravel-think` design brief** into an ordered, file-level im
 
 ## Expensive-check policy
 
-Do not add or execute Playwright/browser E2E work or `typecheck` in this plan unless
-the user explicitly requests the respective check. Keep acceptance checks limited to
-the Laravel/module behavior being planned.
+Backend verification may use the test level that fits the Laravel/module behavior,
+including Playwright when appropriate. Do not add or execute `typecheck` unless the
+user explicitly requests it.
 
 ## When to use
 

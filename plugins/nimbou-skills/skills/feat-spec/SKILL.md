@@ -13,8 +13,9 @@ If the request is backend-only, use `nestjs-think`.
 
 This skill does not replace the platform-specific think skills. It closes the shared feature design once, defines the preliminary contract and ownership boundary between frontend and backend, and then hands backend contract closure to `nestjs-think`.
 
-When handing off to planning, do not introduce Playwright/browser E2E or `typecheck`
-as implied acceptance work. Both require an explicit user request.
+When handing off to planning, do not introduce **frontend** Playwright/browser E2E as
+implied acceptance work; it requires an explicit user request. Backend verification
+may use Playwright when appropriate. `typecheck` still requires an explicit request.
 
 ## Domain Specification Gate
 
