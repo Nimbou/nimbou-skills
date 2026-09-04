@@ -21,7 +21,7 @@ Encolher o changelog produz notas ruins; **traduzir e destilar** produz boas.
 | Camada | Dona | O quê |
 |---|---|---|
 | **Julgamento** | você (o agente) | ler o CHANGELOG, traduzir para negócio, agrupar em frentes, escolher os selos de fase, escrever o `notes.json` |
-| **Layout** | `scripts/build_release_notes.py` | renderizar capa + sumário + seções com a identidade FAEPEN; numerar as seções; anexar os disclaimers de fase |
+| **Layout** | asset desta skill: `scripts/build_release_notes.py` | renderizar capa + sumário + seções com a identidade FAEPEN; numerar as seções; anexar os disclaimers de fase |
 
 O script **não** lê o CHANGELOG — quem interpreta é você.
 
@@ -29,6 +29,8 @@ O script **não** lê o CHANGELOG — quem interpreta é você.
 
 - Saiu (ou vai sair) uma versão e alguém não-técnico precisa saber o que mudou.
 - O pedido é "notas de versão", "novidades desde a X.Y.Z", "release notes pra gerência/usuários".
+- Um release `minor` ou `major` concluído precisa do PDF que consolida a faixa
+  desde a linha `minor`/`major` anterior.
 
 **NÃO use quando:**
 - Pedem o changelog técnico cru (commits, hashes) → isso é o próprio `CHANGELOG.md`.
@@ -37,13 +39,29 @@ O script **não** lê o CHANGELOG — quem interpreta é você.
 ## Fluxo
 
 1. **Descubra a faixa de versões.** Peça a versão de origem se não veio ("desde a X.Y.Z").
+   Quando esta skill for acionada pelo fluxo de release para uma versão `minor`
+   ou `major`, a origem não é opcional: encontre a tag anterior com patch zero
+   (`vA.B.0`), excluindo a tag alvo, e cubra tudo até a versão nova. Isso inclui
+   todos os patches intermediários. Use a ordem de versão, não a data:
+
+   ```bash
+   git tag --merged vX.Y.Z --sort=-v:refname \
+     | sed -nE 's/^v[0-9]+[.][0-9]+[.]0$/&/p' \
+     | grep -Fxv vX.Y.Z \
+     | head -1
+   git log --oneline <tag-minor-ou-major-anterior>..vX.Y.Z
+   ```
+
+   Exemplo: para `v1.73.0`, a origem é `v1.72.0`; entram `v1.72.1`,
+   `v1.72.2` e todas as mudanças até `v1.73.0`.
    - `git tag --sort=-creatordate | head` — versões existentes.
    - `grep -n "^## \[" CHANGELOG.md` — cabeçalhos e datas de cada versão.
    - Se o checkout estiver atrás da tag, leia `git show v<tag>:CHANGELOG.md`.
    - A faixa costuma cobrir **vários patches** (ex.: desde a 1.72.0 = 1.72.1 + 1.72.2 + 1.72.3 + 1.73.0). Some tudo.
 2. **Traduza e agrupe** (ver as duas regras abaixo).
 3. **Escreva o `notes.json`** (schema abaixo).
-4. **Renderize:** `python scripts/build_release_notes.py notes.json <saida>.pdf`
+4. **Renderize:** execute o asset desta skill, não um caminho do repositório do
+   produto: `python <diretório-desta-skill>/scripts/build_release_notes.py notes.json <saida>.pdf`.
 5. **Confira olhando** (layout de PDF quebra fácil): renderize as páginas para PNG e leia as imagens.
    Ex.: `python -c "import fitz; d=fitz.open('saida.pdf'); [d[i].get_pixmap(dpi=110).save(f'v{i}.png') for i in range(d.page_count)]"`.
    Cheque: capa e selos corretos, sumário com todas as seções e badges, zero jargão, nada transbordando.
