@@ -7,7 +7,7 @@ description: Use when one Vue/Nuxt component must be rendered in isolation acros
 
 ## Overview
 
-Pega **um** componente Vue, renderiza seus estados em **viewports** num sandbox isolado (Storybook), corrige quebras e poli a UX **ancorado nos guias do projeto**, num **loop fechado** que só encerra quando estabiliza.
+Pega **um** componente Vue, renderiza seus estados em **viewports** no Vitest Browser Mode, corrige quebras e poli a UX **ancorado nos guias do projeto**, num **loop fechado** que só encerra quando estabiliza.
 
 ```text
 NENHUMA EDIÇÃO DE DESIGN SEM RENDER ISOLADO E EVIDÊNCIA DE BROWSER
@@ -31,7 +31,7 @@ Olhar o código não é evidência. Navegar uma página real não é o palco —
 
 ## Pré-condições (pare se faltarem)
 
-1. **Storybook** configurado no projeto-alvo. É o palco canônico de avaliação. Sem Storybook, **pare e reporte** — não troque por navegação de páginas reais.
+1. **Vitest Browser Mode** configurado no projeto-alvo, com provider de navegador e forma de capturar evidência visual. Sem ele, **pare e reporte** — não troque por navegação de páginas reais.
 2. **`DESIGN.md` + `GUIDELINES.md`** resolvidos pela área do componente (mesma ordem da `nimbou-skills:nuxt-audit`: do diretório do componente subindo). São a régua do "agradável". Se faltarem, pare e sugira `/design-md`; só siga com aprovação explícita de usar regras genéricas.
 3. Edição autônoma de arquivo real → rode em branch/worktree (`nimbou-skills:using-git-worktrees`) e mostre o diff antes de qualquer commit.
 
@@ -40,8 +40,8 @@ Olhar o código não é evidência. Navegar uma página real não é o palco —
 ```dot
 digraph harden {
   rankdir=TB;
-  states   [shape=box,label="1. Enumerar estados (nuxt-catalog) + garantir stories"];
-  render   [shape=box,label="2. Render estados × viewports no Storybook + screenshot"];
+  states   [shape=box,label="1. Enumerar estados (nuxt-catalog) + garantir harness"];
+  render   [shape=box,label="2. Render estados × viewports no harness + screenshot"];
   classify [shape=diamond,label="Quebra ou violação de guia?"];
   fix      [shape=box,label="3. Corrige (quebra: via nuxt-debug; estética: via nuxt-design-posture)"];
   gate     [shape=diamond,label="Gate duplo fecha E render estabilizou?"];
@@ -60,21 +60,21 @@ digraph harden {
 }
 ```
 
-Corrige quebra objetiva e poli a estética **autonomamente** dentro do loop. Só as **stories** têm gate de confirmação (artefato persistente). Diff final sempre mostrado antes de commit.
+Corrige quebra objetiva e poli a estética **autonomamente** dentro do loop. O teste browser tem gate de confirmação antes de commit. Diff final sempre mostrado antes de commit.
 
 ## Superfície de avaliação
 
 **Matriz de estados** (mínimo): `vazio`, `carregando`, `erro`, `preenchido mínimo`, `preenchido no limite` (texto longo, lista grande, número grande). Derive a lista das props/slots reais via `nimbou-skills:nuxt-catalog` — não invente estados nem ignore os obrigatórios.
 
-**Matriz de viewports**: mobile (~390), tablet (~768), desktop (~1280) — use o addon de viewport do Storybook. Acrescente o que o `GUIDELINES.md` exigir.
+**Matriz de viewports**: mobile (~390), tablet (~768), desktop (~1280). Configure o viewport do navegador antes de cada render no Vitest Browser Mode. Acrescente o que o `GUIDELINES.md` exigir.
 
 Avalie **todo estado × todo viewport**. Um esconde o que o outro mostra.
 
-## Stories: gerar o que falta
+## Testes browser: gerar o que falta
 
-- Use as stories existentes; para estados sem story, **crie/complete** `*.stories.*` cobrindo a matriz, com args das props reais (via catálogo).
-- Stories são artefato persistente: **pergunte antes de commitá-las**. Se o usuário não quiser persistir, use stories efêmeras só durante o ciclo e descarte no fim.
-- Stories ruins viciam toda a avaliação seguinte — confira que cada estado renderiza o que diz renderizar antes de julgar.
+- Use testes browser existentes; para estados sem cobertura, **crie/complete** um teste de componente que monte o SFC isoladamente, aplique cada viewport e salve screenshots ou outra evidência visual comparável.
+- Testes browser são artefatos persistentes: **pergunte antes de commitá-los**. Se o usuário não quiser persistir, use um teste efêmero só durante o ciclo e descarte no fim.
+- Um teste ruim vicia toda a avaliação seguinte — confira que cada estado renderiza o que diz renderizar antes de julgar. Não aceite execução em ambiente Node como substituta do browser.
 
 ## Orquestração (quem decide o quê)
 
@@ -109,21 +109,21 @@ Encerra **somente** quando, ao mesmo tempo:
 | Racionalização | Realidade |
 |---|---|
 | "Li o código, tá ok" | Código não é render. Sem screenshot do estado, você não viu a quebra. |
-| "Naveguei a página real, chega" | Página real é acoplamento a rota/auth/dados. O palco é o Storybook isolado. |
+| "Naveguei a página real, chega" | Página real é acoplamento a rota/auth/dados. O palco é um harness isolado em browser. |
 | "Uma rodada de validação basta" | Loop fechado exige re-render e estabilização (2 iterações iguais). |
 | "Vou polir mais um pouquinho" | Sem gate, vira gold-plating. Fecha nos gates ou para no teto. |
-| "Criei a story e já commitei" | Story é artefato persistente: confirme antes de commitar. |
+| "Criei o teste e já commitei" | Teste browser persistente: confirme antes de commitar. |
 | "Sem guia eu uso meu gosto" | Sem `GUIDELINES.md`, pare e sugira `/design-md`. Gosto em produção é dívida. |
 | "Conserto dentro do componente" (quebra é do pai) | Mascarar quebra estrutural é gambiarra. Reporte a origem real. |
-| "Tá com pressa, Storybook é frescura" | Pressa não rebaixa o palco. Sem Storybook, pare e reporte; página real só como override consciente e rotulado pelo usuário. |
-| "Pode commitar que eu confio" | Pré-autorização não dispensa gates nem diff. Feche os gates, mostre o diff, confirme as stories — autoridade não colapsa o loop. |
+| "Tá com pressa, teste browser é frescura" | Pressa não rebaixa o palco. Sem Vitest Browser Mode, pare e reporte; página real só como override consciente e rotulado pelo usuário. |
+| "Pode commitar que eu confio" | Pré-autorização não dispensa gates nem diff. Feche os gates, mostre o diff, confirme o teste browser — autoridade não colapsa o loop. |
 
 ## Quick Reference
 
 | Fase | Foco | Saída |
 |---|---|---|
-| 1. Estados | catálogo → matriz de estados, garantir stories | stories cobrindo a matriz (gate de commit) |
-| 2. Render | Storybook × viewports, screenshot | evidência por estado × viewport |
+| 1. Estados | catálogo → matriz de estados, garantir testes browser | testes browser cobrindo a matriz (gate de commit) |
+| 2. Render | Vitest Browser Mode × viewports, screenshot | evidência por estado × viewport |
 | 3. Diagnóstico | quebra → `nuxt-debug`; estética → `nuxt-design-posture` | causa-raiz e direção de correção |
 | 4. Correção | edita o SFC, re-renderiza, compara | diff + screenshots antes/depois |
 | 5. Parada | gate duplo + estabilização, teto como trava | entrega ou relatório do que falta |
