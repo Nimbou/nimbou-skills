@@ -31,7 +31,7 @@ Olhar o código não é evidência. Navegar uma página real não é o palco —
 
 ## Pré-condições (pare se faltarem)
 
-1. **Vitest Browser Mode** configurado no projeto-alvo, com provider de navegador e forma de capturar evidência visual. Sem ele, **pare e reporte** — não troque por navegação de páginas reais.
+1. **Vitest Browser Mode** configurado no projeto-alvo, com provider de navegador e screenshots persistidos ou baseline visual comparável. Sem ele, **pare e reporte** — página real nunca é substituta.
 2. **`DESIGN.md` + `GUIDELINES.md`** resolvidos pela área do componente (mesma ordem da `nimbou-skills:nuxt-audit`: do diretório do componente subindo). São a régua do "agradável". Se faltarem, pare e sugira `/design-md`; só siga com aprovação explícita de usar regras genéricas.
 3. Edição autônoma de arquivo real → rode em branch/worktree (`nimbou-skills:using-git-worktrees`) e mostre o diff antes de qualquer commit.
 
@@ -66,13 +66,15 @@ Corrige quebra objetiva e poli a estética **autonomamente** dentro do loop. O t
 
 **Matriz de estados** (mínimo): `vazio`, `carregando`, `erro`, `preenchido mínimo`, `preenchido no limite` (texto longo, lista grande, número grande). Derive a lista das props/slots reais via `nimbou-skills:nuxt-catalog` — não invente estados nem ignore os obrigatórios.
 
-**Matriz de viewports**: mobile (~390), tablet (~768), desktop (~1280). Configure o viewport do navegador antes de cada render no Vitest Browser Mode. Acrescente o que o `GUIDELINES.md` exigir.
+**Matriz de viewports**: mobile `390×844`, tablet `768×1024`, desktop `1280×960`. Antes de cada render, configure a largura **e** a altura com `page.viewport(width, height)`. Acrescente apenas viewports que o `GUIDELINES.md` exigir.
 
 Avalie **todo estado × todo viewport**. Um esconde o que o outro mostra.
 
-## Testes browser: gerar o que falta
+## Testes browser e evidência: gerar o que falta
 
-- Use testes browser existentes; para estados sem cobertura, **crie/complete** um teste de componente que monte o SFC isoladamente, aplique cada viewport e salve screenshots ou outra evidência visual comparável.
+- Use testes browser existentes; para estados sem cobertura, **crie/complete** um teste de componente que monte o SFC isoladamente e aplique cada célula de estado × viewport.
+- Para **cada célula**, chame `page.viewport(width, height)` e gere um screenshot nomeado com `page.screenshot(...)`, ou compare-a a um baseline visual nomeado com o matcher configurado pelo projeto. O nome/caminho deve identificar componente, estado e viewport.
+- Inclua no relatório final os caminhos ou IDs dos screenshots/baselines avaliados. Sem eles, não declare que o render estabilizou.
 - Testes browser são artefatos persistentes: **pergunte antes de commitá-los**. Se o usuário não quiser persistir, use um teste efêmero só durante o ciclo e descarte no fim.
 - Um teste ruim vicia toda a avaliação seguinte — confira que cada estado renderiza o que diz renderizar antes de julgar. Não aceite execução em ambiente Node como substituta do browser.
 
@@ -89,7 +91,7 @@ Encerra **somente** quando, ao mesmo tempo:
 
 1. **Zero violações** de `DESIGN.md`/`GUIDELINES.md` (incl. Absolute Bans do `nuxt-design-posture`).
 2. **Checklist objetivo 100%** (abaixo) em todo estado × viewport.
-3. **Render estabilizou**: duas iterações consecutivas sem mudança visual.
+3. **Render estabilizou**: duas iterações consecutivas sem mudança visual, comparando os mesmos screenshots/baselines de cada célula.
 
 **Teto de iterações** (default 3) é trava de segurança: ao atingir o teto sem fechar os gates, **pare e reporte o que falta** — não declare pronto, não fique polindo "mais um pouco". Feche com `nimbou-skills:verification-before-completion`.
 
@@ -115,7 +117,7 @@ Encerra **somente** quando, ao mesmo tempo:
 | "Criei o teste e já commitei" | Teste browser persistente: confirme antes de commitar. |
 | "Sem guia eu uso meu gosto" | Sem `GUIDELINES.md`, pare e sugira `/design-md`. Gosto em produção é dívida. |
 | "Conserto dentro do componente" (quebra é do pai) | Mascarar quebra estrutural é gambiarra. Reporte a origem real. |
-| "Tá com pressa, teste browser é frescura" | Pressa não rebaixa o palco. Sem Vitest Browser Mode, pare e reporte; página real só como override consciente e rotulado pelo usuário. |
+| "Tá com pressa, teste browser é frescura" | Pressa não rebaixa o palco. Sem Vitest Browser Mode, pare e reporte; não há override por página real. |
 | "Pode commitar que eu confio" | Pré-autorização não dispensa gates nem diff. Feche os gates, mostre o diff, confirme o teste browser — autoridade não colapsa o loop. |
 
 ## Quick Reference
@@ -123,7 +125,7 @@ Encerra **somente** quando, ao mesmo tempo:
 | Fase | Foco | Saída |
 |---|---|---|
 | 1. Estados | catálogo → matriz de estados, garantir testes browser | testes browser cobrindo a matriz (gate de commit) |
-| 2. Render | Vitest Browser Mode × viewports, screenshot | evidência por estado × viewport |
+| 2. Render | Vitest Browser Mode × viewports, screenshot/baseline nomeado | evidência por estado × viewport, com caminho/ID |
 | 3. Diagnóstico | quebra → `nuxt-debug`; estética → `nuxt-design-posture` | causa-raiz e direção de correção |
 | 4. Correção | edita o SFC, re-renderiza, compara | diff + screenshots antes/depois |
 | 5. Parada | gate duplo + estabilização, teto como trava | entrega ou relatório do que falta |
