@@ -59,14 +59,33 @@ test('skills tree ships the unified skill set directly', () => {
   assert.equal(existsSync(resolve(root, '.agents/plugins/marketplace.json')), true)
 
   const codexPlugin = JSON.parse(read('plugins/nimbou-skills/.codex-plugin/plugin.json'))
+  const claudePlugin = JSON.parse(read('plugins/nimbou-skills/.claude-plugin/plugin.json'))
   const codexMarketplace = JSON.parse(read('.agents/plugins/marketplace.json'))
 
   assert.equal(codexPlugin.name, 'nimbou-skills')
   assert.equal(codexPlugin.skills, './skills/')
+  assert.equal(codexPlugin.version, claudePlugin.version, 'Codex and Claude must ship the same release')
+  assert.match(codexPlugin.description, /Laravel/i)
   assert.equal(codexMarketplace.name, 'nimbou-skills')
   assert.equal(codexMarketplace.plugins[0].policy.installation, 'INSTALLED_BY_DEFAULT')
   assert.equal(codexMarketplace.plugins[0].source.source, 'local')
   assert.equal(codexMarketplace.plugins[0].source.path, './plugins/nimbou-skills')
+})
+
+test('CMS workflow uses the safe ordering key and preserves every planning gate', () => {
+  const cmsThink = read('plugins/nimbou-skills/skills/nimbou-cms-think/SKILL.md')
+  const cmsPlan = read('plugins/nimbou-skills/skills/nimbou-cms-plan/SKILL.md')
+  const portSkill = read('plugins/nimbou-skills/skills/port-redesign-nimbou-site/SKILL.md')
+  const portHarness = read('plugins/nimbou-skills/skills/port-redesign-nimbou-site/qa-harness.md')
+
+  for (const skill of [cmsThink, cmsPlan]) {
+    assert.match(skill, /`sort_order`/, 'CMS design and planning must name the safe ordering field')
+    assert.doesNotMatch(skill, /manual `order` field/, 'CMS guidance must not recommend the reserved key')
+  }
+
+  const completeCmsHandoff = /`nimbou-cms-think`.*`nimbou-cms-plan`.*`nimbou-cms-execute`.*`nimbou-cms-wire`/s
+  assert.match(portSkill, completeCmsHandoff)
+  assert.match(portHarness, completeCmsHandoff)
 })
 
 test('command and agent scaffolds exist for design, merge, and review workflows', () => {

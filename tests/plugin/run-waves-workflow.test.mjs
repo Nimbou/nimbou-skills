@@ -116,6 +116,24 @@ test('run-waves refuses a plan that is not wave-structured', async () => {
   assert.match(result.error, /nestjs-plan, nimbou-skills:laravel-plan, nimbou-skills:nuxt-plan, or nimbou-skills:fullstack-plan/)
 })
 
+test('run-waves refuses a fullstack plan without a valid backend planner', async () => {
+  for (const backendPlanner of [undefined, 'other']) {
+    const fullstack = JSON.parse(JSON.stringify(twoWavePlan))
+    fullstack.planOrigin = 'fullstack-plan'
+    if (backendPlanner === undefined) delete fullstack.backendPlanner
+    else fullstack.backendPlanner = backendPlanner
+
+    const { result, calls } = await runWorkflow('docs/plans/fullstack.md', [[PARSE, fullstack]])
+
+    assert.match(result.error, /backendPlanner/)
+    assert.equal(
+      calls.filter((call) => call.opts.phase === 'Implement').length,
+      0,
+      'an ambiguous fullstack backend must fail before dispatch',
+    )
+  }
+})
+
 test('run-waves fans out one implementer per task and commits once per wave', async () => {
   const { result, calls } = await runWorkflow('docs/plans/x.md', [
     [PARSE, twoWavePlan],

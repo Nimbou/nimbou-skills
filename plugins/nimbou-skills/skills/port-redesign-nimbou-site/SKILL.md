@@ -18,7 +18,7 @@ Core principle: **port the render, keep the CMS as content, measure the DOM to p
 - A site built content-first **diverged** from the redesign (over-simplified: missing utility bar, hero photo, carousels, filters) and must be brought back to fidelity — page by page.
 - A new nimbou site must match an export (`.dc.html`/Duda, Framer, Webflow) — self-contained HTML + inline CSS + a `data-dc-script`.
 
-**Not** for: theming tokens/fonts (`theming-nimbou-site`); designing a page from scratch with no export (`nuxt-think`/`nuxt-plan`); building/wiring CMS modules (`nimbou-cms-think`/`nimbou-cms-execute`/`nimbou-cms-wire`); the SEO cutover or deploy (`nimbou-seo-migrate`/`golive-`/`deploy-nimbou-site`).
+**Not** for: theming tokens/fonts (`theming-nimbou-site`); designing a page from scratch with no export (`nuxt-think`/`nuxt-plan`); building/wiring CMS modules (`nimbou-cms-think`/`nimbou-cms-plan`/`nimbou-cms-execute`/`nimbou-cms-wire`); the SEO cutover or deploy (`nimbou-seo-migrate`/`golive-`/`deploy-nimbou-site`).
 
 ## Boundary — what this skill OWNS vs DELEGATES
 
@@ -29,7 +29,7 @@ Core principle: **port the render, keep the CMS as content, measure the DOM to p
 | The port itself + the **gotchas** below + **QA by measurement** | **this skill** |
 | Palette/type tokens already applied to the skeleton | `theming-nimbou-site` (assumed done) |
 | Page/component design decisions (splits, state, reuse) | feed the fidelity inventory as a brief into `nuxt-think` → `nuxt-plan`; **do not re-plan** |
-| A CMS module the redesign needs but that doesn't exist | **detect the gap, hand off** to `nimbou-cms-think`/`nimbou-cms-execute` + `nimbou-cms-wire` — never hardcode, never build it here |
+| A CMS module the redesign needs but that doesn't exist | **detect the gap, hand off** to `nimbou-cms-think` → `nimbou-cms-plan` → `nimbou-cms-execute` → `nimbou-cms-wire` — never hardcode, never build it here |
 
 ## Shape — 3 stages
 

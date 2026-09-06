@@ -150,7 +150,7 @@ Write `docs/<phase>/port-manifest.md` so a second port can diff against it. It m
 | script.__DC.quoteModal | components/QuoteModal.vue + composables/useQuote.ts | informations.whatsapp | shared | data→CMS; interaction re-derived |
 
 ## CMS gaps (delegated, not built here)
-- <content in the redesign with no module> → hand off to nimbou-cms-think/nimbou-cms-execute + nimbou-cms-wire
+- <content in the redesign with no module> → hand off to `nimbou-cms-think` → `nimbou-cms-plan` → `nimbou-cms-execute` → `nimbou-cms-wire`
 ```
 
 **Re-run (second port, updated export):** hash the new export; `diff` its section inventory against the manifest; produce an **impact report** (added/changed/removed blocks) and apply **surgical edits** to the mapped components only. Never blind-overwrite a component file — hand edits from later phases live there.

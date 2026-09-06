@@ -297,6 +297,15 @@ if (plan.waveStructured === false) {
   }
 }
 
+if (
+  plan.planOrigin === 'fullstack-plan' &&
+  !['nestjs-plan', 'laravel-plan'].includes(plan.backendPlanner)
+) {
+  return {
+    error: `${planPath} came from fullstack-plan but has no valid backendPlanner. Regenerate it with an explicit **Backend planner:** nestjs-plan or laravel-plan before executing.`,
+  }
+}
+
 // Every write in this run is anchored here. Without it, implementers resolve the
 // plan's paths against whatever checkout they inherited — which is how a wave gets
 // half-written into the main checkout and committed as if it were complete.

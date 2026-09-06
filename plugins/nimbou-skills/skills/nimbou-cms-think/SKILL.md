@@ -23,7 +23,7 @@ Work through these and record the answers as the brief:
 1. **View type.** Singleton content → **Item** (one row, id=1). A collection of items → **Table** (many rows, `active=1` + visibility window). Approval workflow → ApprovalTable.
 2. **Fields.** For each field pick a `key` + type from the catalog (§4 of the guide). ⚠️ **The field `key`s ARE the API/frontend contract** — name them deliberately (`short_description`, `long_description`, `image`…). Prefer scalar types; **avoid `category`/`subcategory`/`tags` when the frontend needs the readable value** — the site returns them **raw (int id / JSON)**, only `imageFile`/`file` are enriched.
 3. **Slug / URL.** There is **no slug field and the id is the real key**. Default: URL = `Str::slug(title)-{id}`, resolved by `RouteHelper::getIdFromSlug` (id visible in URL). A **clean slug** (`/seguros/auto`, no id) requires **new PHP** (a `where('slug',…)` lookup + a `slug` field + a matching frontend route) — only take it if the client insists.
-4. **Ordering.** ⚠️ `TableView::index` hard-codes `ORDER BY created_at DESC`; there is **no order column** on Table content tables. Editor-controlled ordering is **not** available via the API as-is. Options: accept created_at order; add a `number` field and sort on the frontend; or (last resort) patch `TableView`. Decide now.
+4. **Ordering.** ⚠️ `TableView::index` hard-codes `ORDER BY created_at DESC`; there is **no ordering column** on Table content tables. Editor-controlled ordering is **not** available via the API as-is. Options: accept created_at order; add a `number` field keyed `sort_order` and sort on the frontend; or (last resort) patch `TableView`. Decide now. Never key the field `order`: it is a MySQL reserved word and the admin's unquoted `ALTER TABLE` fails.
 5. **Routing & SEO — only if the content has its OWN public page.** ⚠️ Decide first: does this content type need a dedicated URL (a list page and/or a per-item page), or is it rendered **inside an existing page/section** (e.g. a testimonials block on the homepage)?
    - **Own page(s):** add **entries to `config/pages.php`** (a `meta` array/closure + a `sitemap` closure for `{slug}` routes). No controller edits — `web.php` injects `<head>`, the body is Nuxt.
    - **Inside an existing page (no dedicated URL):** **change nothing in `config/pages.php`.** The generic `/api/<key>` is enough; the existing page's route already injects its own `<head>`. Do NOT add a list/`{slug}` route or a sitemap entry — that would be dead code, and there is no page to verify SEO on.
@@ -51,14 +51,14 @@ A short doc the user approves:
 - Slug + ordering decisions (with the constraints above).
 - Route(s) to add to `config/pages.php` (with meta/sitemap sketch).
 - Reproducibility approach chosen (+ the "rebuild on a clean DB" acceptance bar).
-- Frontend handoff for `nimbou-cms-wire`, followed by `nuxt-think`/`nuxt-plan` for visible UI work: module key, view type, field-key contract, image `{featured,list}` shape, **and any client-side responsibilities the API can't do** — especially: sort order (the API always returns `created_at DESC`, so if the brief chose a manual `order` field the frontend MUST sort by it), and resolving raw `category`/`tag` ids. A handoff missing the sort instruction silently ships the wrong order.
+- Frontend handoff for `nimbou-cms-wire`, followed by `nuxt-think`/`nuxt-plan` for visible UI work: module key, view type, field-key contract, image `{featured,list}` shape, **and any client-side responsibilities the API can't do** — especially: sort order (the API always returns `created_at DESC`, so if the brief chose a manual `sort_order` field the frontend MUST sort by it), and resolving raw `category`/`tag` ids. A handoff missing the sort instruction silently ships the wrong order.
 
 Get explicit approval, then `nimbou-cms-plan`.
 
 ## Common mistakes
 
 - Choosing `category`/`tags` for something the frontend must display readably (site returns raw ids/JSON).
-- Assuming editor-controlled ordering works. `TableView` returns `created_at DESC`; the `order` value ships in the JSON but the sort is the frontend's job — say so in the handoff.
+- Assuming editor-controlled ordering works. `TableView` returns `created_at DESC`; the `sort_order` value ships in the JSON but the sort is the frontend's job — say so in the handoff.
 - Adding a list/`{slug}` route + sitemap for content that lives inside an existing page (dead code + nothing to verify). Only route content that has its own URL.
 - Promising clean id-free URLs without budgeting the extra PHP.
 - Treating `imageFile` as single — the API always returns `{ featured, list }`; the frontend reads `image.featured?.path`.

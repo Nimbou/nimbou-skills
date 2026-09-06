@@ -32,7 +32,7 @@ Produce a plan with these phases; each step names the exact file/endpoint and it
 
 **5 — Verify.** Always: `GET /api/<key>` (list `{data:[...]}`), `GET /api/<key>/{id}` (table only), and field `key`s match the contract. **Only if a public route was added:** `/sitemap.xml` contains the URLs and view-source of a `{slug}` page shows injected `<title>`/OG. Do not verify SEO/sitemap for a routeless (section) content type — there's nothing to check.
 
-**6 — Frontend handoff.** Emit first for `nimbou-cms-wire`: module key, view type, field keys, image `{featured,list}` shape, **client-side responsibilities the API can't do** (sort — the API returns `created_at DESC`, so a manual `order` field must be sorted on the frontend; resolving raw `category`/`tag` ids), and whether there's a public route or it's a section. After the typed entity/store/model/mock/composable wiring, route visible UI work to `nuxt-think`/`nuxt-plan`. Do NOT plan Nuxt files here.
+**6 — Frontend handoff.** Emit first for `nimbou-cms-wire`: module key, view type, field keys, image `{featured,list}` shape, **client-side responsibilities the API can't do** (sort — the API returns `created_at DESC`, so a manual `sort_order` field must be sorted on the frontend; resolving raw `category`/`tag` ids), and whether there's a public route or it's a section. After the typed entity/store/model/mock/composable wiring, route visible UI work to `nuxt-think`/`nuxt-plan`. Do NOT plan Nuxt files here.
 
 **7 — Dev→prod reproduction.** Apply the *validated* artifact on prod (separate DB). **Content + images are NOT carried** — re-enter, or dump/restore `mod_<key>` + `images` rows + `public/upload/<moduleId>/…` (⚠️ the `<moduleId>` path segment changes if the prod module id differs → image paths break; verify/remap). Keep site-repo (`config/pages.php`, if any) and admin-repo (artifact) changes in lockstep for the deploy.
 
@@ -48,4 +48,4 @@ An ordered checklist (files + acceptance per step), the versioned module-definit
 - Adding a `config/pages.php` route + sitemap for content that renders inside an existing page — then trying to verify SEO that doesn't exist. Route only content with its own URL.
 - Assuming content/images travel with the schema (they don't); forgetting the `<moduleId>` image-path drift between envs.
 - Editing `ModuleController`/`web.php` — the API and route loop are generic.
-- Handing off to the frontend without the sort/transform responsibilities (manual `order`, raw category ids), or planning Nuxt files here instead of `nuxt-plan`.
+- Handing off to the frontend without the sort/transform responsibilities (manual `sort_order`, raw category ids), or planning Nuxt files here instead of `nuxt-plan`.
