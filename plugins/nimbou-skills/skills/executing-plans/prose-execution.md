@@ -69,7 +69,7 @@ Dispatch **one implementer subagent per group from 2.1b** with `spawn_agent`, in
 bounded by the available worker capacity. Groups in the same batch run in parallel;
 later batches remain part of the same wave and start only after the prior batch returns.
 
-Build each prompt from `./implementer-prompt.md`. Plans from `nestjs-plan` and `nuxt-plan`
+Build each prompt from `./implementer-prompt.md`. Plans from `nestjs-plan`, `laravel-plan`, and `nuxt-plan`
 declare an Execution Contract per task — `Role`, `Onda`, `Files`, `Consome`, `Estimativa`, `RED`, `Verificação` —
 directly under the task heading. Read those fields; do not re-derive them from the prose.
 Each implementer gets:
@@ -96,7 +96,7 @@ The controller does **not** write implementation code during a fan-out wave. It 
 
 ## Role Routing
 
-`nestjs-plan` declares a `**Role:**` line per task; `nuxt-plan` declares a `Role` column per file row. In Codex, that slug selects the compact ownership brief in `./codex-role-briefs.md`, which the controller includes in a general `spawn_agent` message.
+`nestjs-plan` and `laravel-plan` declare a `**Role:**` line per task; `nuxt-plan` declares a `Role` column per file row. In Codex, that slug selects the compact ownership brief in `./codex-role-briefs.md`, which the controller includes in a general `spawn_agent` message.
 
 | Role slug | Owns |
 |---|---|
@@ -111,6 +111,7 @@ The controller does **not** write implementation code during a fan-out wave. It 
 Rules:
 
 - **Fallback:** a task with no `Role` gets `general-purpose`, you say so in the wave report, and you record it as a `concern` for Step 3 — same as a write-set collision. Both are planning defects, and follow-ups is where they get triaged. Fix the plan rather than leaning on the fallback.
+- **Laravel:** `laravel-plan` currently declares `general-purpose` explicitly. This is intentional and is not the missing-Role fallback.
 - **A write-set collision can cost the Role.** Merged tasks keep it only when they agree on it; conflicting Roles fall back to `general-purpose` with a `concern`. See Step 2.1.
 - **Never infer a role from the file path.** If the plan did not declare one, the fallback applies — silently picking `prisma-repository-author` because the path contains `infra/` hides a planning bug.
 - Final-wave `nestjs-test` tasks and `## Pos-execucao` items carry no `Role`. They route through the test auditors and follow-ups, not through implementers.

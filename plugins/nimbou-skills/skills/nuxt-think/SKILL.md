@@ -56,7 +56,7 @@ Treat `docs/domain/<domain>/` as the canonical specification bundle for the feat
    - what existing primitives, shells, or local patterns from `DESIGN.md` and `GUIDELINES.md` must be preferred
    - what visual direction should guide the UI so it does not drift into generic output
    - what local anti-patterns must be avoided, such as rebuilding an existing shell locally, creating a store for simple parent-child communication, or pushing child-only handlers up into the page
-7. Produce the structured output below with explicit references to the approved specification artifacts, present it for approval, and only then hand off to `nuxt-plan`. Do not write code.
+7. Produce the structured output below with explicit references to the approved specification artifacts and present it for approval. Hand off to `nuxt-plan` for frontend-only work or to `fullstack-plan` when backend implementation is also in scope. Do not write code.
 
 Consult `nimbou-skills:nuxt-design-architecture`, the local `GUIDELINES.md`, and the local `DESIGN.md` before proposing component splits. `GUIDELINES.md` owns implementation rules; `DESIGN.md` owns visual rules and wins on visual conflict.
 

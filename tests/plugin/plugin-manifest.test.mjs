@@ -25,6 +25,12 @@ test('skills tree ships the unified skill set directly', () => {
   assert.ok(shippedSkills.includes('fullstack-plan'))
   assert.ok(shippedSkills.includes('e2e-test-quality'))
   assert.ok(shippedSkills.includes('change-plan'))
+  assert.ok(shippedSkills.includes('laravel-think'))
+  assert.ok(shippedSkills.includes('laravel-plan'))
+  assert.ok(shippedSkills.includes('nimbou-cms-think'))
+  assert.ok(shippedSkills.includes('nimbou-cms-plan'))
+  assert.ok(shippedSkills.includes('nimbou-cms-execute'))
+  assert.equal(shippedSkills.includes('laravel-execute'), false)
   assert.ok(shippedSkills.includes('feat-spec'))
   assert.ok(shippedSkills.includes('doc-domain'))
   assert.ok(shippedSkills.includes('doc-gherkin'))
@@ -93,6 +99,8 @@ test('specification skills and think orchestrators document the domain-centered 
     'plugins/nimbou-skills/skills/doc-gherkin/SKILL.md',
     'plugins/nimbou-skills/skills/doc-openapi/SKILL.md',
     'plugins/nimbou-skills/skills/change-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/laravel-think/SKILL.md',
+    'plugins/nimbou-skills/skills/laravel-plan/SKILL.md',
     'plugins/nimbou-skills/skills/nuxt-think/SKILL.md',
     'plugins/nimbou-skills/skills/nestjs-think/SKILL.md',
     'plugins/nimbou-skills/skills/feat-spec/SKILL.md',
@@ -106,6 +114,7 @@ test('specification skills and think orchestrators document the domain-centered 
   const gherkinSkill = read('plugins/nimbou-skills/skills/doc-gherkin/SKILL.md')
   const openapiSkill = read('plugins/nimbou-skills/skills/doc-openapi/SKILL.md')
   const changePlan = read('plugins/nimbou-skills/skills/change-plan/SKILL.md')
+  const laravelThink = read('plugins/nimbou-skills/skills/laravel-think/SKILL.md')
   const nuxtThink = read('plugins/nimbou-skills/skills/nuxt-think/SKILL.md')
   const nestjsThink = read('plugins/nimbou-skills/skills/nestjs-think/SKILL.md')
   const featSpec = read('plugins/nimbou-skills/skills/feat-spec/SKILL.md')
@@ -118,8 +127,8 @@ test('specification skills and think orchestrators document the domain-centered 
   assert.match(gherkinSkill, /^---\nname: doc-gherkin/m)
   assert.match(openapiSkill, /docs\/domain\/<domain>\/openapi\.yaml/)
   assert.match(openapiSkill, /canonical HTTP transport contract/i)
-  assert.match(openapiSkill, /after `domain\.md`, `\.feature` files, and backend contract decisions are approved/i)
-  assert.match(openapiSkill, /after `nestjs-think` and before `nuxt-think`/i)
+  assert.match(openapiSkill, /after domain and Gherkin approval/i)
+  assert.match(openapiSkill, /selected backend design skill .* and before `nuxt-think`/i)
   assert.match(openapiSkill, /^---\nname: doc-openapi/m)
   assert.match(nuxtThink, /docs\/domain\/<domain>\//)
   assert.match(nuxtThink, /confirm `docs\/domain\/<domain>\/domain\.md` is approved/i)
@@ -161,6 +170,12 @@ test('specification skills and think orchestrators document the domain-centered 
   assert.match(changePlan, /no domain-artifact gate/i)
   assert.match(changePlan, /Routing Gate/i)
   assert.match(changePlan, /`executing-plans`/i)
+  assert.match(changePlan, /NestJS or Laravel backend and the Nuxt frontend/i)
+  assert.match(changePlan, /no domain-artifact gate/i)
+  assert.match(changePlan, /REQUIRED SUB-SKILL.*plan-generation\.md/i)
+  assert.match(laravelThink, /^---\nname: laravel-think/m)
+  assert.match(laravelThink, /Form Requests own transport validation/i)
+  assert.match(laravelThink, /Use `nimbou-cms-think` for the Nimbou CMS shell/i)
 
   assert.match(featSpec, /^---\nname: feat-spec/m)
   assert.match(featSpec, /feature changes both frontend and backend/i)
@@ -291,12 +306,12 @@ test('README documents backend-first core and prefixed NestJS and Nuxt skills', 
   assert.match(readme, /mixed-request entry point/i)
   assert.match(readme, /`change-plan` is the single entry point for a small fullstack change/i)
   assert.match(readme, /closes the shared feature contract and ownership boundary first/i)
-  assert.match(readme, /hands backend contract closure to `nestjs-think`/i)
+  assert.match(readme, /hands contract closure to `nestjs-think` or `laravel-think`/i)
   assert.match(readme, /keeps backend contract and persistence viability together/i)
-  assert.match(readme, /publishes the canonical HTTP transport artifact .* after `nestjs-think` and before `nuxt-think`/i)
+  assert.match(readme, /publishes the canonical HTTP transport artifact .* after the selected backend think skill and before `nuxt-think`/i)
   assert.match(readme, /canonical HTTP transport artifact/i)
   assert.match(readme, /frontend-only requests stay in `nuxt-think`/i)
-  assert.match(readme, /backend-only requests stay in `nestjs-think`/i)
+  assert.match(readme, /backend-only requests use the detected backend think skill/i)
   assert.doesNotMatch(readme, /feature-dev/)
   assert.doesNotMatch(readme, /nestjs-audit-http-tests/)
   assert.doesNotMatch(readme, /nestjs-audit-prisma-repositories/)

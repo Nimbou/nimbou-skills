@@ -48,7 +48,11 @@ const PLAN_SCHEMA = {
       items: { type: 'string' },
       description: 'every checkout of this repository, from `git worktree list --porcelain`, repoRoot included',
     },
-    planOrigin: { type: 'string', description: 'nestjs-plan | nuxt-plan | other' },
+    planOrigin: { type: 'string', description: 'nestjs-plan | laravel-plan | nuxt-plan | fullstack-plan | other' },
+    backendPlanner: {
+      type: 'string',
+      description: 'nestjs-plan | laravel-plan; required when planOrigin is fullstack-plan',
+    },
     waveStructured: { type: 'boolean' },
     posExecucao: { type: 'array', items: { type: 'string' } },
     waves: {
@@ -235,7 +239,7 @@ Assign each task to a wave by its \`**Onda:**\` field, not by where the task tex
 happens to sit in the document. When a task has no \`**Onda:**\` field, fall back to
 the heading it sits under.
 
-Plans from \`nestjs-plan\` and \`nuxt-plan\` declare an Execution Contract per task —
+Plans from \`nestjs-plan\`, \`laravel-plan\`, and \`nuxt-plan\` declare an Execution Contract per task —
 seven labelled fields directly under the task heading. **Read those fields; do not
 re-derive them from the prose.** For every task in every wave, return:
 - title: the task heading, verbatim, without its \`#\` markers
@@ -277,7 +281,9 @@ Set isNestjsTestWave on a wave whose job is to dispatch
 can be one. Set it to false everywhere else — a wave that merely contains some
 test tasks is not the final verification wave.
 
-Also return planOrigin (nestjs-plan / nuxt-plan / other) and posExecucao: the
+Also return planOrigin (nestjs-plan / laravel-plan / nuxt-plan / fullstack-plan / other).
+For fullstack-plan, return backendPlanner from the explicit \`**Backend planner:**\`
+header field; do not infer it from filenames. Also return posExecucao: the
 verbatim items under \`## Pos-execucao\` when that section exists.
 
 Beyond the two \`git rev-parse\` reads, read only. Change nothing.`,
@@ -287,7 +293,7 @@ Beyond the two \`git rev-parse\` reads, read only. Change nothing.`,
 if (!plan) return { error: `Could not parse ${planPath}.` }
 if (plan.waveStructured === false) {
   return {
-    error: `${planPath} has no \`## Ondas de Execução\`. Regenerate it via nimbou-skills:nestjs-plan or nimbou-skills:nuxt-plan before executing.`,
+    error: `${planPath} has no \`## Ondas de Execução\`. Regenerate it via nimbou-skills:nestjs-plan, nimbou-skills:laravel-plan, nimbou-skills:nuxt-plan, or nimbou-skills:fullstack-plan before executing.`,
   }
 }
 
@@ -627,10 +633,14 @@ ${tasks
 // Step 2.6: a plan from nestjs-plan MUST end with a nestjs-test wave scoped to
 // the files it changed. When the plan author forgot it, the executor adds it —
 // shipping a backend plan without its verification wave is not an option.
-if (!stoppedAt && plan.planOrigin === 'nestjs-plan' && !waves.some(w => w.isNestjsTestWave)) {
+const needsNestjsTest =
+  plan.planOrigin === 'nestjs-plan' ||
+  (plan.planOrigin === 'fullstack-plan' && plan.backendPlanner === 'nestjs-plan')
+
+if (!stoppedAt && needsNestjsTest && !waves.some(w => w.isNestjsTestWave)) {
   const label = 'Onda Final — Verificação (nestjs-test)'
   concerns.push(
-    `${label}: the plan came from nestjs-plan but declared no final nestjs-test wave. The executor added it. Fix the plan.`,
+    `${label}: the plan uses nestjs-plan backend rules but declared no final nestjs-test wave. The executor added it. Fix the plan.`,
   )
   log(`${label}: missing from the plan, adding it.`)
 
@@ -648,7 +658,7 @@ your first write, and build every path from WORKTREE_ROOT if your working direct
 is elsewhere. This run may be happening in a worktree, and a test written into the
 main checkout is a test this branch does not have. Report paths relative to it.
 
-The plan at \`${planRef}\` came from \`nestjs-plan\` but declared no final
+The plan at \`${planRef}\` uses \`nestjs-plan\` backend rules but declared no final
 verification wave. You are that wave.
 
 Scope: ONLY what this plan changed across every wave — these files and nothing

@@ -101,6 +101,8 @@ test('shared specification skills are shipped with the tree', () => {
   assert.ok(shippedSkills.includes('doc-gherkin'))
   assert.ok(shippedSkills.includes('doc-openapi'))
   assert.ok(shippedSkills.includes('change-plan'))
+  assert.ok(shippedSkills.includes('laravel-think'))
+  assert.ok(shippedSkills.includes('laravel-plan'))
   assert.ok(shippedSkills.includes('feat-spec'))
   assert.ok(shippedSkills.includes('request-review'))
   assert.ok(shippedSkills.includes('apply-review'))
@@ -499,6 +501,7 @@ test('planners require a task to declare every file it tells the implementer to 
     'plugins/nimbou-skills/skills/nestjs-plan/SKILL.md',
     'plugins/nimbou-skills/skills/nuxt-plan/SKILL.md',
     'plugins/nimbou-skills/skills/fullstack-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/laravel-plan/SKILL.md',
   ]
 
   for (const file of planners) {
@@ -525,6 +528,7 @@ test('planners forbid a task from consuming a sibling in its own wave', () => {
     'plugins/nimbou-skills/skills/nestjs-plan/SKILL.md',
     'plugins/nimbou-skills/skills/nuxt-plan/SKILL.md',
     'plugins/nimbou-skills/skills/fullstack-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/laravel-plan/SKILL.md',
   ]
 
   for (const file of planners) {
@@ -551,6 +555,7 @@ test('planners forbid tombstone task headings and prose in the Role field', () =
     'plugins/nimbou-skills/skills/nestjs-plan/SKILL.md',
     'plugins/nimbou-skills/skills/nuxt-plan/SKILL.md',
     'plugins/nimbou-skills/skills/fullstack-plan/SKILL.md',
+    'plugins/nimbou-skills/skills/laravel-plan/SKILL.md',
   ]
 
   for (const file of planners) {
@@ -585,13 +590,13 @@ test('every planner states the coalescing rule and the ordering it implies', () 
   // fullstack-plan carried this alone, so the two planners that actually emit backend
   // and frontend waves were free to size a wave by counting tasks — and to interleave
   // same-Role tasks, which makes greedy coalescing split a producer from its consumer.
-  for (const plan of ['nestjs-plan', 'nuxt-plan', 'fullstack-plan']) {
+  for (const plan of ['nestjs-plan', 'laravel-plan', 'nuxt-plan', 'fullstack-plan']) {
     const body = read(`plugins/nimbou-skills/skills/${plan}/SKILL.md`)
     assert.match(body, /Dispatch is not task count/i, `${plan} must warn that dispatch is not task count`)
     assert.match(body, /one implementer per `Role` per wave/i, `${plan} must state the coalescing rule`)
   }
 
-  for (const plan of ['nestjs-plan', 'nuxt-plan']) {
+  for (const plan of ['nestjs-plan', 'laravel-plan', 'nuxt-plan']) {
     const body = read(`plugins/nimbou-skills/skills/${plan}/SKILL.md`)
     assert.match(
       body,

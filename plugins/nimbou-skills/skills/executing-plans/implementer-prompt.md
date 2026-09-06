@@ -6,7 +6,7 @@ Use this template when the controller fans a wave's tasks out under `nimbou-skil
 
 **Precondition:** the controller already checked write sets (Step 2.1) and coalesced by Role (Step 2.1b). Every implementer in a wave owns a disjoint set of files. Tasks reaching this template together either share a file or share a Role — the controller resolved which before dispatching.
 
-**Role brief:** `[ROLE]` — the slug the plan declared for this task (`**Role:**` line in `nestjs-plan`, `Role` column in `nuxt-plan`). The controller reads the matching brief in `./codex-role-briefs.md` and includes it in this message. When the plan declared none, `[ROLE]` is `general-purpose` and the controller says so in the wave report.
+**Role brief:** `[ROLE]` — the slug the plan declared for this task (`**Role:**` line in `nestjs-plan`/`laravel-plan`, `Role` column in `nuxt-plan`). The controller reads the matching brief in `./codex-role-briefs.md` and includes it in this message. When the plan declared none, `[ROLE]` is `general-purpose` and the controller says so in the wave report.
 
 **Isolation:** the implementer never inherits the controller's session history — nor, reliably, its working directory. Everything it needs is constructed below, including the absolute path of the checkout it writes to.
 

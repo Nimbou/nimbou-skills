@@ -1,6 +1,6 @@
 # nimbou-skills
 
-`nimbou-skills` is the canonical skill library for `Claude Code`, `Codex`, and `VS Code Copilot Chat`. It ships a backend-first core for `NestJS`, `Prisma`, `Clean Architecture`, and `SOLID`, plus Nuxt/Vuetify skills and Codex-only mirrors for Claude command workflows under `.codex/skills/`.
+`nimbou-skills` is the canonical skill library for `Claude Code`, `Codex`, and `VS Code Copilot Chat`. It ships backend workflows for `NestJS + Prisma` and conventional `Laravel + Eloquent`, plus Nuxt/Vuetify skills and Codex-only mirrors for Claude command workflows under `.codex/skills/`.
 
 This fork consolidates:
 - backend-first workflow skills
@@ -12,8 +12,8 @@ This fork consolidates:
 
 - Supported harnesses: `Claude Code` and `Codex`
 - VS Code integration: shared skills in `~/.copilot/skills` and agents in `~/.config/Code/User/prompts`
-- Default architecture bias: `NestJS + Prisma + Clean Architecture + SOLID`
-- Use `nestjs-*` for backend-first work and `nuxt-*` for Nuxt-specific work
+- Backend architecture follows the detected stack and the target project's local conventions
+- Use `nestjs-*` for NestJS/Prisma, `laravel-*` for conventional Laravel/Eloquent, `nimbou-cms-*` for the Nimbou CMS shell, and `nuxt-*` for frontend work
 
 ### Core workflow skills
 
@@ -25,6 +25,8 @@ This fork consolidates:
 - `doc-approval`
 - `nestjs-think`
 - `nestjs-plan`
+- `laravel-think`
+- `laravel-plan`
 - `nestjs-refactor`
 - `fullstack-plan`
 - `executing-plans`
@@ -45,6 +47,11 @@ This fork consolidates:
 - `nestjs-refactor`
 - `nestjs-test`
 
+### Laravel-specific skills
+
+- `laravel-think`
+- `laravel-plan`
+
 ### Nuxt-specific skills
 
 - `nuxt-think`
@@ -59,7 +66,7 @@ This fork consolidates:
 - `scaffold-nimbou-site` bootstraps a new site from the starter, green locally
 - `theming-nimbou-site` applies a client's visual identity to a scaffolded site
 - `port-redesign-nimbou-site` rebuilds pages faithful to a page-builder export (Duda/.dc.html, Framer, Webflow), CMS-driven, verified by DOM measurement
-- `laravel-think` / `laravel-plan` / `laravel-execute` design, plan and build a nimbou-cms content module
+- `nimbou-cms-think` / `nimbou-cms-plan` / `nimbou-cms-execute` design, plan and build a nimbou-cms content module
 - `nimbou-cms-seed` / `nimbou-cms-wire` load module content and wire it to the SPA
 - `nimbou-seo-migrate` builds the 301 redirect map for a domain cutover
 - `deploy-nimbou-site` deploys a nimbou site to cPanel shared hosting (FTP-only, MariaDB), first go-live or redeploy
@@ -156,12 +163,12 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `/design-md` and `/merge-pr` stay as Claude commands, with matching Codex mirrors in `.codex/skills/`.
 - `/design-md` validates generated `DESIGN.md` files with the official Google CLI via `design.md lint` (or `npx @google/design.md lint` as fallback).
 - `change-plan` is the single entry point for a small fullstack change (existing flow or a small new feature). It emits a `run-waves`-ready plan directly, with no domain-artifact gate, and escalates to `feat-spec` or `fullstack-plan` when a size threshold trips. It replaces the former `change-spec`.
-- `feat-spec` is the mixed-request entry point for a large new feature or a new backend contract. It closes the shared feature contract and ownership boundary first, then hands backend contract closure to `nestjs-think`. Frontend-only requests stay in `nuxt-think`; backend-only requests stay in `nestjs-think`.
+- `feat-spec` is the mixed-request entry point for a large new feature or a new backend contract. It closes the shared feature contract and ownership boundary first, then detects the backend and hands contract closure to `nestjs-think` or `laravel-think`. Frontend-only requests stay in `nuxt-think`; backend-only requests use the detected backend think skill.
 - `nestjs-think` keeps backend contract and persistence viability together, including Prisma/schema impact when relevant, instead of splitting data modeling into a separate default step.
-- `doc-openapi` publishes the canonical HTTP transport artifact beside `domain.md` and the approved `.feature` files after `nestjs-think` and before `nuxt-think`.
+- `doc-openapi` publishes the canonical HTTP transport artifact beside `domain.md` and the approved `.feature` files after the selected backend think skill and before `nuxt-think`.
 - `doc-approval` turns a domain spec (`domain.md` + `*.feature`) into a non-technical approval PDF for a business sponsor, translating the Gherkin scenarios into plain business language and keeping the source HTML beside the spec for re-generation.
-- `nestjs-think` and `nestjs-plan` stay backend-first; `nuxt-think` and `nuxt-plan` cover Nuxt planning.
-- `fullstack-plan` produces ONE wave-structured plan for work spanning both stacks, so frontend tasks run in the same waves as backend tasks instead of queueing behind them. A frontend task depends on the approved `openapi.yaml`, never on a backend task; two separate plans serialize work that has no dependency between it. It composes rather than duplicates — platform rules stay in `nestjs-plan` and `nuxt-plan`, and this skill owns only the wave topology across the two.
+- `nestjs-think`/`nestjs-plan` and `laravel-think`/`laravel-plan` are parallel backend workflows; `nuxt-think` and `nuxt-plan` cover Nuxt planning.
+- `fullstack-plan` produces ONE wave-structured plan for NestJS-or-Laravel + Nuxt work. A frontend task depends on the approved `openapi.yaml`, never on a backend task; platform rules stay in the selected backend planner and `nuxt-plan`.
 - `nestjs-refactor` is the structural cleanup workflow for existing NestJS backends that need SOLID and Clean Architecture restoration in bounded batches.
 - `nestjs-test` handles Gherkin-driven backend coverage, audit routing, and backend test stabilization.
 - `nestjs-debug` handles NestJS, Prisma, and boundary failures across controller, use-case, repository, and transaction layers.

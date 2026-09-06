@@ -1,6 +1,6 @@
 ---
 name: port-redesign-nimbou-site
-description: Use when a nimbou site's pages must be rebuilt FAITHFUL to a redesign delivered as a page-builder export — self-contained HTML with inline CSS plus a `<script data-dc-script>` (Duda/.dc.html, Framer, Webflow) — either because a content-first build drifted from the redesign, or a new site must match the export. Covers header/hero/sections and internal pages, CMS-driven, desktop+mobile. NOT theming tokens/fonts (theming-nimbou-site), NOT designing pages from scratch (nuxt-think/nuxt-plan), NOT building CMS modules (laravel-*/nimbou-cms-wire).
+description: Use when a nimbou site's pages must be rebuilt FAITHFUL to a redesign delivered as a page-builder export — self-contained HTML with inline CSS plus a `<script data-dc-script>` (Duda/.dc.html, Framer, Webflow) — either because a content-first build drifted from the redesign, or a new site must match the export. Covers header/hero/sections and internal pages, CMS-driven, desktop+mobile. NOT theming tokens/fonts (theming-nimbou-site), NOT designing pages from scratch (nuxt-think/nuxt-plan), NOT building CMS modules (nimbou-cms-*/nimbou-cms-wire).
 ---
 
 # port-redesign-nimbou-site
@@ -18,7 +18,7 @@ Core principle: **port the render, keep the CMS as content, measure the DOM to p
 - A site built content-first **diverged** from the redesign (over-simplified: missing utility bar, hero photo, carousels, filters) and must be brought back to fidelity — page by page.
 - A new nimbou site must match an export (`.dc.html`/Duda, Framer, Webflow) — self-contained HTML + inline CSS + a `data-dc-script`.
 
-**Not** for: theming tokens/fonts (`theming-nimbou-site`); designing a page from scratch with no export (`nuxt-think`/`nuxt-plan`); building/wiring CMS modules (`laravel-think`/`laravel-execute`/`nimbou-cms-wire`); the SEO cutover or deploy (`nimbou-seo-migrate`/`golive-`/`deploy-nimbou-site`).
+**Not** for: theming tokens/fonts (`theming-nimbou-site`); designing a page from scratch with no export (`nuxt-think`/`nuxt-plan`); building/wiring CMS modules (`nimbou-cms-think`/`nimbou-cms-execute`/`nimbou-cms-wire`); the SEO cutover or deploy (`nimbou-seo-migrate`/`golive-`/`deploy-nimbou-site`).
 
 ## Boundary — what this skill OWNS vs DELEGATES
 
@@ -29,7 +29,7 @@ Core principle: **port the render, keep the CMS as content, measure the DOM to p
 | The port itself + the **gotchas** below + **QA by measurement** | **this skill** |
 | Palette/type tokens already applied to the skeleton | `theming-nimbou-site` (assumed done) |
 | Page/component design decisions (splits, state, reuse) | feed the fidelity inventory as a brief into `nuxt-think` → `nuxt-plan`; **do not re-plan** |
-| A CMS module the redesign needs but that doesn't exist | **detect the gap, hand off** to `laravel-think`/`laravel-execute` + `nimbou-cms-wire` — never hardcode, never build it here |
+| A CMS module the redesign needs but that doesn't exist | **detect the gap, hand off** to `nimbou-cms-think`/`nimbou-cms-execute` + `nimbou-cms-wire` — never hardcode, never build it here |
 
 ## Shape — 3 stages
 
@@ -77,7 +77,7 @@ Match each export section against the recurring nimbou patterns before creating 
 | Verifying images by visual diff | HTTP 200 + `naturalWidth>0` per image (qa-harness.md §2). |
 | Shipping the export's inline `data-dc-script` array | Delete it; feed the list from `/api/{module}` via a composable. |
 | Adding a redundant CMS `category` column | Derive grouping from `slug`/stable keys unless the taxonomy is editorial. |
-| Hardcoding content the redesign needs but has no module for | Flag the CMS gap and hand off to `laravel-*`/`nimbou-cms-wire`. |
+| Hardcoding content the redesign needs but has no module for | Flag the CMS gap and hand off to `nimbou-cms-*`/`nimbou-cms-wire`. |
 | Re-planning the pages inside this skill | Feed the fidelity inventory into `nuxt-think`/`nuxt-plan`; add only the fidelity+CMS+QA layer. |
 
 ## Real-world impact

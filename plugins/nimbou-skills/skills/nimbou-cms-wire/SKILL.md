@@ -1,13 +1,13 @@
 ---
 name: nimbou-cms-wire
-description: Use when a nimbou-cms module already exists and its /api/{key} responds, but the Nuxt SPA still needs to consume it — wiring the entity, store, model, mock and composable for a module (Table or Item) on the nimbou-site @ministerjs stack. The frontend counterpart of laravel-execute. NOT for building the CMS module/API (that's laravel-execute) and NOT the page/component design (that's nuxt-think/nuxt-plan).
+description: Use when a nimbou-cms module already exists and its /api/{key} responds, but the Nuxt SPA still needs to consume it — wiring the entity, store, model, mock and composable for a module (Table or Item) on the nimbou-site @ministerjs stack. NOT for building the CMS module/API (that's nimbou-cms-execute) and NOT the page/component design (that's nuxt-think/nuxt-plan).
 ---
 
 # nimbou-cms-wire (nuxt)
 
 ## Overview
 
-The **frontend counterpart of `laravel-execute`**. Once a nimbou-cms module is built and `GET /api/{key}` responds, the Nuxt SPA still has to be fiado to consume it: the typed entity, the `@ministerjs` store/model registration, the dev mock, and the composable that owns the fetch. This skill does exactly that wiring — for a Table (list) or Item (singleton) module — and stops at the composable, handing the UI off to `nuxt-think`/`nuxt-plan`.
+The **frontend counterpart of `nimbou-cms-execute`**. Once a nimbou-cms module is built and `GET /api/{key}` responds, the Nuxt SPA still has to be wired to consume it: the typed entity, the `@ministerjs` store/model registration, the dev mock, and the composable that owns the fetch. This skill does exactly that wiring — for a Table (list) or Item (singleton) module — and stops at the composable, handing the UI off to `nuxt-think`/`nuxt-plan`.
 
 **Core principle — the API response is NOT the view-model.** `GET /api/{key}` returns **raw** data: a Table comes `created_at DESC`; `collectionWithKey` comes back as a **JSON string**; `imageFile` as `{featured,list}`; `category`/`tags` as raw ids with **no labels**. The **composable is the single normalization boundary** (sort, `JSON.parse`, reshape, resolve-by-slug) and the **mock mirrors the raw API shapes** so dev-with-mocks exercises the *same* parse/sort path that production hits. Confirm the shapes with one `GET /api/{key}` — never guess, never reverse-engineer the PHP.
 
@@ -15,15 +15,15 @@ The **frontend counterpart of `laravel-execute`**. Once a nimbou-cms module is b
 
 ## When to Use
 
-- After `laravel-execute` (or equivalent) has built the module and `/api/{key}` returns data.
+- After `nimbou-cms-execute` (or equivalent) has built the module and `/api/{key}` returns data.
 - You have the contract: the module `key`, its **view type** (Table/Item), and the field list with types.
-- **Not** to build the CMS module or API (that's `laravel-execute`).
+- **Not** to build the CMS module or API (that's `nimbou-cms-execute`).
 - **Not** to design the page/component or its look (that's `nuxt-think`/`nuxt-plan` — this skill hands off at the composable).
 
 ## Boundary
 
 - **In scope:** `entities/<Name>.ts` (+ `entities/index.ts`), the `stores.ts` + `models/modelSetups.ts` registration, `mocks/mockData.ts`, and `composables/use<Name>.ts` (the fetch owner). All under `resources/nuxt/`.
-- **Out of scope:** the consuming page/component and its design (hand to `nuxt-plan`); any CMS/backend change; `config/pages.php` routing/SEO (that's `laravel-execute`, when the content has a public URL).
+- **Out of scope:** the consuming page/component and its design (hand to `nuxt-plan`); any CMS/backend change; `config/pages.php` routing/SEO (that's `nimbou-cms-execute`, when the content has a public URL).
 - **`config/resources.ts` is generic** (`useRestResources(fetch_)` derives `/api/{key}` from the store key) — **do not edit it** for a standard REST key.
 
 ## Procedure

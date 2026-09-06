@@ -113,7 +113,7 @@ test('run-waves refuses to run without a plan path', async () => {
 test('run-waves refuses a plan that is not wave-structured', async () => {
   const { result } = await runWorkflow('docs/plans/x.md', [[PARSE, { waveStructured: false, waves: [] }]])
   assert.match(result.error, /Ondas de Execução/)
-  assert.match(result.error, /nestjs-plan or nimbou-skills:nuxt-plan/)
+  assert.match(result.error, /nestjs-plan, nimbou-skills:laravel-plan, nimbou-skills:nuxt-plan, or nimbou-skills:fullstack-plan/)
 })
 
 test('run-waves fans out one implementer per task and commits once per wave', async () => {
@@ -395,6 +395,64 @@ test('run-waves does not add a nestjs-test wave to a frontend plan', async () =>
     calls.filter((call) => (call.opts.label ?? '').startsWith('Onda Final')).length,
     0,
     'the nestjs-test rule belongs to nestjs-plan only',
+  )
+})
+
+test('run-waves does not add a nestjs-test wave to a Laravel plan', async () => {
+  const laravel = JSON.parse(JSON.stringify(twoWavePlan))
+  laravel.planOrigin = 'laravel-plan'
+  laravel.waves = laravel.waves.filter((wave) => !wave.isNestjsTestWave)
+
+  const { calls } = await runWorkflow('docs/plans/laravel-feature.md', [
+    [PARSE, laravel],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  assert.equal(
+    calls.filter((call) => call.opts.phase === 'Implement' && /nimbou-skills:nestjs-test/.test(call.prompt)).length,
+    0,
+    'Laravel plans execute their declared scoped verification and never inherit nestjs-test',
+  )
+})
+
+test('run-waves respects the selected backend planner in a fullstack plan', async () => {
+  const fullstackLaravel = JSON.parse(JSON.stringify(twoWavePlan))
+  fullstackLaravel.planOrigin = 'fullstack-plan'
+  fullstackLaravel.backendPlanner = 'laravel-plan'
+  fullstackLaravel.waves = fullstackLaravel.waves.filter((wave) => !wave.isNestjsTestWave)
+
+  const laravelRun = await runWorkflow('docs/plans/fullstack-laravel.md', [
+    [PARSE, fullstackLaravel],
+    ['commit Onda', okCommit],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  assert.equal(
+    laravelRun.calls.filter((call) => call.opts.phase === 'Implement' && /nimbou-skills:nestjs-test/.test(call.prompt)).length,
+    0,
+    'fullstack Laravel plans must not inherit nestjs-test',
+  )
+
+  const fullstackNest = JSON.parse(JSON.stringify(fullstackLaravel))
+  fullstackNest.backendPlanner = 'nestjs-plan'
+  const nestRun = await runWorkflow('docs/plans/fullstack-nest.md', [
+    [PARSE, fullstackNest],
+    ['commit Onda Final', { sha: 'shaT', message: 'test wave' }],
+    ['commit Onda', okCommit],
+    ['Onda Final', { status: 'DONE', filesTouched: [], verification: 'pnpm test -- --runInBand src/a.spec.ts' }],
+    ['Onda', doneImplementer],
+    [SPEC_REVIEW, { findings: [] }],
+    [GAP_REVIEW, { findings: [] }],
+  ])
+
+  assert.ok(
+    nestRun.calls.some((call) => call.opts.phase === 'Implement' && /nimbou-skills:nestjs-test/.test(call.prompt)),
+    'fullstack NestJS plans retain the scoped nestjs-test final wave',
   )
 })
 
@@ -875,8 +933,9 @@ test('the pipeline routes cross-stack work to fullstack-plan', () => {
   assert.match(read('change-plan'), /`nimbou-skills:executing-plans`/)
   assert.match(read('change-plan'), /This skill \*\*replaces `change-spec`\*\*/)
   assert.match(read('change-plan'), /produces one wave-structured plan/)
+  assert.match(read('change-plan'), /nimbou-skills:fullstack-plan/)
 
-  for (const skill of ['nestjs-think', 'nuxt-think']) {
+  for (const skill of ['nestjs-think', 'laravel-think', 'nuxt-think']) {
     assert.match(
       read(skill),
       /when the work spans both stacks, that planning step is `fullstack-plan`/,
@@ -886,6 +945,7 @@ test('the pipeline routes cross-stack work to fullstack-plan', () => {
 
   // Single-platform routing must survive untouched.
   assert.match(read('nestjs-think'), /invoke `nestjs-plan`/)
+  assert.match(read('laravel-think'), /Backend-only implementation planning: `laravel-plan`/)
   assert.match(read('nuxt-think'), /invoke `nuxt-plan`/)
 })
 

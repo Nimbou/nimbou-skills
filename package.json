@@ -2,7 +2,7 @@
   "name": "nimbou-skills",
   "version": "0.1.0",
   "private": true,
-  "description": "Unified Claude Code and Codex skill library with a NestJS backend core and prefixed Nuxt/Vuetify frontend skills",
+  "description": "Unified Claude Code and Codex skill library for NestJS, Laravel, and Nuxt/Vuetify workflows",
   "type": "module",
   "bin": {
     "nb-catalog": "./bin/nb-catalog"

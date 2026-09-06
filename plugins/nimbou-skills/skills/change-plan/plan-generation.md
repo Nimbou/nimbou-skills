@@ -9,9 +9,9 @@ This plan is a `fullstack-plan` output with three deltas. Follow `nimbou-skills:
 - **Wave Topology** — Contratos → Implementação → Wiring → Verificação.
 - **Execution Contract** — every task carries `Role`, `Onda`, `Files`, `Consome`, `Estimativa`, `RED`, `Verificação`; no per-task commit steps.
 - **Response Shape** and the **Self-Review** checklist.
-- The scoped `nestjs-test` final wave (no `Role`).
+- The platform-specific backend final verification: scoped `nestjs-test` for NestJS, or the declared scoped Laravel verification task from `laravel-plan`.
 
-Backend tasks follow `nimbou-skills:nestjs-plan` (Role Mapping, Clean Architecture, Prisma ownership, TDD `RED`). Frontend tasks follow `nimbou-skills:nuxt-plan` (Role Mapping, reuse, design resolution, `RED: n/a — frontend, coberto por review`). When this file and a platform planner disagree about a platform rule, the platform planner wins.
+Backend tasks follow the planner detected from the repository: `nimbou-skills:nestjs-plan` or `nimbou-skills:laravel-plan`. Frontend tasks follow `nimbou-skills:nuxt-plan`. When this file and a platform planner disagree about a platform rule, the platform planner wins.
 
 Frontend Playwright/browser E2E is opt-in: omit it from the plan and do not execute it
 unless the user explicitly requested it. Backend verification may use Playwright when
@@ -33,7 +33,7 @@ appropriate. `typecheck` remains opt-in for both stacks.
 
    When HTTP does not change, omit the block and cite the existing route as-is.
 
-3. **Small by construction.** The Routing Gate already proved the work fits: ≤ 8 files and ≤ 2 roles per stack, one implementation wave, a one-pass contract, additive-only migration. If while writing you uncover a threshold signal you missed, **stop and escalate** — `feat-spec` for a new feature, `nestjs-think` / `nuxt-think` → `fullstack-plan` for an existing one — rather than growing the plan past the gate.
+3. **Small by construction.** The Routing Gate already proved the work fits: ≤ 8 files and ≤ 2 roles per stack, one implementation wave, a one-pass contract, additive-only migration. If while writing you uncover a threshold signal you missed, **stop and escalate** — `feat-spec` for a new feature, or the detected backend think skill + `nuxt-think` → `fullstack-plan` for an existing one — rather than growing the plan past the gate.
 
 4. **Estimate for dispatch, not for task slicing.** Every task declares
    `**Estimativa:** curta | media | longa`, including its scoped verification.

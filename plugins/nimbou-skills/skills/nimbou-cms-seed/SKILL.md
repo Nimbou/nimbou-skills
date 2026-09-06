@@ -1,13 +1,13 @@
 ---
 name: nimbou-cms-seed
-description: Use when a nimbou-cms content module already exists and its rows (and images) must be loaded reproducibly from a data file via the admin REST — including re-running the same seed on dev and then on production without duplicating rows or orphaning images. The content-seeding step after laravel-execute built the module. For nimbou-cms (custom PHP admin), not Laravel seeders or a SQL import.
+description: Use when a nimbou-cms content module already exists and its rows (and images) must be loaded reproducibly from a data file via the admin REST — including re-running the same seed on dev and then on production without duplicating rows or orphaning images. For nimbou-cms (custom PHP admin), not Laravel seeders or a SQL import.
 ---
 
 # nimbou-cms-seed
 
 ## Overview
 
-Content never travels with a schema migration — `laravel-execute` ships the module's **structure**, and the **rows + images are re-entered per environment**. This skill is that step: load a module's content from a versioned data file through the admin REST, **idempotently**, so the same seed runs on dev now and on production later and converges to one row per item, one image per row.
+Content never travels with a schema migration — `nimbou-cms-execute` ships the module's **structure**, and the **rows + images are re-entered per environment**. This skill is that step: load a module's content from a versioned data file through the admin REST, **idempotently**, so the same seed runs on dev now and on production later and converges to one row per item, one image per row.
 
 **Core principle — upsert by a natural key, and serialize the way the generic column-setter expects.** The admin's Table update is a **generic column writer with no per-field-type processing**: it writes each value verbatim. So `collectionWithKey` must be sent as a **pre-serialized JSON string** (not an array), `imageFile` must be the **int FK** obtained from a **separate two-step multipart upload** (not the path, not the POST return), and a new row lands `active=0` — the seed must flip it to `1` or it never appears on `/api`. And because `POST` always creates, re-running a naive seed **duplicates rows**; the seed must **find-or-create by a unique key** and **reuse the existing image** instead of re-uploading.
 
@@ -15,8 +15,8 @@ Content never travels with a schema migration — `laravel-execute` ships the mo
 
 ## When to Use
 
-- A nimbou-cms module exists (built via `laravel-execute`) and its `/api/<key>` responds, and you have the content in a data file.
-- **Not** to build the module or its schema (that's `laravel-execute`).
+- A nimbou-cms module exists (built via `nimbou-cms-execute`) and its `/api/<key>` responds, and you have the content in a data file.
+- **Not** to build the module or its schema (that's `nimbou-cms-execute`).
 - **Not** to extract the content (scraping the old site / parsing PDFs is a **separate** step that produces the data file).
 - **Not** the Nuxt frontend wiring (that's `nimbou-cms-wire`).
 

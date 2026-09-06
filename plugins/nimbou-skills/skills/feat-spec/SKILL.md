@@ -1,17 +1,19 @@
 ---
 name: feat-spec
-description: Use when a feature changes both frontend and backend, or when the frontend depends on a new backend contract. Close the shared feature design, ownership boundary, and preliminary contract before handing the backend contract work to `nestjs-think`.
+description: Use when a feature changes both Nuxt frontend and a NestJS or Laravel backend, or when the frontend depends on a new backend contract.
 ---
 
 # Feat Spec
 
 Use this skill when the request changes both frontend and backend in the same feature slice, or when frontend delivery depends on a new or changed backend contract.
+The feature changes both frontend and backend; the repository decides whether that backend is NestJS or Laravel.
 For a small fullstack change — evolving an existing flow or a small new feature — use `change-plan`. This skill is the door for a large new feature; the discriminator is size, not novelty.
 
 If the request is frontend-only, use `nuxt-think`.
-If the request is backend-only, use `nestjs-think`.
+If the request is backend-only, use `nestjs-think` or `laravel-think` according to the target repository.
 
-This skill does not replace the platform-specific think skills. It closes the shared feature design once, defines the preliminary contract and ownership boundary between frontend and backend, and then hands backend contract closure to `nestjs-think`.
+This skill does not replace the platform-specific think skills. It closes the shared feature design once, defines the preliminary contract and ownership boundary between frontend and backend, then hands backend contract closure to the detected backend skill: `nestjs-think` for NestJS or `laravel-think` for Laravel. Inspect the repository; never choose from the feature description alone.
+Close the shared feature design, ownership boundary, and preliminary contract before platform-specific design begins.
 
 When handing off to planning, do not introduce **frontend** Playwright/browser E2E as
 implied acceptance work; it requires an explicit user request. Backend verification
@@ -63,7 +65,7 @@ Do not use `AskUserQuestion` for:
 - requests for prose-level explanations from the user
 
 Do not use this skill to finish Nuxt component decomposition, visual direction, or route-level UI structure. Hand that to `nuxt-think` after `doc-openapi`.
-Do not use this skill to finish NestJS module design, Prisma boundaries, or use-case decomposition. Hand that to `nestjs-think`.
+Do not finish framework-specific backend design here. Hand NestJS/Prisma boundaries to `nestjs-think`, or Laravel/Eloquent/Policy/transaction boundaries to `laravel-think`.
 
 ## Flow
 
@@ -72,8 +74,8 @@ Do not use this skill to finish NestJS module design, Prisma boundaries, or use-
 3. decide which questions are truly shared and which belong to frontend-only or backend-only design
 4. challenge accidental chatty contracts, array-by-array validation loops, and payloads that resend unchanged data
 5. write the shared feature design and ownership boundary in a way both sides can consume
-6. route the next contract step to `nestjs-think`
-7. do not route to `doc-openapi`, `nuxt-think`, `nuxt-plan`, or `nestjs-plan` directly from this skill
+6. inspect the backend and route the next contract step to `nestjs-think` or `laravel-think`
+7. do not route to `doc-openapi`, `nuxt-think`, or a platform planner directly from this skill
 8. state that planning ends in `fullstack-plan`, not in the platform planners: this feature spans both stacks, so it gets one joint plan whose waves mix backend and frontend work. Two separate plans would queue the frontend behind the whole backend for a dependency it does not have
 
 ## Output
@@ -86,5 +88,5 @@ Produce:
 - frontend ownership boundary
 - backend ownership boundary
 - contract-dependent states and error handling
-- required next skill: `nestjs-think`
-- planning skill once `doc-openapi` and `nuxt-think` are closed: `fullstack-plan` (one joint plan, not `nestjs-plan` + `nuxt-plan`)
+- required next skill: `nestjs-think` or `laravel-think`, naming the detected backend
+- planning skill once `doc-openapi` and `nuxt-think` are closed: `fullstack-plan` (one joint plan, not separate backend and frontend plans)

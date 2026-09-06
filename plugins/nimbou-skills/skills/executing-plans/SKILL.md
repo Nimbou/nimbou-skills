@@ -20,7 +20,7 @@ Load the plan, review it critically, confirm it is wave-structured, then hand it
 
 Parallelism only happens within a wave, exactly as the plan declares it. Waves stay sequential because later waves consume contracts earlier waves produce. Reviews run alongside execution, not in front of it.
 
-**Why fan out:** `nestjs-plan` and `nuxt-plan` already guarantee that tasks inside a wave are parallel-safe — no shared file writes, no implicit ordering. Implementing them one after another throws that guarantee away and pays wave time proportional to the task count. It also drags every task's diff and verification output through a single context, which degrades the controller across long plans.
+**Why fan out:** `nestjs-plan`, `laravel-plan`, and `nuxt-plan` guarantee that tasks inside a wave are parallel-safe — no shared file writes, no implicit ordering.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
@@ -79,8 +79,8 @@ here, in conversation, first.**
 1. Read the plan file
 2. Review it critically
 3. Raise any blockers or missing assumptions before starting
-4. Confirm wave structure: the plan must contain `## Ondas de Execução` (or the legacy `## Grupos de Execucao`). If it does not, **stop** and ask the plan author to regenerate the plan via `nimbou-skills:nestjs-plan` or `nimbou-skills:nuxt-plan`. Do not fall back to a serial task list.
-5. Detect plan origin: if the header references `nestjs-plan` or the plan path matches a backend slice, the final wave MUST run `nimbou-skills:nestjs-test` scoped strictly to the files the plan touched. Record that addition in the run checklist if the plan author forgot it. Never let the final wave widen into an unfiltered `pnpm test` run.
+4. Confirm wave structure: the plan must contain `## Ondas de Execução` (or the legacy `## Grupos de Execucao`). If it does not, **stop** and ask the plan author to regenerate it via `nimbou-skills:nestjs-plan`, `nimbou-skills:laravel-plan`, `nimbou-skills:nuxt-plan`, or `nimbou-skills:fullstack-plan`. Do not fall back to a serial task list.
+5. Detect plan origin from the explicit planner named in the header, never from a generic “backend” path. A `nestjs-plan` MUST finish with scoped `nimbou-skills:nestjs-test`; never widen it into an unfiltered `pnpm test`. A `laravel-plan` MUST execute its declared scoped Laravel verification wave and MUST NOT receive `nestjs-test`.
 6. Detect `## Pos-execucao` (typical for `nuxt-plan` output). Capture those items now to seed the follow-ups artifact in Step 3.
 7. Establish the checkout. Run `git rev-parse --show-toplevel`, `git rev-parse --abbrev-ref HEAD`, and `git worktree list`, and state the path, the branch, and the sibling checkouts in your opening message. **Refuse to implement on a long-lived branch** — `main`, `master`, `dev`, `develop`, `staging`, `production` — without explicit user consent: a run sitting on one is almost always the main checkout instead of the worktree set up for this plan. That absolute path is `WORKTREE_ROOT` — every implementer, commit, and reviewer in the run is anchored to it, because subagents do not reliably inherit a working directory and plans often write their paths as absolute. Both paths do this: the workflow re-derives it in its parse step, the prose path in Step 2.0.
 8. Create one progress entry per wave, its tasks, the post-wave commit, review collection, and follow-ups using the harness's native plan tracker when available. If none exists, keep that checklist in the controller's run report. Proceed only when the plan is executable.
@@ -135,7 +135,7 @@ commit-per-wave, end-of-plan spec review, follow-up execution — belong to
 Required workflow skills:
 
 - `nimbou-skills:using-git-worktrees` — set up an isolated workspace before starting
-- `nimbou-skills:nestjs-plan` — produces wave-structured backend plans for this skill to execute
+- `nimbou-skills:nestjs-plan` or `nimbou-skills:laravel-plan` — produces wave-structured backend plans for this skill to execute
 - `nimbou-skills:nuxt-plan` — produces wave-structured frontend plans for this skill to execute
 - `nimbou-skills:nestjs-test` — REQUIRED final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (no full-suite runs)
 - `nimbou-skills:browser-smoke` — Step 5, in `report` mode, when the committed diff touched frontend files. The only lens here that looks at the running application; it skips itself cleanly when no browser driver is available

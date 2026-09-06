@@ -1,13 +1,13 @@
 ---
 name: change-plan
-description: Use when a small change or bugfix touches both the NestJS backend and the Nuxt frontend — evolving an existing flow or a small new feature — and running change-spec then fullstack-plan would be two steps for little work.
+description: Use when a small change or bugfix touches both a NestJS or Laravel backend and the Nuxt frontend, for an existing flow or a small new feature.
 ---
 
 # Change Plan
 
 ## Overview
 
-Single entry point for a **small** fullstack change (NestJS + Nuxt). When the work is small, this skill produces one wave-structured plan that `run-waves`/`executing-plans` runs directly — no separate spec step, no domain-artifact gate. Its tasks still declare `Estimativa` so the executor can choose setup-sharing only for short work. When the work is not small, it routes to the heavier path instead of under-planning it.
+Single entry point for a **small** fullstack change (NestJS or Laravel + Nuxt). Detect the backend from the repository before selecting platform rules. When the work is small, this skill produces one wave-structured plan that `run-waves`/`executing-plans` runs directly — no domain-artifact gate or separate spec step. Its tasks still declare `Estimativa` so the executor can choose setup-sharing only for short work. When the work is not small, it routes to the heavier path instead of under-planning it.
 
 This skill **replaces `change-spec`**. It covers what `change-spec` covered (evolving an existing flow) and, additionally, small new features that span both stacks.
 
@@ -20,7 +20,7 @@ This skill **replaces `change-spec`**. It covers what `change-spec` covered (evo
 
 Do **not** use when:
 
-- The work touches one stack only → `nimbou-skills:nestjs-think` or `nimbou-skills:nuxt-think`.
+- The work touches one stack only → the detected `nimbou-skills:nestjs-think` / `nimbou-skills:laravel-think`, or `nimbou-skills:nuxt-think`.
 - The change is big (see Routing Gate) → escalate; do not force it through here.
 
 ## Routing Gate
@@ -37,7 +37,7 @@ Escalate if **ANY** signal trips:
 **Escalate only when a signal trips.** A new feature is not a reason to escalate — a small new feature stays here (see Boundary with feat-spec). Once a signal has tripped, pick the target by novelty, never by re-judging size:
 
 - **New feature** → `nimbou-skills:feat-spec` (it runs the domain gate, then `fullstack-plan`).
-- **Evolving an existing flow** → close the contract with `nimbou-skills:nestjs-think` + `nimbou-skills:nuxt-think`, then `nimbou-skills:fullstack-plan`.
+- **Evolving an existing flow** → close the contract with the detected backend think skill + `nimbou-skills:nuxt-think`, then `nimbou-skills:fullstack-plan`.
 
 If nothing trips, stay and produce the plan — new or existing alike.
 
@@ -51,10 +51,10 @@ No domain artifacts are required. The **only** gate: when the change alters the 
 
 ## Producing the Plan
 
-Once the gate says "stay," follow **REQUIRED SUB-SKILL:** `change-plan/plan-generation.md`. It writes a `run-waves`-ready plan to `docs/plans/change-plan-<slug>.md` and defers all platform and wave rules to `fullstack-plan`, `nestjs-plan`, and `nuxt-plan`.
+Once the gate says "stay," follow **REQUIRED SUB-SKILL:** `change-plan/plan-generation.md`. It writes a `run-waves`-ready plan to `docs/plans/change-plan-<slug>.md` and defers platform rules to `fullstack-plan`, the detected backend planner, and `nuxt-plan`.
 
 ## Integration
 
 - **Replaces** `change-spec`.
 - Downstream (small): `nimbou-skills:executing-plans` / `run-waves` consume the plan directly.
-- Escalation: `nimbou-skills:feat-spec` (new) or `nimbou-skills:nestjs-think` / `nimbou-skills:nuxt-think` → `nimbou-skills:fullstack-plan` (existing).
+- Escalation: `nimbou-skills:feat-spec` (new) or the detected backend think skill + `nimbou-skills:nuxt-think` → `nimbou-skills:fullstack-plan` (existing).

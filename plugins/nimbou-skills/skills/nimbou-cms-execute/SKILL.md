@@ -1,22 +1,22 @@
 ---
-name: laravel-execute
-description: Use when an approved laravel-plan (or equivalent brief) for a nimbou-cms content module needs to be physically built — creating the module and fields in the dev admin, capturing the versioned migration, validating it on a clean DB, and wiring config/pages.php routing/SEO. The "execute" step after laravel-think and laravel-plan. For nimbou-cms (custom PHP admin), NOT Laravel MVC or NestJS.
+name: nimbou-cms-execute
+description: Use when an approved nimbou-cms-plan (or equivalent brief) for a nimbou-cms content module needs to be physically built — creating the module and fields in the dev admin, capturing the versioned migration, validating it on a clean DB, and wiring config/pages.php routing/SEO. For nimbou-cms (custom PHP admin), NOT Laravel MVC or NestJS.
 ---
 
-# laravel-execute (nimbou)
+# nimbou-cms-execute
 
 ## Overview
 
-The **execute** step of the nimbou backend triad (`laravel-think → laravel-plan → laravel-execute`). Takes an approved `laravel-plan` and materializes the **PHP/backend** side: builds the nimbou-cms module, captures a versioned migration, validates it on a clean DB, and — when the content has its own public URL — wires `config/pages.php` routing/SEO.
+The **execute** step of the nimbou backend triad (`nimbou-cms-think → nimbou-cms-plan → nimbou-cms-execute`). Takes an approved `nimbou-cms-plan` and materializes the **PHP/backend** side: builds the nimbou-cms module, captures a versioned migration, validates it on a clean DB, and — when the content has its own public URL — wires `config/pages.php` routing/SEO.
 
 **Core principle — build through the admin's REST, then DUMP the generated schema.** `Field::add` cannot be bootstrapped standalone (the admin framework couples to its HTTP entry point). So you build the module with **one authenticated `POST /rest/modules`** against the running admin — that runs the real `afterAddModule` + `Field::add`, producing correct columns and FK names by construction. Then you **dump** that generated schema (`SHOW CREATE TABLE`) into a numbered migration — **never hand-write the DDL** (the imageFile/category FK must be named `mod_<key>_<field>`; hand-writing it breaks later admin edits). Finally you **validate on a clean DB** (apply all migrations in order, diff).
 
-**Announce at start:** "I'm using the laravel-execute skill to build this module."
+**Announce at start:** "I'm using the nimbou-cms-execute skill to build this module."
 
 ## When to Use
 
-- After `laravel-plan` produces an approved plan for a nimbou-cms module.
-- **Not** without a plan (go through `laravel-think`/`laravel-plan` first).
+- After `nimbou-cms-plan` produces an approved plan for a nimbou-cms module.
+- **Not** without a plan (go through `nimbou-cms-think`/`nimbou-cms-plan` first).
 - **Not** for the Nuxt frontend (that's `nuxt-plan`/`executing-plans`) or NestJS backends.
 
 ## Boundary

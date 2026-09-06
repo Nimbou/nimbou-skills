@@ -1,6 +1,6 @@
 ---
 name: theming-nimbou-site
-description: Use when applying a client's visual identity to a freshly-scaffolded nimbou site (Laravel shell + Nuxt 4/Vuetify 3) — turning the neutral skeleton into the redesign's look from a MACHINE-READABLE design source (redesign HTML/CSS export, a live URL, a logo SVG). Runs after scaffold-nimbou-site. NOT for Figma/image/PDF sources (need visual extraction), and NOT the CMS content step (uploading logo/icons into the informations module → that's laravel-plan).
+description: Use when applying a client's visual identity to a freshly-scaffolded nimbou site (Laravel shell + Nuxt 4/Vuetify 3) — turning the neutral skeleton into the redesign's look from a MACHINE-READABLE design source (redesign HTML/CSS export, a live URL, a logo SVG). Runs after scaffold-nimbou-site. NOT for Figma/image/PDF sources (need visual extraction), and NOT the CMS content step (uploading logo/icons into the informations module → that's nimbou-cms-plan).
 ---
 
 # theming-nimbou-site
@@ -46,7 +46,7 @@ The nimbou convention is **self-hosted** fonts (CSP, offline, performance, no la
 - Put the logo in the project (`assets/img/` and/or `public/`).
 - **Derive the raster branding from the SVG**: favicon (16/32), apple-touch (180), PWA icons (192/512), share/OG image (1200×630). Use a raster tool available in the project — `sharp` via a one-off node script (it's a Nuxt project, Node is present), or `rsvg-convert`/ImageMagick. If no tool is available, say so and hand the SVG to the content step.
 - Set `app.head.title` in `nuxt.config.ts`.
-- **Boundary:** do NOT upload logo/icons into the `informations` CMS module — that's the content step (`laravel-plan`/Fase 2). Prepare the files and **hand off the asset list**. (The runtime header/footer logo is CMS-driven from `informations.img.featured` — theming makes the assets ready; the CMS wiring is not this skill.)
+- **Boundary:** do NOT upload logo/icons into the `informations` CMS module — that's the content step (`nimbou-cms-plan`/Fase 2). Prepare the files and **hand off the asset list**. (The runtime header/footer logo is CMS-driven from `informations.img.featured` — theming makes the assets ready; the CMS wiring is not this skill.)
 
 ### 5. VERIFY by measuring the DOM (grep is necessary, not sufficient)
 Grepping that old hexes are gone proves the *source* changed — not that tokens/fonts actually **resolve**. Bring the site up and measure:

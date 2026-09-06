@@ -17,7 +17,7 @@ When a nimbou rebuild replaces a live site at the **same domain**, every URL Goo
 
 - A nimbou site is about to go live at a domain that currently serves an old site with indexed URLs.
 - **Not** for a brand-new domain with no history (nothing to preserve).
-- **Not** the CMS module build (that's `laravel-execute`), sitemap submission, DNS, or www-canonicalization — those are go-live follow-ups, out of scope here.
+- **Not** the CMS module build (that's `nimbou-cms-execute`), sitemap submission, DNS, or www-canonicalization — those are go-live follow-ups, out of scope here.
 
 ## Boundary
 

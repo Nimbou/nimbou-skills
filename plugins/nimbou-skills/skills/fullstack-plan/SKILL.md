@@ -1,6 +1,6 @@
 ---
 name: fullstack-plan
-description: Use when a feature or change spans NestJS backend and Nuxt frontend and both sides are ready to plan, to produce ONE wave-structured plan that runs backend and frontend work in the same waves instead of one platform after the other.
+description: Use when a feature spans a NestJS or Laravel backend and a Nuxt frontend and both sides have approved designs and a stable shared contract.
 ---
 
 # Fullstack Plan
@@ -9,7 +9,7 @@ description: Use when a feature or change spans NestJS backend and Nuxt frontend
 
 Produce a single wave-structured plan covering both stacks, so frontend work runs alongside backend work instead of queueing behind it.
 
-Two separate plans — one from `nestjs-plan`, one from `nuxt-plan` — execute one after the other. That serializes work that has no dependency between it. A frontend component consuming an approved contract does not need the use-case that serves it to exist yet; it needs the contract, and the contract was approved before either plan was written.
+Separate backend and frontend plans execute one after the other and serialize work that has no dependency between it. A frontend component consuming an approved contract does not need the backend implementation to exist yet; it needs the approved contract.
 
 **Core principle:** a frontend task depends on the **approved contract**, never on a backend task.
 
@@ -29,12 +29,12 @@ This skill owns **wave topology across the two stacks**, and nothing else.
 
 It does **not** restate platform rules. They have one home each, and this skill defers to them:
 
-- **Backend tasks** follow `nimbou-skills:nestjs-plan` — Role Mapping, Clean Architecture boundaries, Prisma ownership, controller sizing, migration sequencing, the `## Task Structure` body, and the scoped `nestjs-test` final wave.
+- **Backend tasks** follow exactly one detected planner: `nimbou-skills:nestjs-plan` for NestJS/Prisma or `nimbou-skills:laravel-plan` for Laravel/Eloquent. Inspect the target repository and record the selected backend in the plan header.
 - **Frontend tasks** follow `nimbou-skills:nuxt-plan` — Role Mapping, `DESIGN.md` and `GUIDELINES.md` resolution, component catalog reuse, naming, layout strategy, and `## Pos-execucao`.
 
 Read the relevant planner before writing tasks for that side. When this file and a platform planner disagree about a platform rule, the platform planner wins — this file is only authoritative about how the waves interleave.
 
-Do not use this skill when the work touches one stack only. Use `nestjs-plan` or `nuxt-plan` directly; a joint plan for single-platform work is pure overhead.
+Do not use this skill when the work touches one stack only. Use the detected backend planner or `nuxt-plan` directly.
 
 ## Precondition Gate
 
@@ -43,7 +43,7 @@ Do not start until all of these hold. Each is a real input, not a formality:
 1. `docs/domain/<domain>/domain.md` approved.
 2. `docs/domain/<domain>/*.feature` approved.
 3. `docs/domain/<domain>/openapi.yaml` approved when the feature changes HTTP. **This is what unblocks the frontend.** Without it there is no joint plan to write — frontend tasks would have nothing stable to consume, and you would be back to serializing.
-4. `nestjs-think` closed backend contract and persistence viability.
+4. `nestjs-think` or `laravel-think` closed backend contract and persistence viability for the detected stack.
 5. `nuxt-think` closed UI structure, reuse, state ownership, and responsive behavior.
 
 If the contract is not closed, stop and close it. Planning around an unstable contract produces waves that look parallel and are not.
@@ -69,10 +69,10 @@ The default shape. Collapse or split only when a real contract dependency justif
 
 | Onda | Backend | Frontend |
 |---|---|---|
-| 1 — Contratos | DTOs, domain contracts and ports, Prisma migration expand-step | types derived from `openapi.yaml`, fixtures |
+| 1 — Contratos | stable declarations and migration/schema expand-step defined by the selected backend planner | types derived from `openapi.yaml`, fixtures |
 | 2 — Implementação | use-cases, domain services, repository adapters — each with its test, written first, in the same task | components, composables, utils |
 | 3 — Wiring | controllers, guards, filters, interceptors, module composition | page and layout integration, route wiring |
-| Final — Verificação | `nestjs-test` scoped strictly to the files this plan changed | catalog verification; a test command only when explicitly requested |
+| Final — Verificação | scoped `nestjs-test` for NestJS, or the declared scoped Laravel verification task | catalog verification; a test command only when explicitly requested |
 
 Both sides occupy Onda 2 at the same time. That is the whole point of the skill.
 
@@ -105,7 +105,7 @@ Two consequences the plan must be written against:
 
 ## Execution Contract
 
-Every task carries the fields `nimbou-skills:executing-plans` extracts, regardless of which stack it belongs to — with **one exception, stated here so it is not resolved by guessing**: a task in the `nestjs-test` final wave declares **no `Role`**, because it routes through the test auditors rather than an agent-author. `nestjs-plan` owns that rule and it wins. Omit the field; do not fill it with a justification, an `n/a`, or a parenthetical — the executor copies the field verbatim into the agent type, so prose there becomes a nonexistent agent. The reason belongs in the task body.
+Every task carries the fields `nimbou-skills:executing-plans` extracts, with one exception: the `nestjs-test` final wave declares **no `Role`** because the NestJS planner routes it through test auditors. Laravel final verification follows `laravel-plan` and declares `Role: general-purpose`.
 
 ```md
 #### Task N: <nome>
@@ -120,24 +120,25 @@ Every task carries the fields `nimbou-skills:executing-plans` extracts, regardle
 
 Rules specific to a joint plan:
 
-- **`RED` is a backend field.** Backend tasks declare it under `nestjs-plan`'s rules: the failure *class*, never a literal error string, and `RED: n/a — <motivo>` only for schema/migration or pure module composition. Frontend tasks write `**RED:** `n/a — frontend, coberto por review``. The executor requires the field to be present on every task precisely so its absence cannot be silent; what differs across stacks is the value, not the presence.
+- **`RED` follows the selected platform planner.** Backend behavior tasks declare the failure class, never a literal message. Frontend tasks write `**RED:** `n/a — frontend, coberto por review``.
 
 - **Write sets are checked across both stacks.** Two tasks in the same wave must not share a file. Backend and frontend rarely collide, but generated types, shared constants, and `openapi.yaml`-derived files do.
 - **`Consome` for a frontend task quotes the contract**, pasted: the route, the request and response shape, the error cases. Not "the endpoint from Task 3".
 - **`Consome` is mandatory from Onda 2 on**, on both sides. A task that consumes nothing belongs in Onda 1.
 - **No task declares a commit step.** `executing-plans` commits once per wave, and a wave now mixes both stacks — per-task commits would interleave two stacks' history.
-- **Roles come from the owning platform planner.** Backend slugs are in `nestjs-plan`, frontend slugs in `nuxt-plan`. Never invent a slug and never infer one from the file path.
+- **Roles come from the owning platform planner.** NestJS uses its specialized roles, Laravel currently uses explicit `general-purpose`, and frontend roles come from `nuxt-plan`.
 
 ## Response Shape
 
 ```md
 # Plan: [Feature Name]
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Waves mix backend and frontend tasks. Backend tasks are driven by their failing test: run the `RED:` command and report its output before writing implementation; frontend tasks declare `RED: n/a`. The run ends with one spec-compliance pass over every wave plus a boundary pass over the diff, and the final wave runs `nimbou-skills:nestjs-test` scoped strictly to the suites this plan touched.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Waves mix backend and frontend tasks. Backend tasks are driven by their failing test; frontend tasks declare `RED: n/a`. The final wave uses the verification contract of the selected backend planner and scoped Nuxt checks.
 
 **Goal:** [one sentence]
 **Contrato:** `docs/domain/<domain>/openapi.yaml` [approved on <date or commit>]
 **Ownership:** [what frontend owns locally vs what backend owns centrally]
+**Backend planner:** `nestjs-plan` | `laravel-plan`
 
 ## Contexto
 
@@ -180,11 +181,11 @@ After writing the plan, check:
 7. **Deletion ownership, across both stacks:** a task that deletes a file owns **every** consumer of it, or lands in a later wave than the last consumer to be migrated. Grep the symbol before planning the delete. Two importers where you assumed one leaves the wave committed with an import pointing at nothing — and in a joint plan the second consumer is often in the *other* stack, or in a slice this feature does not otherwise touch. When the last consumer is out of scope, the deletion is out of scope too: say so in the plan instead of deleting.
 8. **Scoped commands are verified, not composed:** run each distinct `RED`/`Verificação` shape once in the target repo before writing it into a task. Package managers append extra args to the end of the **whole** script string, so a script that chains (`vitest run … && pnpm run lint:rules`) hands your path filter to the *last* command: the runner executes the full suite unfiltered and the trailing command fails on an argument it never expected. `RED` then goes red regardless of the code and `Verificação` can never go green — both fields stop proving anything. Bypass the script and invoke the runner directly when it chains. Copying the form from an older plan in the same repo is not verification; that is how the bug propagates.
 9. **No orphan task headings.** Every `#### Task N` heading is a task the executor will dispatch. A heading kept as a tombstone for work you cut — `#### Task N: (removed)`, `#### Task N: merged into Task M` — is parsed as a real task: it has no `Onda`, so it inherits the wave of the section it sits under, and it has no `Role`, so it is dispatched as `general-purpose` **and logged as a planning bug**. An implementer is opened to read the word "removed". Delete the heading and let the numbering skip; say so in a note if a reader would otherwise look for the missing number.
-10. **`Role` holds a slug, nothing else.** The executor copies the field verbatim into the agent type. A justification, a parenthetical, or an italicised "n/a" becomes a nonexistent agent type. When a task genuinely has no owner — only the `nestjs-test` final wave — **omit the field entirely** and put the reason in the body.
+10. **`Role` holds a slug, nothing else.** The executor copies it verbatim into the agent type, so prose becomes a nonexistent agent. Omit it only for the `nestjs-test` final wave; Laravel final verification declares `general-purpose`.
 11. **TDD shape:** Onda 1 contains no tests on either side. Every backend task carrying behavior owns its test and its implementation, and declares a `RED` failure class. Every frontend task declares `RED: n/a — frontend, coberto por review`. No `n/a` on a backend use-case, repository, or controller
 12. **Roles:** every slug exists in the owning platform planner's Role Mapping
-13. **Platform rules:** backend tasks respect `nestjs-plan` boundaries; frontend tasks respect `nuxt-plan` reuse and design resolution
-14. **Final wave:** `nestjs-test` scoped to this plan's files with explicit suite paths — never an unfiltered `pnpm test`
+13. **Platform rules:** backend tasks respect the selected `nestjs-plan` or `laravel-plan`; frontend tasks respect `nuxt-plan`
+14. **Final wave:** use the selected backend planner's scoped verification; never run an unfiltered backend suite
 15. **Balance is not a goal:** waves with work on one side only are fine when the dependency graph says so
 
 Fix issues inline before handing off.
@@ -194,13 +195,13 @@ Fix issues inline before handing off.
 Upstream — this skill runs after all of them:
 
 - `nimbou-skills:feat-spec` or `nimbou-skills:change-plan` — closes the shared boundary and routes here (`change-plan` routes here only when the change escalates past its small-work threshold)
-- `nimbou-skills:nestjs-think` — backend contract and persistence viability
+- `nimbou-skills:nestjs-think` or `nimbou-skills:laravel-think` — backend contract and persistence viability
 - `nimbou-skills:doc-openapi` — publishes the `openapi.yaml` this plan depends on
 - `nimbou-skills:nuxt-think` — UI structure, reuse, state ownership
 
 Deferred to for platform rules:
 
-- `nimbou-skills:nestjs-plan` — backend Role Mapping, boundaries, task body
+- `nimbou-skills:nestjs-plan` or `nimbou-skills:laravel-plan` — backend roles, boundaries, task body, and final verification
 - `nimbou-skills:nuxt-plan` — frontend Role Mapping, design resolution, catalog reuse
 
 Downstream:

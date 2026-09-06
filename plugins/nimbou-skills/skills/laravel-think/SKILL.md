@@ -1,66 +1,64 @@
 ---
 name: laravel-think
-description: Use when designing the PHP side of a content feature on a nimbou site (Laravel shell + nimbou-cms admin) — a new content type/module, a dynamic route, or a change to how the site exposes CMS data — before writing code. Drives the design (view type, fields, routing/SEO, module reproducibility) to an approved brief. NOT for the Nuxt frontend (use nuxt-think) and NOT for Clean-Architecture/NestJS backends.
+description: Use before designing or implementing a conventional Laravel backend, especially when API contracts, authorization, Eloquent persistence, transactions, queues, or a Nuxt consumer must be reconciled. Not for the Nimbou CMS shell.
 ---
 
-# laravel-think (nimbou)
+# Laravel Think
 
-## Overview
+Turn backend requests into an approved Laravel design before code changes. Prefer the lightest architecture that keeps business rules, authorization, transactions, and persistence coherent; do not force either fat Eloquent models or framework-agnostic Clean Architecture by default.
 
-Drive the **PHP-side design** of a content feature into an approved brief, working **within nimbou-cms conventions** (not Clean Architecture — the "backend" is a thin Laravel shell + a custom-PHP CMS). Output is a short design the user approves before `laravel-plan` turns it into steps.
+Use `nimbou-cms-think` for the Nimbou CMS shell. Use `nuxt-think` for frontend-only work. For fullstack work, enter through `feat-spec` (large feature) or `change-plan` (small change); backend design still returns here.
 
-**REQUIRED REFERENCE:** read `docs/nimbou-cms-guidelines.md` (in the project / nimbou-site-starter) — the data model, view types, field-type catalog, `/api` shapes, SEO wiring, and export/import limits. Don't re-derive it. The frontend is out of scope → hand off to `nuxt-think`.
+<HARD-GATE>
+Do not write implementation code, migrations, or scaffolding until the design is presented and approved.
+</HARD-GATE>
 
-## When to use
+## Specification gate
 
-- "Add a new content type / module to the site", "add a dynamic route with SEO", "change what `/api/<x>` returns".
-- **Not** for: Nuxt pages/components (`nuxt-think`), pure admin-framework changes (new field types), or non-nimbou Laravel apps.
+Before planning:
 
-## The design decisions to resolve
+1. Identify the business domain.
+2. Use `doc-domain` for `docs/domain/<domain>/domain.md` and `doc-gherkin` for its `*.feature` files; obtain approval and refresh them when states or invariants change.
+3. Inspect `composer.json`, the nearest `GUIDELINES.md`, routes, controllers, Form Requests, Resources, Policies, models, migrations, jobs, tests, and recent commits.
+4. Close the backend-viable contract and persistence design. For HTTP changes, hand the approved shape to `doc-openapi`.
+5. Use `laravel-plan` only for backend-only work. Fullstack work ends in `fullstack-plan` after `doc-openapi` and `nuxt-think` are approved.
 
-Work through these and record the answers as the brief:
+when the work spans both stacks, that planning step is `fullstack-plan`, not separate `laravel-plan` and `nuxt-plan` documents.
 
-1. **View type.** Singleton content → **Item** (one row, id=1). A collection of items → **Table** (many rows, `active=1` + visibility window). Approval workflow → ApprovalTable.
-2. **Fields.** For each field pick a `key` + type from the catalog (§4 of the guide). ⚠️ **The field `key`s ARE the API/frontend contract** — name them deliberately (`short_description`, `long_description`, `image`…). Prefer scalar types; **avoid `category`/`subcategory`/`tags` when the frontend needs the readable value** — the site returns them **raw (int id / JSON)**, only `imageFile`/`file` are enriched.
-3. **Slug / URL.** There is **no slug field and the id is the real key**. Default: URL = `Str::slug(title)-{id}`, resolved by `RouteHelper::getIdFromSlug` (id visible in URL). A **clean slug** (`/seguros/auto`, no id) requires **new PHP** (a `where('slug',…)` lookup + a `slug` field + a matching frontend route) — only take it if the client insists.
-4. **Ordering.** ⚠️ `TableView::index` hard-codes `ORDER BY created_at DESC`; there is **no order column** on Table content tables. Editor-controlled ordering is **not** available via the API as-is. Options: accept created_at order; add a `number` field and sort on the frontend; or (last resort) patch `TableView`. Decide now.
-5. **Routing & SEO — only if the content has its OWN public page.** ⚠️ Decide first: does this content type need a dedicated URL (a list page and/or a per-item page), or is it rendered **inside an existing page/section** (e.g. a testimonials block on the homepage)?
-   - **Own page(s):** add **entries to `config/pages.php`** (a `meta` array/closure + a `sitemap` closure for `{slug}` routes). No controller edits — `web.php` injects `<head>`, the body is Nuxt.
-   - **Inside an existing page (no dedicated URL):** **change nothing in `config/pages.php`.** The generic `/api/<key>` is enough; the existing page's route already injects its own `<head>`. Do NOT add a list/`{slug}` route or a sitemap entry — that would be dead code, and there is no page to verify SEO on.
-6. **Reproducibility across environments.** How does the module definition travel dev→prod (usually separate DBs)? This is a real fork — see below; capture the choice in the brief.
-7. **Frontend boundary.** PHP owns: the generic `/api/<key>` JSON, per-route `<head>` SEO, `sitemap.xml`, and the admin CRUD UI. Everything visible is Nuxt. The contract = module key + view type + field keys. Note the handoff explicitly.
+## Design workflow
 
-## Reproducibility fork (decide in the brief)
+1. Ask one question at a time about purpose, actors, tenancy, lifecycle, authorization, external effects, and success criteria.
+2. Present 2–3 grounded approaches with trade-offs. Consider Laravel-native controllers/models, application Actions or Services, and stronger domain isolation only when the domain or existing code justifies it.
+3. Recommend one approach and present the design in reviewable sections.
+4. Save the approved design to `docs/plans/YYYY-MM-DD-<topic>-design.md`.
+5. Self-review it and ask the user to review the file. After approval, invoke `laravel-plan` for backend-only work or continue through `doc-openapi` + `nuxt-think` to `fullstack-plan` when Nuxt changes too.
 
-**Always build the module through the admin first** (it runs the real DDL — correct FK names, columns, seed row). Then capture a *versioned artifact* that can rebuild it on a clean DB. The acceptance bar for any artifact: **applying it to a fresh starter DB reproduces the admin-built schema (diff them).**
+## Decisions to close
 
-| Approach | Fidelity | Notes |
-|---|---|---|
-| **Export JSON** (admin Export button → `Module::export`) re-applied via the module-add path (`Module::add`) | **Schema faithful** | Re-running add invokes the real `afterAddModule` → identical columns + **correct FK names**. Loses only field `options`/`unique`/`private` → capture those alongside and re-apply. No import UI, so re-add + option re-apply is a manual step. |
-| **SQL dump of the generated schema** (`mysqldump` the `modules`/`modules_fields` rows + the `CREATE TABLE mod_<key>`) into a numbered `admin/database/migrations/` file | **Full** — *if dumped, not hand-written* | ⚠️ Do NOT hand-author the DDL: the `imageFile` FK must be named exactly `mod_<key>_<field>` with `ON DELETE SET NULL ON UPDATE SET NULL` (the admin looks it up by that name to edit/drop the field). Dumping the real generated schema avoids this footgun. Pin `modules_fields_types_id` to the seeded ids. |
-| Hand-written SQL migration | fragile | The FK-name/`ON UPDATE` footgun above makes a schema that *looks* right but breaks later admin edits. Avoid unless you diff-validate against the admin-built table. |
-| Manual UI steps | none | Not versioned; diverges between envs. |
+- **Transport:** route grouping, request/response shapes, pagination, errors, idempotency, and API versioning when relevant.
+- **Input and output:** Form Requests own transport validation; API Resources or the established presenter own serialization. Do not expose accidental Eloquent shapes as the contract.
+- **Authorization:** middleware authenticates; Policies/Gates cover resource access; state-sensitive business restrictions must also hold inside the transactional application operation.
+- **Application boundary:** one Action/use case per business verb when workflow or reuse warrants it. Thin controllers parse, call, and map; they do not orchestrate multi-step state changes.
+- **Eloquent:** models own relationships, casts, scopes, and local invariants. Avoid placing cross-aggregate workflows, notifications, or request-specific orchestration in model hooks.
+- **Persistence:** close cardinality, constraints, indexes, tenant scoping, locking/versioning, soft-delete or audit posture, and expand–migrate–contract needs. Add repositories only when a real abstraction or test seam justifies them.
+- **Transactions and effects:** define the atomic write boundary. Dispatch jobs, notifications, and integration events after commit when observers must not see rolled-back state; define retry and deduplication behavior.
+- **Tests:** default to HTTP feature tests for public behavior, focused unit tests for domain policies/Actions, and database integration tests for queries, constraints, locking, or tenant isolation.
 
-**Content (rows + uploaded images) is never carried by any of these** — re-enter in prod, or dump/restore `mod_<key>` + `images` rows + `public/upload/<moduleId>/…` files (⚠️ the module id may differ between envs, changing image paths).
+For arrays of identifiers, prefer batch queries and set comparison over per-id loops. For partial updates, preserve omitted values rather than rebuilding a full model payload. Surface conflicts between the desired contract and Eloquent/database viability now, not in planning.
 
-## Output — the design brief
+## Design output
 
-A short doc the user approves:
-- View type + rationale.
-- Field table: `key` → type → notes (mark relational/enriched).
-- Slug + ordering decisions (with the constraints above).
-- Route(s) to add to `config/pages.php` (with meta/sitemap sketch).
-- Reproducibility approach chosen (+ the "rebuild on a clean DB" acceptance bar).
-- Frontend handoff for `nuxt-think`/`nuxt-plan`: module key, view type, field-key contract, image `{featured,list}` shape, **and any client-side responsibilities the API can't do** — especially: sort order (the API always returns `created_at DESC`, so if the brief chose a manual `order` field the frontend MUST sort by it), and resolving raw `category`/`tag` ids. A handoff missing the sort instruction silently ships the wrong order.
+Include scope, actors and invariants, lifecycle, route/contract sketch, authorization matrix, controller/Action/model boundaries, schema and migration impact, transaction/concurrency behavior, queued or external effects, error mapping, test strategy, and the explicit Nuxt handoff when applicable.
 
-Get explicit approval, then `laravel-plan`.
+## Self-review
 
-## Common mistakes
+Check that there are no placeholders or incompatible interpretations; controllers remain coordinators; authorization is enforced at every required boundary; Eloquent concerns do not leak into the public contract; transactions include every invariant-preserving write; tenant filters and unique constraints agree; after-commit effects are explicit; migrations are reversible where practical; and the test strategy proves HTTP, business, and persistence behavior in proportion to risk.
 
-- Choosing `category`/`tags` for something the frontend must display readably (site returns raw ids/JSON).
-- Assuming editor-controlled ordering works. `TableView` returns `created_at DESC`; the `order` value ships in the JSON but the sort is the frontend's job — say so in the handoff.
-- Adding a list/`{slug}` route + sitemap for content that lives inside an existing page (dead code + nothing to verify). Only route content that has its own URL.
-- Promising clean id-free URLs without budgeting the extra PHP.
-- Treating `imageFile` as single — the API always returns `{ featured, list }`; the frontend reads `image.featured?.path`.
-- Trusting a hand-written SQL migration as "lossless" — the FK-name footgun breaks later admin edits. Dump the generated schema or use export→re-POST, and diff against the admin-built table.
-- Relying on `number` for validated ranges (e.g. 1–5 rating) — there is no min/max enforcement; it's a data-entry + frontend convention.
+## Transition
+
+After approval:
+
+- HTTP contract: `doc-openapi`.
+- Frontend consuming that contract: `nuxt-think`.
+- Backend-only implementation planning: `laravel-plan`.
+- Laravel + Nuxt implementation planning: `fullstack-plan`.

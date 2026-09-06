@@ -11,7 +11,7 @@ Create or update `docs/domain/<domain>/*.feature` from `docs/domain/<domain>/dom
 
 ## When to Use
 
-Use this from `nuxt-think` and `nestjs-think` during specification, before any plan is written.
+Use this from `nuxt-think`, `nestjs-think`, or `laravel-think` during specification, before any plan is written.
 
 ## Output
 
@@ -25,4 +25,4 @@ Use this from `nuxt-think` and `nestjs-think` during specification, before any p
 - never invent states that are not in `domain.md`
 - use `Feature`, `Rule`, and `Scenario` in business language
 - keep one functional slice per `.feature` file
-- do not include selectors, URLs, DTOs, controllers, or Prisma details
+- do not include selectors, URLs, DTOs, controllers, or persistence-framework details
