@@ -5,6 +5,8 @@ description: Use when creating a brand-new Nimbou website project from scratch â
 
 # Scaffold a new Nimbou site
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Bootstrap a new site by cloning **`github.com/Nimbou/nimbou-site-starter`** (monorepo: Laravel 11 shell + Nuxt 4/Vuetify frontend + `admin/` nimbou-cms + `docker/`), bringing site+admin+DB up green in Docker, then creating a private repo + issue. Everything PHP/MySQL runs in containers â€” the host only needs Docker, Node+pnpm, git, `gh`. **No PHP/Composer/MySQL install, no admin rights.**

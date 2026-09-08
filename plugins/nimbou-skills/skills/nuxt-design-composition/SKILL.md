@@ -1,9 +1,11 @@
 ---
 name: nuxt-design-composition
-description: Use when shaping the overall composition, hierarchy, and narrative of a Nuxt 4 + Vuetify 3 interface — landing pages, first viewports, page sequences, or product UI shells (dashboards, admin, workspaces). Pairs with nuxt-design-posture for micro aesthetic details (fonts, color tokens, CSS bans).
+description: Use when shaping the overall composition, hierarchy, and narrative of a Nuxt 4 + Vuetify 4 interface — landing pages, first viewports, page sequences, or product UI shells (dashboards, admin, workspaces). Pairs with nuxt-design-posture for micro aesthetic details (fonts, color tokens, CSS bans).
 ---
 
 # Nuxt Design — Composition
+
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
 ## Overview
 

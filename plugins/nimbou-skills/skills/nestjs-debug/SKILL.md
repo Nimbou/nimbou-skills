@@ -5,6 +5,8 @@ description: Use for backend bugs, test failures, or unexpected behavior in Nest
 
 # Systematic Debugging
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Backend debugging in this repository is not stack-neutral. Default to `NestJS + Prisma + Clean Architecture + SOLID`.
 
 Use this skill for backend issues first. If the problem is clearly browser/UI-first in Nuxt/Vuetify, use `nuxt-debug` instead.

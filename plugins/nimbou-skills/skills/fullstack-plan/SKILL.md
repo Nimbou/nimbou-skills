@@ -5,6 +5,8 @@ description: Use when a feature spans a NestJS or Laravel backend and a Nuxt fro
 
 # Fullstack Plan
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Produce a single wave-structured plan covering both stacks, so frontend work runs alongside backend work instead of queueing behind it.

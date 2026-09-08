@@ -5,6 +5,8 @@ description: Use when a nimbou-cms module already exists and its /api/{key} resp
 
 # nimbou-cms-wire (nuxt)
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 The **frontend counterpart of `nimbou-cms-execute`**. Once a nimbou-cms module is built and `GET /api/{key}` responds, the Nuxt SPA still has to be wired to consume it: the typed entity, the `@ministerjs` store/model registration, the dev mock, and the composable that owns the fetch. This skill does exactly that wiring — for a Table (list) or Item (singleton) module — and stops at the composable, handing the UI off to `nuxt-think`/`nuxt-plan`.

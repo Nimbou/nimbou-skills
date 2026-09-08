@@ -5,6 +5,8 @@ description: Generate and validate the Nuxt component catalog for Vue SFCs with 
 
 # Nuxt Catalog
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Purpose
 
 Scan `components/**/*.vue`, extract `<catalog lang="json">`, merge the result with `vue-component-meta`, and write both the rich `components.meta.json` catalog and the slim `.generated/component-catalog/components.meta.json` mirror.

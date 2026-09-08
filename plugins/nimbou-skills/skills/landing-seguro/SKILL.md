@@ -5,6 +5,8 @@ description: 'Use quando o operador de uma corretora pede o conteúdo de uma lan
 
 # Landing de Seguro
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Gera o conteúdo de uma **landing page comercial por tipo de seguro** para o operador de uma
 corretora **revisar antes de publicar** — nunca é a página final, nunca vai direto ao ar.
 

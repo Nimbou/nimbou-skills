@@ -5,6 +5,8 @@ description: Use before designing or implementing a conventional Laravel backend
 
 # Laravel Think
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Turn backend requests into an approved Laravel design before code changes. Prefer the lightest architecture that keeps business rules, authorization, transactions, and persistence coherent; do not force either fat Eloquent models or framework-agnostic Clean Architecture by default.
 
 Use `nimbou-cms-think` for the Nimbou CMS shell. Use `nuxt-think` for frontend-only work. For fullstack work, enter through `feat-spec` (large feature) or `change-plan` (small change); backend design still returns here.

@@ -5,6 +5,8 @@ description: Use when a feature changes both Nuxt frontend and a NestJS or Larav
 
 # Feat Spec
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Use this skill when the request changes both frontend and backend in the same feature slice, or when frontend delivery depends on a new or changed backend contract.
 The feature changes both frontend and backend; the repository decides whether that backend is NestJS or Laravel.
 For a small fullstack change — evolving an existing flow or a small new feature — use `change-plan`. This skill is the door for a large new feature; the discriminator is size, not novelty.

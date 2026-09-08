@@ -5,6 +5,8 @@ description: "Use before backend design or implementation work. Drive NestJS, Pr
 
 # NestJS Think
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Turn backend requests into concrete NestJS-first designs before code changes. This skill is not stack-neutral: default to `NestJS + Prisma + Clean Architecture + SOLID`.
 
 This skill owns backend coherence end to end at the design level: use-cases, transport, error mapping, and persistence viability stay together here unless the user explicitly asks to split them.

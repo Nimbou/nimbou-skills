@@ -148,7 +148,7 @@ Estes padrões CSS **nunca** são aceitáveis. São as impressões digitais mais
 
 Para o **ritmo** (quantos motions por página, quais momentos ancoram) → `nuxt-design-composition`.
 
-## Integração com Vuetify 3
+## Integração com Vuetify 4
 
 - Customize tokens no `vuetify.config` antes de escrever CSS local.
 - Use `v-theme-provider` para escopar variantes de tema em seções específicas.

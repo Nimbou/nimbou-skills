@@ -5,6 +5,8 @@ description: Use after approval of a conventional Laravel backend design to prod
 
 # Laravel Plan
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Write a backend implementation plan that an engineer with no prior context can execute. Use the approved `laravel-think` design and, for HTTP work, the approved `docs/domain/<domain>/openapi.yaml`. Use `nimbou-cms-plan` instead for CMS modules.
 
 Announce this skill and save the plan to `docs/plans/YYYY-MM-DD-<feature-name>.md` unless the user chooses another path. Read `CLAUDE.md`, the nearest `GUIDELINES.md`, `composer.json`, neighboring Laravel files, and the actual test/quality scripts before naming files or commands.

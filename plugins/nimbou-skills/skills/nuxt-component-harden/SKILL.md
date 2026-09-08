@@ -5,6 +5,8 @@ description: Use when one Vue/Nuxt component must be rendered in isolation acros
 
 # Nuxt Component Harden
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Pega **um** componente Vue, renderiza seus estados em **viewports** no Vitest Browser Mode, corrige quebras e poli a UX **ancorado nos guias do projeto**, num **loop fechado** que só encerra quando estabiliza.

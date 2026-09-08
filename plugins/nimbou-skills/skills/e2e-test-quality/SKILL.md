@@ -5,6 +5,8 @@ description: Use when auditing, fixing, stabilizing, or expanding bounded end-to
 
 # E2E Test Quality
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 For frontend flows, dispatch `e2e-quality-auditor` only when the user explicitly asks
 for browser-driven end-to-end coverage or its audit. Do not infer that request from
 ordinary frontend implementation. Backend flows may use this skill when browser-driven

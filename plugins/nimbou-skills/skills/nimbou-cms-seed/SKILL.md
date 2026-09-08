@@ -5,6 +5,8 @@ description: Use when a nimbou-cms content module already exists and its rows (a
 
 # nimbou-cms-seed
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Content never travels with a schema migration — `nimbou-cms-execute` ships the module's **structure**, and the **rows + images are re-entered per environment**. This skill is that step: load a module's content from a versioned data file through the admin REST, **idempotently**, so the same seed runs on dev now and on production later and converges to one row per item, one image per row.

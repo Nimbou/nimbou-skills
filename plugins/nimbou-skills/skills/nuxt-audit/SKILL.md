@@ -1,9 +1,11 @@
 ---
 name: nuxt-audit
-description: Audit Nuxt 4 + Vuetify 3 frontend work for architecture, reuse, hardening, performance, and final polish without editing code.
+description: Audit Nuxt 4 + Vuetify 4 frontend work for architecture, reuse, hardening, performance, and final polish without editing code.
 ---
 
 # Nuxt Audit
+
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
 Read `reference/quality-rules.md` before auditing.
 

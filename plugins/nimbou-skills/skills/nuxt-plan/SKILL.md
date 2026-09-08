@@ -5,6 +5,8 @@ description: Use after frontend design approval to write a Nuxt implementation p
 
 # Nuxt Plan
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Turn an approved frontend design direction into a concrete file tree and execution sequence. The plan must make component reuse, route ownership, state boundaries, and responsive behavior explicit before implementation starts.

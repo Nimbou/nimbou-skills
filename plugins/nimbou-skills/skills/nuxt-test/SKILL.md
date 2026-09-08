@@ -5,6 +5,8 @@ description: Stabilize and expand bounded Playwright E2E coverage for a Nuxt/Vue
 
 # Nuxt Test
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Read `reference/test-conventions.md` before changing tests.
 
 ## Purpose

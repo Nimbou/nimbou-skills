@@ -5,6 +5,8 @@ description: Use after nimbou-cms-think's design is approved, to write the imple
 
 # nimbou-cms-plan
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Turn an **approved `nimbou-cms-think` design brief** into an ordered, file-level implementation plan for the **PHP side**, within nimbou-cms conventions. The frontend page is a separate plan (`nuxt-plan`).

@@ -5,6 +5,8 @@ description: Use when a small change or bugfix touches both a NestJS or Laravel 
 
 # Change Plan
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Single entry point for a **small** fullstack change (NestJS or Laravel + Nuxt). Detect the backend from the repository before selecting platform rules. When the work is small, this skill produces one wave-structured plan that `run-waves`/`executing-plans` runs directly — no domain-artifact gate or separate spec step. Its tasks still declare `Estimativa` so the executor can choose setup-sharing only for short work. When the work is not small, it routes to the heavier path instead of under-planning it.

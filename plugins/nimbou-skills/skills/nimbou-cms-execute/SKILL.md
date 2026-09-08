@@ -5,6 +5,8 @@ description: Use when an approved nimbou-cms-plan (or equivalent brief) for a ni
 
 # nimbou-cms-execute
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 The **execute** step of the nimbou backend triad (`nimbou-cms-think → nimbou-cms-plan → nimbou-cms-execute`). Takes an approved `nimbou-cms-plan` and materializes the **PHP/backend** side: builds the nimbou-cms module, captures a versioned migration, validates it on a clean DB, and — when the content has its own public URL — wires `config/pages.php` routing/SEO.

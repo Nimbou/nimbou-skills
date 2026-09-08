@@ -5,6 +5,8 @@ description: Use for Nuxt/Vuetify browser bugs, hydration issues, or flaky front
 
 # Nuxt Systematic Debugging
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Use this skill when the bug is clearly frontend-first: route rendering, hydration, browser state, network sequencing, Vuetify interaction, or flaky browser behavior around a Nuxt app.
 
 If the failure is primarily in NestJS, Prisma, or backend contracts, use `nestjs-debug` instead.

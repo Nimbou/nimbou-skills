@@ -5,6 +5,8 @@ description: Use when designing the PHP side of a content feature on a nimbou si
 
 # nimbou-cms-think
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Drive the **PHP-side design** of a content feature into an approved brief, working **within nimbou-cms conventions** (not Clean Architecture — the "backend" is a thin Laravel shell + a custom-PHP CMS). Output is a short design the user approves before `nimbou-cms-plan` turns it into steps.

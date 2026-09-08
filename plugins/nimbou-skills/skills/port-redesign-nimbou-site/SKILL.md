@@ -5,6 +5,8 @@ description: Use when a nimbou site's pages must be rebuilt FAITHFUL to a redesi
 
 # port-redesign-nimbou-site
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Rebuild nimbou pages **faithful to a page-builder export**, wired to the CMS. The export is the **specification**; the **rendered DOM** is the fidelity target and the source of truth (measured, never eyeballed — the browser pane doesn't composite, so screenshots are blank). This skill **orchestrates** the rest of the plugin — it does not re-plan or duplicate it.

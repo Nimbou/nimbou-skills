@@ -1,9 +1,11 @@
 ---
 name: theming-nimbou-site
-description: Use when applying a client's visual identity to a freshly-scaffolded nimbou site (Laravel shell + Nuxt 4/Vuetify 3) — turning the neutral skeleton into the redesign's look from a MACHINE-READABLE design source (redesign HTML/CSS export, a live URL, a logo SVG). Runs after scaffold-nimbou-site. NOT for Figma/image/PDF sources (need visual extraction), and NOT the CMS content step (uploading logo/icons into the informations module → that's nimbou-cms-plan).
+description: Use when applying a client's visual identity to a freshly-scaffolded nimbou site (Laravel shell + Nuxt 4/Vuetify 4) — turning the neutral skeleton into the redesign's look from a MACHINE-READABLE design source (redesign HTML/CSS export, a live URL, a logo SVG). Runs after scaffold-nimbou-site. NOT for Figma/image/PDF sources (need visual extraction), and NOT the CMS content step (uploading logo/icons into the informations module → that's nimbou-cms-plan).
 ---
 
 # theming-nimbou-site
+
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
 ## Overview
 

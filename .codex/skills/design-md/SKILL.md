@@ -5,6 +5,8 @@ description: Use when a Nuxt/Vuetify app needs a Google-format DESIGN.md created
 
 # Generate DESIGN.MD
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 Use this skill when the user wants frontend design guidance created, refreshed, or standardized for a Nuxt/Vuetify project.
 
 ## Core Rules

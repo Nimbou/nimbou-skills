@@ -5,6 +5,8 @@ description: Use when a backend or Nuxt feature needs one framework-neutral busi
 
 # Doc Domain
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Purpose
 
 Create or update `docs/domain/<domain>/domain.md` as the shared source of truth for domain terms, entities, states, transitions, and derived statuses.

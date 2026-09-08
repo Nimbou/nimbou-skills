@@ -5,6 +5,8 @@ description: Use when deploying a nimbou-stack site (thin Laravel shell + Nuxt S
 
 # Deploy a Nimbou site to cPanel (FTP-only)
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Publish a nimbou site — **thin Laravel shell** (serves SEO meta + `/api/{module}` + sitemap, docroot = its `public/`) + **Nuxt SPA** built into that `public/` + separate **nimbou-cms admin** on a subdomain (docroot = its `public/`) — to **cPanel shared hosting with FTP only, no SSH, MariaDB, per-subdomain MultiPHP**. Site and admin share ONE database.

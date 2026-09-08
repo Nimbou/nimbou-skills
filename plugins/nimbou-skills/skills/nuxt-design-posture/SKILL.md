@@ -5,6 +5,8 @@ description: Use when the composition is already framed and the remaining decisi
 
 # Nuxt Design — Posture
 
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
 ## Overview
 
 Disciplina de micro-detalhes estéticos para interfaces Nuxt/Vuetify: o que pintar (fonte, cor, escala, padrão CSS), não o que montar. Composição, hierarquia e sequência de página são tratadas em `nuxt-design-composition`.
@@ -27,7 +29,7 @@ Antes de qualquer decisão de token, o **Working Model** (visual thesis, content
 
 ## Onde estão as regras
 
-`reference/posture-rules.md` carrega as decisões concretas: tipografia (incluindo o procedimento de seleção de fonte e o tratamento de texto em dark), cor e seleção de tema em OKLCH, tokens de espaçamento, os **Absolute Bans** de CSS, detalhes visuais, técnicas de movimento e integração com Vuetify 3.
+`reference/posture-rules.md` carrega as decisões concretas: tipografia (incluindo o procedimento de seleção de fonte e o tratamento de texto em dark), cor e seleção de tema em OKLCH, tokens de espaçamento, os **Absolute Bans** de CSS, detalhes visuais, técnicas de movimento e integração com Vuetify 4.
 
 Leia esse arquivo antes de escrever qualquer token, nome de fonte ou regra CSS. As Red flags abaixo são o resumo verificável; elas não substituem a referência.
 
