@@ -1,4 +1,0 @@
-interface:
-  display_name: "Nimbou MCP"
-  short_description: "Usar ou configurar o MCP de um site Nimbou"
-  default_prompt: "Use $nimbou-mcp para conectar, operar ou configurar com segurança o MCP deste site Nimbou."

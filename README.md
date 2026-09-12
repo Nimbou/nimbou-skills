@@ -61,16 +61,12 @@ This fork consolidates:
 - `nuxt-test`
 - `nuxt-debug`
 
-### Nimbou-site skills (Laravel shell + Nuxt SPA + nimbou-cms)
+### Project-specific skills
 
-- `scaffold-nimbou-site` bootstraps a new site from the starter, green locally
-- `theming-nimbou-site` applies a client's visual identity to a scaffolded site
-- `port-redesign-nimbou-site` rebuilds pages faithful to a page-builder export (Duda/.dc.html, Framer, Webflow), CMS-driven, verified by DOM measurement
-- `nimbou-cms-think` / `nimbou-cms-plan` / `nimbou-cms-execute` design, plan and build a nimbou-cms content module
-- `nimbou-cms-seed` / `nimbou-cms-wire` load module content and wire it to the SPA
-- `nimbou-seo-migrate` builds the 301 redirect map for a domain cutover
-- `deploy-nimbou-site` deploys a nimbou site to cPanel shared hosting (FTP-only, MariaDB), first go-live or redeploy
-- `golive-nimbou-site` activates the SEO cutover on the real domain (canonical, real-domain 301 re-check, sitemap→Search Console)
+The Nimbou site and CMS workflows are maintained with the central CMS project in
+[`Nimbou/cms.nimbou.com.br`](https://github.com/Nimbou/cms.nimbou.com.br), under
+`.agents/skills/`. They are intentionally not shipped by this general-purpose
+plugin.
 
 ## Repository Layout
 

@@ -27,9 +27,6 @@ test('skills tree ships the unified skill set directly', () => {
   assert.ok(shippedSkills.includes('change-plan'))
   assert.ok(shippedSkills.includes('laravel-think'))
   assert.ok(shippedSkills.includes('laravel-plan'))
-  assert.ok(shippedSkills.includes('nimbou-cms-think'))
-  assert.ok(shippedSkills.includes('nimbou-cms-plan'))
-  assert.ok(shippedSkills.includes('nimbou-cms-execute'))
   assert.equal(shippedSkills.includes('laravel-execute'), false)
   assert.ok(shippedSkills.includes('feat-spec'))
   assert.ok(shippedSkills.includes('doc-domain'))
@@ -70,22 +67,6 @@ test('skills tree ships the unified skill set directly', () => {
   assert.equal(codexMarketplace.plugins[0].policy.installation, 'INSTALLED_BY_DEFAULT')
   assert.equal(codexMarketplace.plugins[0].source.source, 'local')
   assert.equal(codexMarketplace.plugins[0].source.path, './plugins/nimbou-skills')
-})
-
-test('CMS workflow uses the safe ordering key and preserves every planning gate', () => {
-  const cmsThink = read('plugins/nimbou-skills/skills/nimbou-cms-think/SKILL.md')
-  const cmsPlan = read('plugins/nimbou-skills/skills/nimbou-cms-plan/SKILL.md')
-  const portSkill = read('plugins/nimbou-skills/skills/port-redesign-nimbou-site/SKILL.md')
-  const portHarness = read('plugins/nimbou-skills/skills/port-redesign-nimbou-site/qa-harness.md')
-
-  for (const skill of [cmsThink, cmsPlan]) {
-    assert.match(skill, /`sort_order`/, 'CMS design and planning must name the safe ordering field')
-    assert.doesNotMatch(skill, /manual `order` field/, 'CMS guidance must not recommend the reserved key')
-  }
-
-  const completeCmsHandoff = /`nimbou-cms-think`.*`nimbou-cms-plan`.*`nimbou-cms-execute`.*`nimbou-cms-wire`/s
-  assert.match(portSkill, completeCmsHandoff)
-  assert.match(portHarness, completeCmsHandoff)
 })
 
 test('command and agent scaffolds exist for design, merge, and review workflows', () => {
