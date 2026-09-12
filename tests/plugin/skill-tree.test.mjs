@@ -457,7 +457,21 @@ test('browser-smoke ships as a standalone skill and is wired into executing-plan
   // blames the code for an environment that was never usable.
   assert.match(smoke, /health-check|Health check/i)
   assert.match(smoke, /route the change did NOT touch/i)
+  assert.match(smoke, /integrated browser/i)
   assert.match(smoke, /Chrome DevTools MCP/)
+  assert.ok(
+    smoke.indexOf('integrated browser') < smoke.indexOf('Chrome DevTools MCP'),
+    'Codex must prefer its integrated browser before Chrome DevTools MCP',
+  )
+  assert.match(
+    smoke,
+    /Chrome DevTools MCP[^\n]*fail[\s\S]*integrated browser[^\n]*available[^\n]*not[^\n]*no browser driver/i,
+    'a headful Chrome DevTools failure must not hide an available integrated browser',
+  )
+  assert.ok(
+    smoke.indexOf('Chrome DevTools MCP') < smoke.indexOf('Playwright MCP'),
+    'Playwright remains the last, explicitly requested driver',
+  )
   assert.match(smoke, /skip the smoke and say so loudly/i)
   assert.match(smoke, /do not\s+report the change as verified/i)
   assert.match(smoke, /screenshot/i)

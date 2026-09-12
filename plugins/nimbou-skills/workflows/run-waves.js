@@ -169,7 +169,7 @@ const SMOKE_SCHEMA = {
       description:
         'SKIPPED when no browser driver was available or the app never came up — that is an environment gap, never a defect',
     },
-    driver: { type: 'string', description: 'chrome-devtools | playwright | none' },
+    driver: { type: 'string', description: 'codex-integrated | chrome-devtools | playwright | none' },
     flows: { type: 'integer', description: 'how many flows were actually exercised' },
     findings: {
       type: 'array',
@@ -1348,6 +1348,11 @@ ${
 ${recheck.map(f => `- ${f}`).join('\n')}`
       : 'Pick three to six flows, favouring the ones a user hits first.'
   }
+
+When running in Codex, always use its integrated browser first when that surface is
+available in the session. Fall back to Chrome DevTools MCP only after that, and use
+Playwright only when the user explicitly requested it. A Chrome DevTools headful
+failure is not a missing-driver concern while the integrated browser can run.
 
 Before any flow, health-check a route this plan did NOT touch. If it does not render,
 the environment is broken rather than the code: return status SKIPPED with the reason

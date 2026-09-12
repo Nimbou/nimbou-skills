@@ -1083,7 +1083,7 @@ const frontPlan = JSON.parse(JSON.stringify(twoWavePlan))
 frontPlan.planOrigin = 'nuxt-plan'
 frontPlan.waves[1].tasks[0].files = ['components/AttachmentCard.vue']
 const frontImplementer = { status: 'DONE', filesTouched: ['components/AttachmentCard.vue'], verification: 'pass' }
-const cleanSmoke = { status: 'PASS', driver: 'chrome-devtools', flows: 3, findings: [] }
+const cleanSmoke = { status: 'PASS', driver: 'codex-integrated', flows: 3, findings: [] }
 
 test('run-waves skips the browser smoke when no wave touched the frontend', async () => {
   const { result, calls } = await runWorkflow('docs/plans/x.md', [
@@ -1113,6 +1113,7 @@ test('run-waves smokes the browser when a wave touched frontend files', async ()
   assert.ok(smoke, 'a .vue in the committed diff is the trigger')
   assert.match(smoke.prompt, /nimbou-skills:browser-smoke/, 'the workflow delegates to the skill, not to an inline recipe')
   assert.match(smoke.prompt, /report/, 'the workflow owns the fix cycle, so the skill must not fix')
+  assert.match(smoke.prompt, /integrated browser/i, 'the workflow must preserve the Codex-first driver contract')
   assert.match(smoke.prompt, new RegExp(`WORKTREE_ROOT = ${WORKTREE}`), 'the dev server must serve this checkout')
   assert.match(smoke.prompt, new RegExp(`${WORKTREE}/docs/plans/x\\.md`), 'flows are derived from the plan text')
   assert.equal(result.browserSmoke.status, 'PASS')

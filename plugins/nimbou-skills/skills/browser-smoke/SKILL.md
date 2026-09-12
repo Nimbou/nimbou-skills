@@ -1,6 +1,6 @@
 ---
 name: browser-smoke
-description: Use after a change that touched frontend files to verify in a real browser that the promised behavior actually works — derive the flows from the plan or change description, drive them with Chrome DevTools MCP, and report screenshot plus console evidence per flow. Runs as the last step of executing-plans, or standalone over any branch.
+description: Use after a change that touched frontend files to verify in a real browser that the promised behavior actually works — derive the flows from the plan or change description, prefer Codex's integrated browser when available, and report screenshot plus console evidence per flow. Runs as the last step of executing-plans, or standalone over any branch.
 ---
 
 # Browser Smoke
@@ -47,19 +47,28 @@ succeeded.
 
 In order:
 
-1. **Chrome DevTools MCP** — the primary path. Same tools `nimbou-skills:nuxt-debug`
+1. **Codex integrated browser** — always the primary path when it is available in
+   the current session. Use its browser-control surface for navigation, interaction,
+   screenshots, console messages, network requests, and script evaluation. Session
+   availability is enough; it does not need to be configured by the project.
+2. **Chrome DevTools MCP** — the fallback. Same tools `nimbou-skills:nuxt-debug`
    uses: snapshot, console messages, network requests, evaluate script. The server
    name is project-configured; look for tools matching `mcp__chrome*devtools__*`.
-2. **Playwright MCP**, only when the user explicitly requests Playwright/browser E2E.
-3. **Nothing.** Then **skip the smoke and say so loudly**: record
+3. **Playwright MCP**, only when the user explicitly requests Playwright/browser E2E.
+4. **Nothing.** Then **skip the smoke and say so loudly**: record
    `front alterado, validação em browser não executada: nenhum driver de browser disponível`
    as a concern, surface it in the report, and exit. Do not install a browser
    toolchain, do not write a throwaway Playwright script, and above all do not
    report the change as verified.
 
-The driver belongs to the project, not to this skill. A project without one gets an
-honest gap, not a fabricated pass. The gap is worth more than the pass would be:
-"not run" is actionable, "passed" would be a lie.
+If Chrome DevTools MCP fails but the integrated browser is available, this is not a no browser driver case.
+Continue the smoke with the integrated browser; a headful/display failure in the
+fallback does not make the primary driver disappear. Only report the driver gap
+after checking every allowed option in this order.
+
+A session without an allowed driver gets an honest gap, not a fabricated pass. The
+gap is worth more than the pass would be: "not run" is actionable, "passed" would be
+a lie.
 
 ## Step 3: Bring the application up
 
@@ -140,7 +149,7 @@ line — a paragraph per screenshot costs more than the smoke itself.
 ## Step 7: Report
 
 ```
-**Driver:** chrome-devtools MCP | playwright MCP | none (skipped)
+**Driver:** codex-integrated | chrome-devtools MCP | playwright MCP | none (skipped)
 **Ambiente:** how it was started, and the health route you checked
 **Fluxos verificados:** N
 

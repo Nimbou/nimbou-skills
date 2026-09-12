@@ -138,7 +138,7 @@ Required workflow skills:
 - `nimbou-skills:nestjs-plan` or `nimbou-skills:laravel-plan` — produces wave-structured backend plans for this skill to execute
 - `nimbou-skills:nuxt-plan` — produces wave-structured frontend plans for this skill to execute
 - `nimbou-skills:nestjs-test` — REQUIRED final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (no full-suite runs)
-- `nimbou-skills:browser-smoke` — Step 5, in `report` mode, when the committed diff touched frontend files. The only lens here that looks at the running application; it skips itself cleanly when no browser driver is available
+- `nimbou-skills:browser-smoke` — Step 5, in `report` mode, when the committed diff touched frontend files. The only lens here that looks at the running application; in Codex it prefers the integrated browser, then Chrome DevTools MCP, and only uses Playwright when explicitly requested. It skips itself cleanly only when no allowed driver is available
 
 Execution body — see Routing above for which one applies:
 
