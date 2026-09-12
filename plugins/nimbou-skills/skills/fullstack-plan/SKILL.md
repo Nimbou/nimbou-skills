@@ -24,6 +24,8 @@ final wave, `Verificação`, or post-execution handoff unless the user explicitl
 requests that E2E work. Backend verification, including backend Playwright when it
 fits the contract, remains available. Do not add or execute `typecheck` unless the
 user explicitly requests it. Use a smaller relevant frontend proof when one is needed.
+This policy governs persistent E2E coverage; the later `browser-smoke` runtime may
+choose Playwright as its fallback driver.
 
 ## Boundary
 

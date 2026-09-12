@@ -21,8 +21,9 @@ By default, return the plan in the chat as a structured response. Do not write a
 Do not add, create, or execute Playwright/browser E2E coverage in this plan, including
 `Verificação`, `## Pos-execucao`, or a handoff, unless the user explicitly requests
 that E2E work. Do not include or run `typecheck` unless the user explicitly requests
-it. Prefer catalog validation, review, browser smoke without Playwright, or another
-small relevant check when appropriate.
+it. Prefer catalog validation, review, browser smoke, or another small relevant
+check when appropriate. This policy governs persistent E2E coverage; the later
+`browser-smoke` runtime may choose Playwright as its fallback driver.
 
 Read `reference/plan-format.md` before writing the plan.
 

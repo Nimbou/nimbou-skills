@@ -54,7 +54,7 @@ In order:
 2. **Chrome DevTools MCP** — the fallback. Same tools `nimbou-skills:nuxt-debug`
    uses: snapshot, console messages, network requests, evaluate script. The server
    name is project-configured; look for tools matching `mcp__chrome*devtools__*`.
-3. **Playwright MCP**, only when the user explicitly requests Playwright/browser E2E.
+3. **Playwright MCP** — the final automatic fallback when the Codex integrated browser and Chrome DevTools MCP are not available or cannot execute the smoke. Use an already available driver; this smoke does not require a separate request for Playwright.
 4. **Nothing.** Then **skip the smoke and say so loudly**: record
    `front alterado, validação em browser não executada: nenhum driver de browser disponível`
    as a concern, surface it in the report, and exit. Do not install a browser
@@ -64,7 +64,7 @@ In order:
 If Chrome DevTools MCP fails but the integrated browser is available, this is not a no browser driver case.
 Continue the smoke with the integrated browser; a headful/display failure in the
 fallback does not make the primary driver disappear. Only report the driver gap
-after checking every allowed option in this order.
+after checking every option in this order, including the Playwright fallback.
 
 A session without an allowed driver gets an honest gap, not a fabricated pass. The
 gap is worth more than the pass would be: "not run" is actionable, "passed" would be

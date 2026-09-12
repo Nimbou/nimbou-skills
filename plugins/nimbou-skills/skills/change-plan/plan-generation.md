@@ -15,7 +15,8 @@ Backend tasks follow the planner detected from the repository: `nimbou-skills:ne
 
 Frontend Playwright/browser E2E is opt-in: omit it from the plan and do not execute it
 unless the user explicitly requested it. Backend verification may use Playwright when
-appropriate. `typecheck` remains opt-in for both stacks.
+appropriate. This covers persistent E2E coverage; the later `browser-smoke` runtime
+may choose Playwright as its fallback driver. `typecheck` remains opt-in for both stacks.
 
 ## The three deltas
 

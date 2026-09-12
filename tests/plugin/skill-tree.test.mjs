@@ -470,8 +470,14 @@ test('browser-smoke ships as a standalone skill and is wired into executing-plan
   )
   assert.ok(
     smoke.indexOf('Chrome DevTools MCP') < smoke.indexOf('Playwright MCP'),
-    'Playwright remains the last, explicitly requested driver',
+    'Playwright remains the fallback after Chrome DevTools MCP',
   )
+  assert.match(
+    smoke,
+    /Playwright MCP[^\n]*fallback[\s\S]*Chrome DevTools MCP[^\n]*not available/i,
+    'Playwright must run when Chrome DevTools MCP is unavailable',
+  )
+  assert.doesNotMatch(smoke, /Playwright MCP[^\n]*only when the user explicitly requests/i)
   assert.match(smoke, /skip the smoke and say so loudly/i)
   assert.match(smoke, /do not\s+report the change as verified/i)
   assert.match(smoke, /screenshot/i)

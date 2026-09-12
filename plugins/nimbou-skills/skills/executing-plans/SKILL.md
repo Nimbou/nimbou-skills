@@ -14,6 +14,9 @@ frontend command copied from a plan or template as insufficient authorization: i
 plan does not record the explicit request, omit it and report it as intentionally
 skipped.
 
+This restriction applies to persistent project E2E coverage, not to the ephemeral
+`browser-smoke` driver. That skill may use Playwright as its final automatic fallback.
+
 ## Overview
 
 Load the plan, review it critically, confirm it is wave-structured, then hand it to an executor. Inside a wave, implementer subagents run in parallel: short same-Role tasks may share setup, while medium and long tasks get their own lanes whenever their write sets are disjoint. Each wave is committed as soon as its tasks land and verify. Every task is driven by its own failing test, and the red run is reported as evidence. Two **non-blocking** reviewers run once at the end — spec compliance against the plan, and a boundary lens over the diff; their findings never gate progression, they accumulate into `<plan>.followups.md`. Those follow-ups are then executed, not just filed. Last, when the plan touched frontend files, a browser smoke verifies the promised flows on screen. Full code review is deliberately **not** part of this skill: run `/code-review` over the branch when the change warrants a further pass.
@@ -138,7 +141,7 @@ Required workflow skills:
 - `nimbou-skills:nestjs-plan` or `nimbou-skills:laravel-plan` — produces wave-structured backend plans for this skill to execute
 - `nimbou-skills:nuxt-plan` — produces wave-structured frontend plans for this skill to execute
 - `nimbou-skills:nestjs-test` — REQUIRED final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (no full-suite runs)
-- `nimbou-skills:browser-smoke` — Step 5, in `report` mode, when the committed diff touched frontend files. The only lens here that looks at the running application; in Codex it prefers the integrated browser, then Chrome DevTools MCP, and only uses Playwright when explicitly requested. It skips itself cleanly only when no allowed driver is available
+- `nimbou-skills:browser-smoke` — Step 5, in `report` mode, when the committed diff touched frontend files. The only lens here that looks at the running application; in Codex it prefers the integrated browser, then Chrome DevTools MCP, then Playwright as the automatic fallback. It skips itself cleanly only when no driver is available
 
 Execution body — see Routing above for which one applies:
 

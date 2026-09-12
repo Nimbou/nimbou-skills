@@ -1351,8 +1351,9 @@ ${recheck.map(f => `- ${f}`).join('\n')}`
 
 When running in Codex, always use its integrated browser first when that surface is
 available in the session. Fall back to Chrome DevTools MCP only after that, and use
-Playwright only when the user explicitly requested it. A Chrome DevTools headful
-failure is not a missing-driver concern while the integrated browser can run.
+Playwright as the final automatic fallback when Chrome DevTools is unavailable or
+cannot execute the smoke. A Chrome DevTools headful failure is not a missing-driver
+concern while the integrated browser or Playwright can run.
 
 Before any flow, health-check a route this plan did NOT touch. If it does not render,
 the environment is broken rather than the code: return status SKIPPED with the reason
