@@ -78,17 +78,18 @@ def _styles():
 
 class HBar(Flowable):
     """Faixa de cabeçalho de seção: quadro numerado + título serifado + badge."""
-    def __init__(self, num, title, tag, width, badge=None):
+    def __init__(self, num, title, tag, width, badge=None, top_pad=0):
         super().__init__()
         self.num, self.title, self.tag, self.width, self.badge = num, title, tag, width, badge
-        self.height = 16 * mm
+        self.bar_height = 16 * mm
+        self.height = self.bar_height + top_pad
 
     def wrap(self, aw, ah):
         return self.width, self.height
 
     def draw(self):
         from reportlab.pdfbase.pdfmetrics import stringWidth
-        c = self.canv; h = self.height
+        c = self.canv; h = self.bar_height
         c.setFillColor(GREEN); c.roundRect(0, 0, self.width, h, 3 * mm, stroke=0, fill=1)
         c.setFillColor(GOLD);  c.roundRect(0, 0, 16 * mm, h, 3 * mm, stroke=0, fill=1)
         c.setFillColor(GREEN); c.rect(13 * mm, 0, 3 * mm, h, stroke=0, fill=1)
@@ -144,7 +145,7 @@ def item_table(items, width, S):
     rows = []
     for it in items:
         t, d = it["title"], it["desc"]
-        rows.append([Paragraph('<font color="#C4922A">◆</font>', S['item_title']),
+        rows.append([Paragraph('<font color="#C4922A">&#8226;</font>', S['item_title']),
                      [Paragraph(t, S['item_title']), Paragraph(d, S['item_body'])]])
     tbl = Table(rows, colWidths=[7 * mm, width - 7 * mm])
     tbl.setStyle(TableStyle([
@@ -326,6 +327,11 @@ def build(data, out_path):
 
     # -------- seções --------
     for i, sec in enumerate(sections):
+        if i > 0 and sec.get("page_break_before"):
+            story.append(NextPageTemplate('content'))
+            story.append(PageBreak())
+        if sec.get("page_top_padding"):
+            story.append(Spacer(1, 12 * mm))
         num = "%02d" % (i + 1)
         badge = sec.get("badge")
         items = sec["items"]
