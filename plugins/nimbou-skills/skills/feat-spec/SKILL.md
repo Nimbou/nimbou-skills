@@ -17,6 +17,12 @@ If the request is backend-only, use `nestjs-think` or `laravel-think` according 
 This skill does not replace the platform-specific think skills. It closes the shared feature design once, defines the preliminary contract and ownership boundary between frontend and backend, then hands backend contract closure to the detected backend skill: `nestjs-think` for NestJS or `laravel-think` for Laravel. Inspect the repository; never choose from the feature description alone.
 Close the shared feature design, ownership boundary, and preliminary contract before platform-specific design begins.
 
+## Continuous Planning Path
+
+When the user asks for a feature specification and a `fullstack-plan` in the same request, complete the whole path without pausing for approval: `doc-domain` → `doc-gherkin` → detected backend think skill → `doc-openapi` when HTTP changes → `nuxt-think` → `fullstack-plan`.
+
+Publish each artifact, state the decisions and assumptions made, and continue. Ask the user only when a material ambiguity cannot be resolved from the request or repository; never ask for approval of an intermediate artifact or a next-step confirmation. A user may explicitly request a review checkpoint or ask to stop after a named artifact.
+
 When handing off to planning, do not introduce **frontend** Playwright/browser E2E as
 implied acceptance work; it requires an explicit user request. Backend verification
 may use Playwright when appropriate. `typecheck` still requires an explicit request.
@@ -28,7 +34,7 @@ Before routing to backend contract design:
 1. identify the target domain
 2. use `doc-domain` to create or update `docs/domain/<domain>/domain.md`
 3. use `doc-gherkin` to create or update `docs/domain/<domain>/*.feature`
-4. present the domain and Gherkin artifacts for approval
+4. self-review the domain and Gherkin artifacts for consistency with the feature
 5. close the preliminary HTTP, event, or state contract that both sides need
 6. close the ownership boundary between frontend and backend
 7. close the feature-level states and interactions that are contract-dependent
@@ -63,7 +69,7 @@ Lead with your recommendation as the first option and append `(Recommended)` to 
 Do not use `AskUserQuestion` for:
 
 - yes/no confirmations of an obvious next step
-- plan-approval gates (those belong to the user-review step, not a multiple-choice question)
+- plan-approval gates — do not ask for them; continue unless the user explicitly requests a review checkpoint
 - requests for prose-level explanations from the user
 
 Do not use this skill to finish Nuxt component decomposition, visual direction, or route-level UI structure. Hand that to `nuxt-think` after `doc-openapi`.
@@ -79,6 +85,7 @@ Do not finish framework-specific backend design here. Hand NestJS/Prisma boundar
 6. inspect the backend and route the next contract step to `nestjs-think` or `laravel-think`
 7. do not route to `doc-openapi`, `nuxt-think`, or a platform planner directly from this skill
 8. state that planning ends in `fullstack-plan`, not in the platform planners: this feature spans both stacks, so it gets one joint plan whose waves mix backend and frontend work. Two separate plans would queue the frontend behind the whole backend for a dependency it does not have
+9. when the user requested a plan in this run, continue through that path and produce it rather than stopping at any intermediate handoff
 
 ## Output
 

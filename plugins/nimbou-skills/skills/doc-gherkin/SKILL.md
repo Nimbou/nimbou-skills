@@ -1,6 +1,6 @@
 ---
 name: doc-gherkin
-description: Generate or refresh domain-local Gherkin files from an approved domain map so planning and test skills can consume the same scenarios.
+description: Generate or refresh domain-local Gherkin files from a closed domain map so planning and test skills can consume the same scenarios.
 ---
 
 # Doc Gherkin

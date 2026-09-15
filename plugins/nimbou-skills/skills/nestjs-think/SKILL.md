@@ -1,6 +1,6 @@
 ---
 name: nestjs-think
-description: "Use before backend design or implementation work. Drive NestJS, Prisma, Clean Architecture, and SOLID decisions into an approved design before code changes."
+description: "Use before backend design or implementation work. Drive NestJS, Prisma, Clean Architecture, and SOLID decisions into a closed design before code changes."
 ---
 
 # NestJS Think
@@ -18,7 +18,7 @@ Use `change-plan` when a small change or bugfix touches both frontend and backen
 Before closing backend design decisions, locate the nearest backend `GUIDELINES.md` in the target project when one exists. Start from the likely owning module or app, walk upward, and treat the closest file as the primary local implementation source. If none exists, continue with this skill as the fallback baseline.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it.
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until the design is written and self-reviewed. A plan is not implementation: continue to `doc-openapi`, `nuxt-think`, and `fullstack-plan` when the user requested that path.
 </HARD-GATE>
 
 ## Domain Specification Gate
@@ -30,22 +30,22 @@ Before writing the implementation plan:
 1. identify the target business domain
 2. use `doc-domain` to create or update `docs/domain/<domain>/domain.md`
 3. use `doc-gherkin` to create or update `docs/domain/<domain>/*.feature`
-4. present the domain and Gherkin artifacts for approval
+4. self-review the domain and Gherkin artifacts for consistency
 5. do not advance with stale domain or Gherkin artifacts
 6. if state transitions changed, regenerate the affected `.feature` files before planning
 7. do not do the `domain.md` or `*.feature` work inline inside `nestjs-think`; delegate it to the shared spec skills
 8. if the request splits into multiple independent domains, split them and close one domain at a time
 9. for HTTP features, close the backend-viable transport contract before handing off to `doc-openapi`
-10. close persistence viability for the approved backend shape: repositories, transactions, Prisma boundaries, constraints, and schema impact when relevant
-11. only after `doc-openapi` and `nuxt-think` are approved, invoke `nestjs-plan`
-- when the work spans both stacks, that planning step is `fullstack-plan`, not `nestjs-plan`: one joint plan whose waves mix backend and frontend, so frontend tasks consuming the approved `openapi.yaml` do not queue behind backend implementation. Use `nestjs-plan` directly only for backend-only work
+10. close persistence viability for the chosen backend shape: repositories, transactions, Prisma boundaries, constraints, and schema impact when relevant
+11. only after `doc-openapi` and `nuxt-think` are closed, invoke `nestjs-plan`
+- when the work spans both stacks, that planning step is `fullstack-plan`, not `nestjs-plan`: one joint plan whose waves mix backend and frontend, so frontend tasks consuming the closed `openapi.yaml` do not queue behind backend implementation. Use `nestjs-plan` directly only for backend-only work
 
-Treat the domain directory as the approved specification bundle for backend planning, route coverage, and later test generation. `doc-openapi` publishes the canonical transport contract after this skill closes the backend-viable shape.
+Treat the domain directory as the closed specification bundle for backend planning, route coverage, and later test generation. `doc-openapi` publishes the canonical transport contract after this skill closes the backend-viable shape.
 
 **Pronto para planejar**
 
-- `docs/domain/<domain>/domain.md` approved.
-- `docs/domain/<domain>/*.feature` approved.
+- `docs/domain/<domain>/domain.md` closed.
+- `docs/domain/<domain>/*.feature` closed.
 - Backend-viable contract, persistence viability, Prisma/schema impact, and review constraints are closed.
 - `doc-openapi` is ready to publish `docs/domain/<domain>/openapi.yaml` when the feature changes HTTP.
 
@@ -59,8 +59,8 @@ You MUST create a task for each of these items and complete them in order:
 4. **Present the design** — emphasize modules, boundaries, contracts, persistence, and tests
 5. **Write design doc** — save to `docs/plans/YYYY-MM-DD-<topic>-design.md`
 6. **Spec self-review** — check placeholders, contradictions, ambiguity, and boundary drift
-7. **User reviews written spec** — ask the user to review the file before proceeding
-8. **Transition to implementation** — only after approval, invoke `nestjs-plan`
+7. **Continuous handoff** — publish the written spec and continue through the requested planning path
+8. **Transition to planning** — invoke the appropriate planner after closure
 
 ## Process Flow
 
@@ -75,22 +75,16 @@ digraph nestjs_think {
     "Ask clarifying questions" [shape=box];
     "Propose 2-3 backend approaches" [shape=box];
     "Present design sections" [shape=box];
-    "User approves design?" [shape=diamond];
     "Write design doc" [shape=box];
     "Spec self-review" [shape=box];
-    "User reviews spec?" [shape=diamond];
     "Invoke nestjs-plan" [shape=doublecircle];
 
     "Explore project context" -> "Ask clarifying questions";
     "Ask clarifying questions" -> "Propose 2-3 backend approaches";
     "Propose 2-3 backend approaches" -> "Present design sections";
-    "Present design sections" -> "User approves design?";
-    "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
+    "Present design sections" -> "Write design doc";
     "Write design doc" -> "Spec self-review";
-    "Spec self-review" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke nestjs-plan" [label="approved"];
+    "Spec self-review" -> "Invoke nestjs-plan";
 
     "Identify target domain" -> "Use doc-domain";
     "Use doc-domain" -> "Use doc-gherkin";
@@ -127,7 +121,7 @@ digraph nestjs_think {
   - repository and use-case responsibilities
   - whether update flows should be partial/minimal payload or full replacement, and why
   - where Prisma belongs and where it must not leak
-  - whether the approved backend contract is actually supportable by the intended persistence strategy
+  - whether the closed backend contract is actually supportable by the intended persistence strategy
   - how SOLID influences the design
 
 ## Presenting the Design
@@ -146,7 +140,7 @@ Cover, when relevant:
 - payload granularity expectations for update endpoints
 - test strategy across HTTP, application, and persistence layers
 
-Ask after each section whether it looks right so far. If something is wrong or vague, revise before moving on.
+Do not ask for confirmation after each section. Record assumptions and revise when the repository or request exposes a contradiction; ask the user only when a material ambiguity cannot be resolved from available evidence.
 
 ## Clean Architecture Granularity
 
@@ -194,15 +188,11 @@ After writing the spec, check:
 7. **Migration check:** schema-impacting changes have a reversible evolution story when needed
 8. **Contract check:** chatty endpoints, looped validations, or full-form update payloads are justified instead of accidental
 
-Fix issues inline before asking the user to review.
+Fix issues inline before continuing.
 
-### User Review Gate
+### Continuous Handoff
 
-After the self-review loop passes, ask the user to review the written spec before proceeding:
-
-> "Spec written to `<path>`. Review it and tell me if you want any changes before I write the implementation plan."
-
-Wait for approval. If the user requests changes, update the spec and re-run the self-review loop.
+After the self-review loop passes, publish the written spec and continue to the next requested planning skill. Do not ask for approval of the spec or its next step. If the user explicitly requests a review checkpoint or requests changes, honor it and re-run the self-review loop after changes.
 
 ## Key Principles
 
@@ -219,7 +209,7 @@ Wait for approval. If the user requests changes, update the spec and re-run the 
 
 ## Transition
 
-When the backend design is approved, the next skill is:
+When the backend design is closed, the next skill is:
 
 - `doc-openapi` for HTTP features
 - `nuxt-think` for frontend design on top of the published contract

@@ -925,7 +925,7 @@ test('fullstack-plan composes the platform planners instead of duplicating them'
   assert.match(plan, /^---\nname: fullstack-plan/m)
 
   // The reason the skill exists: the frontend waits on the contract, not on the backend.
-  assert.match(plan, /a frontend task depends on the \*\*approved contract\*\*, never on a backend task/i)
+  assert.match(plan, /a frontend task depends on the \*\*closed contract\*\*, never on a backend task/i)
   assert.match(plan, /## The Dependency Rule/)
   assert.match(plan, /openapi\.yaml/)
   assert.match(plan, /end-to-end verification/i, 'the one real cross-stack dependency must be named')

@@ -7,12 +7,12 @@ description: Use before designing or implementing a conventional Laravel backend
 
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
-Turn backend requests into an approved Laravel design before code changes. Prefer the lightest architecture that keeps business rules, authorization, transactions, and persistence coherent; do not force either fat Eloquent models or framework-agnostic Clean Architecture by default.
+Turn backend requests into a closed Laravel design before code changes. Prefer the lightest architecture that keeps business rules, authorization, transactions, and persistence coherent; do not force either fat Eloquent models or framework-agnostic Clean Architecture by default.
 
 Use `nimbou-cms-think` for the Nimbou CMS shell. Use `nuxt-think` for frontend-only work. For fullstack work, enter through `feat-spec` (large feature) or `change-plan` (small change); backend design still returns here.
 
 <HARD-GATE>
-Do not write implementation code, migrations, or scaffolding until the design is presented and approved.
+Do not write implementation code, migrations, or scaffolding until the design is written and self-reviewed. A plan is not implementation: continue to `doc-openapi`, `nuxt-think`, and `fullstack-plan` when the user requested that path.
 </HARD-GATE>
 
 ## Specification gate
@@ -20,10 +20,10 @@ Do not write implementation code, migrations, or scaffolding until the design is
 Before planning:
 
 1. Identify the business domain.
-2. Use `doc-domain` for `docs/domain/<domain>/domain.md` and `doc-gherkin` for its `*.feature` files; obtain approval and refresh them when states or invariants change.
+2. Use `doc-domain` for `docs/domain/<domain>/domain.md` and `doc-gherkin` for its `*.feature` files; self-review and refresh them when states or invariants change.
 3. Inspect `composer.json`, the nearest `GUIDELINES.md`, routes, controllers, Form Requests, Resources, Policies, models, migrations, jobs, tests, and recent commits.
-4. Close the backend-viable contract and persistence design. For HTTP changes, hand the approved shape to `doc-openapi`.
-5. Use `laravel-plan` only for backend-only work. Fullstack work ends in `fullstack-plan` after `doc-openapi` and `nuxt-think` are approved.
+4. Close the backend-viable contract and persistence design. For HTTP changes, hand the closed shape to `doc-openapi`.
+5. Use `laravel-plan` only for backend-only work. Fullstack work ends in `fullstack-plan` after `doc-openapi` and `nuxt-think` are closed.
 
 when the work spans both stacks, that planning step is `fullstack-plan`, not separate `laravel-plan` and `nuxt-plan` documents.
 
@@ -32,8 +32,8 @@ when the work spans both stacks, that planning step is `fullstack-plan`, not sep
 1. Ask one question at a time about purpose, actors, tenancy, lifecycle, authorization, external effects, and success criteria.
 2. Present 2–3 grounded approaches with trade-offs. Consider Laravel-native controllers/models, application Actions or Services, and stronger domain isolation only when the domain or existing code justifies it.
 3. Recommend one approach and present the design in reviewable sections.
-4. Save the approved design to `docs/plans/YYYY-MM-DD-<topic>-design.md`.
-5. Self-review it and ask the user to review the file. After approval, invoke `laravel-plan` for backend-only work or continue through `doc-openapi` + `nuxt-think` to `fullstack-plan` when Nuxt changes too.
+4. Save the closed design to `docs/plans/YYYY-MM-DD-<topic>-design.md`.
+5. Self-review it, publish it, and continue to `laravel-plan` for backend-only work or through `doc-openapi` + `nuxt-think` to `fullstack-plan` when Nuxt changes too. Do not pause for approval unless the user explicitly requests a review checkpoint.
 
 ## Decisions to close
 
@@ -58,7 +58,7 @@ Check that there are no placeholders or incompatible interpretations; controller
 
 ## Transition
 
-After approval:
+After closure:
 
 - HTTP contract: `doc-openapi`.
 - Frontend consuming that contract: `nuxt-think`.

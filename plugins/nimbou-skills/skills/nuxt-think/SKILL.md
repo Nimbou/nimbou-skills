@@ -26,13 +26,13 @@ Apply this gate during step 6 of `## Flow`, before considering the design step c
 Before closing design decisions:
 
 1. identify the target domain
-2. confirm `docs/domain/<domain>/domain.md` is approved
-3. confirm the relevant `docs/domain/<domain>/*.feature` files are approved
-4. for HTTP features, confirm `docs/domain/<domain>/openapi.yaml` is approved and treat it as the canonical transport contract
-5. only after approval, invoke `nuxt-plan`
+2. confirm `docs/domain/<domain>/domain.md` is closed and internally coherent
+3. confirm the relevant `docs/domain/<domain>/*.feature` files are closed and match the domain map
+4. for HTTP features, confirm `docs/domain/<domain>/openapi.yaml` is closed and treat it as the canonical transport contract
+5. after closure, invoke `nuxt-plan`
 - when the work spans both stacks, that planning step is `fullstack-plan`, not `nuxt-plan`: one joint plan whose waves mix frontend and backend. Use `nuxt-plan` directly only for frontend-only work
 6. do not advance to `nuxt-plan` with stale domain, Gherkin, or OpenAPI artifacts
-7. do not redefine the HTTP contract inside `nuxt-think`; consume the approved `openapi.yaml`
+7. do not redefine the HTTP contract inside `nuxt-think`; consume the closed `openapi.yaml`
 
 Treat `docs/domain/<domain>/` as the canonical specification bundle for the feature slice. If the request touches multiple independent domains, split them and close one domain at a time.
 
@@ -58,7 +58,7 @@ Treat `docs/domain/<domain>/` as the canonical specification bundle for the feat
    - what existing primitives, shells, or local patterns from `DESIGN.md` and `GUIDELINES.md` must be preferred
    - what visual direction should guide the UI so it does not drift into generic output
    - what local anti-patterns must be avoided, such as rebuilding an existing shell locally, creating a store for simple parent-child communication, or pushing child-only handlers up into the page
-7. Produce the structured output below with explicit references to the approved specification artifacts and present it for approval. Hand off to `nuxt-plan` for frontend-only work or to `fullstack-plan` when backend implementation is also in scope. Do not write code.
+7. Produce the structured output below with explicit references to the closed specification artifacts, publish it, and continue to `nuxt-plan` for frontend-only work or to `fullstack-plan` when backend implementation is also in scope. Do not write code or request approval unless the user explicitly asks for a review checkpoint.
 
 Consult `nimbou-skills:nuxt-design-architecture`, the local `GUIDELINES.md`, and the local `DESIGN.md` before proposing component splits. `GUIDELINES.md` owns implementation rules; `DESIGN.md` owns visual rules and wins on visual conflict.
 
@@ -78,7 +78,7 @@ Do not use `AskUserQuestion` for:
 
 - open naming, copy, or visual-direction prose
 - yes/no confirmations of an already-recommended path
-- plan-approval gates — those belong to the structured-output review step, not a multiple-choice question
+- plan-approval gates — do not ask for them; continue unless the user explicitly requests a review checkpoint
 
 ## Think Output
 
@@ -128,8 +128,8 @@ Describe the requested page, flow, or component in one sentence.
 ### Pronto para planejar
 
 - Route ownership, reuse decisions, state behavior, and responsive behavior are closed.
-- `docs/domain/<domain>/domain.md` approved.
-- `docs/domain/<domain>/*.feature` approved.
-- `docs/domain/<domain>/openapi.yaml` approved when the feature changes HTTP.
+- `docs/domain/<domain>/domain.md` closed.
+- `docs/domain/<domain>/*.feature` closed.
+- `docs/domain/<domain>/openapi.yaml` closed when the feature changes HTTP.
 - The relevant `DESIGN.md` and `GUIDELINES.md` constraints are closed.
 - `nuxt-plan` should only turn this into exact file paths and execution waves (parallel-by-default, sequential only for contract dependencies).

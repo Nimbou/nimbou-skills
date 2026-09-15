@@ -1,6 +1,6 @@
 ---
 name: fullstack-plan
-description: Use when a feature spans a NestJS or Laravel backend and a Nuxt frontend and both sides have approved designs and a stable shared contract.
+description: Use when a feature spans a NestJS or Laravel backend and a Nuxt frontend and both sides have closed designs and a stable shared contract.
 ---
 
 # Fullstack Plan
@@ -11,9 +11,9 @@ description: Use when a feature spans a NestJS or Laravel backend and a Nuxt fro
 
 Produce a single wave-structured plan covering both stacks, so frontend work runs alongside backend work instead of queueing behind it.
 
-Separate backend and frontend plans execute one after the other and serialize work that has no dependency between it. A frontend component consuming an approved contract does not need the backend implementation to exist yet; it needs the approved contract.
+Separate backend and frontend plans execute one after the other and serialize work that has no dependency between it. A frontend component consuming a closed contract does not need the backend implementation to exist yet; it needs the closed contract.
 
-**Core principle:** a frontend task depends on the **approved contract**, never on a backend task.
+**Core principle:** a frontend task depends on the **closed contract**, never on a backend task.
 
 **Announce at start:** "I'm using the fullstack-plan skill to produce one joint plan."
 
@@ -44,9 +44,9 @@ Do not use this skill when the work touches one stack only. Use the detected bac
 
 Do not start until all of these hold. Each is a real input, not a formality:
 
-1. `docs/domain/<domain>/domain.md` approved.
-2. `docs/domain/<domain>/*.feature` approved.
-3. `docs/domain/<domain>/openapi.yaml` approved when the feature changes HTTP. **This is what unblocks the frontend.** Without it there is no joint plan to write — frontend tasks would have nothing stable to consume, and you would be back to serializing.
+1. `docs/domain/<domain>/domain.md` exists and is internally coherent.
+2. `docs/domain/<domain>/*.feature` files exist and match the domain map.
+3. `docs/domain/<domain>/openapi.yaml` is closed when the feature changes HTTP. **This is what unblocks the frontend.** Without it there is no joint plan to write — frontend tasks would have nothing stable to consume, and you would be back to serializing.
 4. `nestjs-think` or `laravel-think` closed backend contract and persistence viability for the detected stack.
 5. `nuxt-think` closed UI structure, reuse, state ownership, and responsive behavior.
 
@@ -56,7 +56,7 @@ If the contract is not closed, stop and close it. Planning around an unstable co
 
 **A frontend task never declares a dependency on a backend task.**
 
-Its `Consome` field cites the approved `openapi.yaml` — the route, the payload shape, the error mapping — not a use-case, repository, or controller.
+Its `Consome` field cites the closed `openapi.yaml` — the route, the payload shape, the error mapping — not a use-case, repository, or controller.
 
 When you catch yourself putting a frontend task in a later wave *because a backend task must land first*, one of two things is true, and both are bugs:
 
@@ -140,7 +140,7 @@ Rules specific to a joint plan:
 > **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Waves mix backend and frontend tasks. Backend tasks are driven by their failing test; frontend tasks declare `RED: n/a`. The final wave uses the verification contract of the selected backend planner and scoped Nuxt checks.
 
 **Goal:** [one sentence]
-**Contrato:** `docs/domain/<domain>/openapi.yaml` [approved on <date or commit>]
+**Contrato:** `docs/domain/<domain>/openapi.yaml` [closed on <date or commit>]
 **Ownership:** [what frontend owns locally vs what backend owns centrally]
 **Backend planner:** `nestjs-plan` | `laravel-plan`
 
@@ -177,7 +177,7 @@ After writing the plan, check:
 
    Do **not** answer any of these three with "same `Role`, same lane, so it runs in order." That is the trap *Dispatch is not task count* describes: the ordering holds only while the cap keeps both tasks in one implementer, and breaks silently when an unrelated task is added to that role.
 
-2. **Contract closed:** every frontend `Consome` traces to approved `openapi.yaml`, and none names a backend task
+2. **Contract closed:** every frontend `Consome` traces to closed `openapi.yaml`, and none names a backend task
 3. **No false serialization:** for every frontend task outside Onda 1, the reason it is not earlier is a contract it consumes — not a backend task landing
 4. **Write sets:** no two tasks in the same wave write the same file, across both stacks
 5. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
