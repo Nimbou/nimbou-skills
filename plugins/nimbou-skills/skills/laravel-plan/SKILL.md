@@ -5,6 +5,10 @@ description: Use after approval of a conventional Laravel backend design to prod
 
 # Laravel Plan
 
+## Codex Plan mode gate
+
+When running in Codex or Claude Code, this skill requires the task's active mode to be **Plan**. Check the runtime mode instructions before starting any workflow step. If Plan mode is not active, stop and ask the user to switch the task to Plan mode, then invoke the skill again. Do not simulate Plan mode with prose and do not continue the workflow in another mode.
+
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
 Write a backend implementation plan that an engineer with no prior context can execute. Use the approved `laravel-think` design and, for HTTP work, the approved `docs/domain/<domain>/openapi.yaml`. Use `nimbou-cms-plan` instead for CMS modules.

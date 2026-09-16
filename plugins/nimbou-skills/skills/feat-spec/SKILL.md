@@ -5,6 +5,10 @@ description: Use when a feature changes both Nuxt frontend and a NestJS or Larav
 
 # Feat Spec
 
+## Codex Plan mode gate
+
+When running in Codex or Claude Code, this skill requires the task's active mode to be **Plan**. Check the runtime mode instructions before starting any workflow step. If Plan mode is not active, stop and ask the user to switch the task to Plan mode, then invoke the skill again. Do not simulate Plan mode with prose and do not continue the workflow in another mode.
+
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
 Use this skill when the request changes both frontend and backend in the same feature slice, or when frontend delivery depends on a new or changed backend contract.

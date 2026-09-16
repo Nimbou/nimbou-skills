@@ -5,6 +5,10 @@ description: 'Transforma um objetivo de trabalho, mesmo cru, num plano de ação
 
 # Plano de Ação
 
+## Codex Plan mode gate
+
+When running in Codex or Claude Code, this skill requires the task's active mode to be **Plan**. Check the runtime mode instructions before starting any workflow step. If Plan mode is not active, stop and ask the user to switch the task to Plan mode, then invoke the skill again. Do not simulate Plan mode with prose and do not continue the workflow in another mode.
+
 ## O que esta skill faz
 
 Conduz uma entrevista curta e produz um **plano de ação em PDF**, versionado por ciclo (v1, v2, v3…). Escala do plano pequeno de uma frente ao **programa multi-fase** de meses.
