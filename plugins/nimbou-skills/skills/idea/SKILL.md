@@ -17,47 +17,33 @@ Ask questions exhaustively until there are no important doubts left.
 
 Do not stop questioning just because the idea seems simple. Simple ideas often hide unclear assumptions, missing constraints, weak positioning, or undefined success criteria.
 
-## Primary Mechanism: AskUserQuestion
+## Primary Mechanism: Structured Text Questionnaire
 
-**Always prefer the `AskUserQuestion` tool over free-text questions.** Multiple-choice with structured options is the default interaction mode for this skill. Free-text questions are reserved for moments when no useful option set can be pre-shaped.
+Present the interview as plain text, not through `AskUserQuestion`. Tool limits must never reduce the number of independent questions returned in a round.
 
-### Why AskUserQuestion is the default here
+In each round, include **every question whose framing and options can be determined without another unanswered question**. There is no fixed numerical maximum. Defer only genuinely dependent questions whose wording or options require a previous answer.
 
-- Reduces friction: the user clicks instead of typing long answers.
-- Forces the assistant to do the thinking — generating well-shaped options is itself a clarifying exercise.
-- Surfaces trade-offs explicitly through the `description` field of each option.
-- The user can always pick "Other" (auto-injected) to provide a custom answer when none of the options fit.
+### Question format
 
-### How to use it in this skill
-
-- **Batch independent questions in a single call.** The deciding test is dependency, not relatedness: if a question's options can be shaped **without knowing the answers to the others**, the questions are independent and should be sent together — up to the 4-question limit per call. Ask sequentially, one call at a time, only when a question is **dependent** — its framing or options can't be built until a previous answer is known (branching follow-ups). Prefer fewer round-trips: whenever 2-4 independent doubts are open at once (e.g. audience + outcome + constraint), send them in one call instead of drip-feeding them.
-- Each question must have **2 to 4 options**. Options must be mutually exclusive (unless `multiSelect: true`) and shaped as concrete, distinct directions — not vague ("Yes/No/Maybe").
-- Fill `description` for every option with the **trade-off or implication**, not a restatement of the label. The description is where the user reads the consequence of each choice.
-- Use `multiSelect: true` when the dimension is genuinely additive (e.g. "Which constraints apply?", "Which audiences are in scope?"). Default is single-select.
-- Set `header` to a very short chip-style label (≤ 12 chars), e.g. "Audience", "Scope", "Risk", "Outcome".
-- If you have a clear recommendation, put it as the **first option** and add `(Recomendado)` at the end of the label.
-- Use the `preview` field on options only when the user needs to visually compare concrete artifacts (mockups, snippets, layouts). Do not use previews for preference questions.
-- For language: produce questions, options, and descriptions in **Português - BR** when the conversation is in pt-BR, English otherwise.
-
-### When to fall back to free-text
-
-Drop AskUserQuestion only when:
-
-- The question is genuinely open and the option space is unbounded ("Em uma frase, qual é a transformação que o usuário sente depois de usar isso?").
-- You need a quoted name, number, URL, or other concrete value the user must type.
-- You are in the middle of restating the idea and confirming understanding (a single open prompt is fine).
-
-In all other cases — clarifying, scoping, choosing trade-offs, picking audience, picking direction, validating assumptions — use AskUserQuestion.
+- Number questions continuously: `1.`, `2.`, `3.` and so on.
+- Give each question **exactly 3 options**, labeled `A`, `B`, and `C`. Options must be mutually exclusive unless the question explicitly says the user may select more than one.
+- Put the recommended option first as `A`, and append `(Recomendado)` in pt-BR or `(Recommended)` in English. Recommend exactly one option per question.
+- Explain the **trade-off or implication** after every option, not merely what its label means.
+- Base the recommendation on the idea's known goal, evidence, constraints, risks, and cheapest useful learning. When evidence is weak, recommend the option that preserves flexibility or validates the riskiest assumption.
+- For multi-select questions, the recommended option is the one that should be included first; the user may also select `B` or `C`.
+- If the option space is unbounded or a concrete name, number, or URL is needed, make `C` a custom-answer option and ask the user to specify it. Do not add a fourth option.
+- End the batch with a compact response instruction such as: `Responda no formato 1A, 2C: <detalhe>, 3B. Acrescente observações onde precisar.`
+- Produce questions, options, and descriptions in **Português - BR** when the conversation is in pt-BR, English otherwise.
 
 ### Anti-patterns
 
-- Asking a free-text question when 2-4 plausible directions are obvious.
-- Drip-feeding independent questions one call at a time when they could have been batched into a single call.
+- Using `AskUserQuestion` and allowing its question limit to truncate the independent doubts.
+- Drip-feeding independent questions across multiple messages when they can all be asked in one textual questionnaire.
 - Batching **dependent** questions whose options only make sense after a previous answer (ask those sequentially).
 - Options that are not mutually exclusive in a single-select question.
+- Providing fewer or more than 3 options, omitting the recommendation, or marking more than one option as recommended.
 - Descriptions that just rephrase the label instead of stating the trade-off.
-- Adding an explicit "Outro" option — it is auto-injected by the tool.
-- Using `preview` for non-visual choices.
+- Asking the user to answer a long questionnaire without providing the compact `1A, 2B, 3C` response format.
 
 ## When to Use This Skill
 
@@ -84,7 +70,7 @@ Do not:
 - Produce a polished final deliverable too early
 - Assume the user's idea is already clear
 - Ask dependent questions in the same call before their prerequisite answer exists
-- Overwhelm the user with a long questionnaire (never exceed 4 questions per call)
+- Split independent questions into smaller conversational batches merely to keep the interaction short
 
 The output of this skill is a refined understanding of the idea, not a document.
 
@@ -94,7 +80,7 @@ Work as a critical but helpful thinking partner.
 
 Your role is to improve the idea, not merely agree with it. Be supportive, but challenge weak assumptions. Point out ambiguity, risks, contradictions, and missing information.
 
-Prefer short, focused interactions. Group the independent open doubts into a single `AskUserQuestion` call (up to 4) with well-shaped options; keep dependent, branching follow-ups for later calls once their prerequisite answers arrive.
+Minimize round-trips. Put every currently shapeable independent doubt into one textual questionnaire, regardless of its length; keep only dependent, branching follow-ups for later, once their prerequisite answers arrive.
 
 ## Process
 
@@ -127,7 +113,7 @@ Only then provide a concise refined version of the idea.
 
 ## Final Output
 
-When there are no important doubts left, summarize the refined idea in plain text (no AskUserQuestion).
+When there are no important doubts left, summarize the refined idea in plain text.
 
 The final response should include:
 
@@ -145,7 +131,8 @@ Do not create a document unless the user explicitly asks for one after the refin
 ## Key Principles
 
 - Ask before solving
-- Batch independent questions in one `AskUserQuestion` call (up to 4); ask dependent ones sequentially, whenever the option space is bounded
+- Ask all currently independent questions in one textual questionnaire with no numerical cap; ask dependent ones only after their prerequisite answer
+- Give every question exactly 3 options and mark exactly 1—the first—as recommended
 - Each option carries its trade-off in the description, not just a restatement of the label
 - Challenge assumptions respectfully
 - Prefer clarity over speed

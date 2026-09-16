@@ -16,7 +16,7 @@ Your restatement should include:
 - The expected outcome, if known
 - Any assumptions you are already making
 
-Then open with the first clarifying round via `AskUserQuestion` — batch the independent doubts you already have (up to 4) into that single call.
+Then open with one numbered textual questionnaire containing every independent doubt you can already shape, with no numerical cap. Defer only questions whose framing or options depend on an earlier answer. Give each question exactly three options (`A`, `B`, `C`), put the recommended option first, and finish with the compact answer format described in `SKILL.md`.
 
 ### 2. Identify the Type of Idea
 
@@ -28,7 +28,7 @@ Do not necessarily tell the user the classification unless it helps the conversa
 
 ### 3. Explore the Problem
 
-Before improving the solution, understand the problem. Use `AskUserQuestion` to narrow:
+Before improving the solution, understand the problem. Use the textual questionnaire to narrow:
 
 - What problem this idea solves
 - Who has this problem
@@ -41,9 +41,9 @@ Do not refine the idea deeply until the problem is clear.
 
 ### 4. Explore the User or Audience
 
-Clarify who the idea is for. Typical AskUserQuestion shapes:
+Clarify who the idea is for. Typical question shapes:
 
-- Primary audience (single-select among 2-4 personas)
+- Primary audience (single-select among exactly 3 personas, with the recommended persona first)
 - Context of use (single-select)
 - Secondary audiences in scope (multi-select)
 - Willingness to pay / adopt / change behavior (single-select with explicit trade-offs)
@@ -54,13 +54,13 @@ If the target audience is too broad, help narrow it.
 
 Clarify what success means. Push the user to define success concretely. Where possible, surface measurable definitions as options:
 
-- Main goal (e.g. "Validar demanda" / "Gerar receita" / "Reduzir custo operacional" / "Aprender")
+- Main goal (e.g. "Validar demanda" / "Gerar receita" / "Aprender")
 - What would make it fail
 - Time horizon for the outcome
 
 ### 6. Surface Assumptions
 
-Identify assumptions behind the idea. For each important assumption, ask whether there is evidence — typically as a single-select with options like "Tenho evidência direta", "Tenho evidência indireta", "É uma intuição", "Nunca pensei nisso".
+Identify assumptions behind the idea. For each important assumption, ask whether there is evidence — typically as a single-select with exactly 3 options such as "Tenho evidência direta", "Tenho evidência indireta" and "Ainda não tenho evidência".
 
 If there is no evidence, mark it as an assumption to validate.
 
@@ -78,7 +78,7 @@ Do not suggest solutions that ignore the user's constraints.
 
 ### 9. Explore Alternatives
 
-Once the idea is reasonably clear, propose alternative framings via a single AskUserQuestion with 2-4 options. For each option, the `description` should include:
+Once the idea is reasonably clear, propose alternative framings as a textual question with exactly 3 options, placing the recommended framing first. For each option, include:
 
 - What it is in one phrase
 - Main trade-off
@@ -90,7 +90,7 @@ Examples of option labels: "Versão menor", "Versão mais ambiciosa", "Versão d
 
 Challenge the idea before refining it. Useful question shapes:
 
-- "Qual é a objeção mais forte?" (single-select with the 3-4 most plausible objections you can articulate, plus Other)
+- "Qual é a objeção mais forte?" (single-select with exactly the 3 most plausible objections you can articulate)
 - "O que precisa ser testado primeiro?" (single-select)
 - "Qual é a menor versão útil?" (single-select)
 
@@ -100,7 +100,7 @@ Be direct and useful, not harsh.
 
 After the main doubts are answered, help sharpen the idea. Refinement may include: clearer positioning, better target audience, narrower scope, stronger value proposition, simpler first version, better problem framing, better differentiation, better success criteria, better validation path.
 
-When proposing a refinement, validate it with the user — typically a single-select between "Aceitar como proposto", "Aceitar com ajuste", "Rejeitar".
+When proposing a refinement, validate it with the user — typically a single-select between "Aceitar como proposto (Recomendado)", "Aceitar com ajuste", "Rejeitar".
 
 ### 12. Check for Remaining Doubts
 
@@ -116,20 +116,23 @@ Before ending, perform an internal uncertainty check:
 - Do I understand what should be tested first?
 - Do I understand what the idea is not?
 
-If any answer is unclear, ask another AskUserQuestion. Do not finalize while important doubts remain.
+If any answer is unclear, include it in the next textual questionnaire together with every other newly shapeable independent doubt. Do not finalize while important doubts remain.
 
 ## Question Style
 
-Good (delivered as `AskUserQuestion`):
+Good (delivered in the numbered textual questionnaire):
 
-> **Quem sente este problema mais fortemente?**
-> - Iniciantes — pouca familiaridade, alta fricção, alta disposição a pagar por simplicidade
-> - Intermediários — já têm workaround manual, trocam por ganho marginal de tempo
-> - Avançados — querem controle, rejeitam soluções opinionadas
+> **1. Quem sente este problema mais fortemente?**
+> - A. Iniciantes (Recomendado) — pouca familiaridade, alta fricção, alta disposição a pagar por simplicidade
+> - B. Intermediários — já têm workaround manual, trocam por ganho marginal de tempo
+> - C. Avançados — querem controle, rejeitam soluções opinionadas
 
-Good (free-text, only when option space is unbounded):
+Good (custom response kept within the three-option format):
 
-> "Em uma frase, qual é a transformação que o usuário sente depois de usar isso?"
+> **2. Qual transformação o usuário deve sentir?**
+> - A. Ganho de tempo (Recomendado) — benefício concreto e fácil de validar
+> - B. Mais controle — valor percebido maior, mas mais difícil de medir
+> - C. Outra transformação — escreva em uma frase
 
 Bad:
 
@@ -137,13 +140,9 @@ Bad:
 
 Bad:
 
-> "Aqui está um formulário com 20 perguntas. Responde tudo."
-
-Bad:
-
 > "Ótima ideia, aqui está o plano final."
 
-Bad (free-text where AskUserQuestion was obviously better):
+Bad (unstructured text where three comparable options were possible):
 
-> "O foco é validar demanda, gerar receita, reduzir custo, ou aprender?"
-> *(should be a single-select AskUserQuestion with each option carrying its trade-off in the description)*
+> "O foco é validar demanda, gerar receita ou aprender?"
+> *(should be a numbered textual question with exactly 3 options, the recommended one first, and each option carrying its trade-off)*
