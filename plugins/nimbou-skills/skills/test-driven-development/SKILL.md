@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when implementing or changing NestJS, Laravel, Prisma, or other backend production code, before writing implementation code
 ---
 
 # Test-Driven Development (TDD)
@@ -9,17 +9,23 @@ description: Use when implementing any feature or bugfix, before writing impleme
 
 Write the test first. Watch it fail. Write minimal code to pass.
 
+This skill applies only to backend production code. Do not load or enforce it for frontend, UI, or client-side implementation work.
+
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
 
 **Violating the letter of the rules is violating the spirit of the rules.**
 
 ## When to Use
 
-**Always:**
-- New features
-- Bug fixes
-- Refactoring
-- Behavior changes
+**Always for backend work:**
+- New backend features
+- Backend bug fixes
+- Backend refactoring
+- Backend behavior changes
+
+**Do not use for:**
+- Frontend, UI, or client-side implementation
+- Vue, Nuxt, React, component, styling, or browser-only changes
 
 **Exceptions (ask your human partner):**
 - Throwaway prototypes
@@ -31,7 +37,7 @@ Thinking "skip TDD just this once"? Stop. That's rationalization.
 ## The Iron Law
 
 ```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+NO BACKEND PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
 
 Write code before the test? Delete it. Start over.
@@ -289,27 +295,27 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 
 ## Example: Bug Fix
 
-**Bug:** Empty email accepted
+**Bug:** User creation accepts an empty email
 
 **RED**
 ```typescript
-test('rejects empty email', async () => {
-  const result = await submitForm({ email: '' });
-  expect(result.error).toBe('Email required');
+test('rejects an empty user email', async () => {
+  await expect(createUser({ email: '' }))
+    .rejects.toThrow('Email required');
 });
 ```
 
 **Verify RED**
 ```bash
 $ npm test
-FAIL: expected 'Email required', got undefined
+FAIL: expected rejection, promise resolved
 ```
 
 **GREEN**
 ```typescript
-function submitForm(data: FormData) {
+async function createUser(data: CreateUserInput) {
   if (!data.email?.trim()) {
-    return { error: 'Email required' };
+    throw new Error('Email required');
   }
   // ...
 }
@@ -364,7 +370,7 @@ When adding mocks or test utilities, read @testing-anti-patterns.md to avoid com
 ## Final Rule
 
 ```
-Production code → test exists and failed first
+Backend production code → test exists and failed first
 Otherwise → not TDD
 ```
 
