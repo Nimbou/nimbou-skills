@@ -1,40 +1,40 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+description: Use immediately before opening a pull request or merging changes into a target branch
 ---
 
 # Verification Before Completion
 
 ## Overview
 
-Claiming work is complete without verification is dishonesty, not efficiency.
+Opening a pull request or merging changes without verification creates avoidable risk.
 
-**Core principle:** Evidence before claims, always.
+**Core principle:** Evidence before release actions.
 
 **Violating the letter of this rule is violating the spirit of this rule.**
 
 ## The Iron Law
 
 ```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+NO PR OR MERGE WITHOUT FRESH VERIFICATION EVIDENCE
 ```
 
-If you haven't run the verification command in this message, you cannot claim it passes.
+If you have not run the relevant verification for the current changes, do not open the PR or merge.
 
 ## The Gate Function
 
 ```
-BEFORE claiming any status or expressing satisfaction:
+BEFORE opening a pull request or merging changes:
 
-1. IDENTIFY: What command proves this claim?
+1. IDENTIFY: What commands cover the changes being proposed or merged?
 2. RUN: Execute the FULL command (fresh, complete)
 3. READ: Full output, check exit code, count failures
-4. VERIFY: Does output confirm the claim?
-   - If NO: State actual status with evidence
-   - If YES: State claim WITH evidence
-5. ONLY THEN: Make the claim
+4. VERIFY: Does output support opening the PR or merging?
+   - If NO: Report the actual status and do not proceed
+   - If YES: Record the evidence in the PR or merge context
+5. ONLY THEN: Open the PR or merge
 
-Skip any step = lying, not verifying
+Skip any step = an unverified release action
 ```
 
 ## Common Failures
@@ -51,14 +51,11 @@ Skip any step = lying, not verifying
 
 ## Red Flags - STOP
 
-- Using "should", "probably", "seems to"
-- Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
-- About to commit/push/PR without verification
+- About to open a PR or merge without verification
 - Trusting agent success reports
 - Relying on partial verification
 - Thinking "just this once"
 - Tired and wanting work over
-- **ANY wording implying success without having run verification**
 
 ## Rationalization Prevention
 
@@ -116,24 +113,16 @@ From 24 failure memories:
 
 ## When To Apply
 
-**ALWAYS before:**
-- ANY variation of success/completion claims
-- ANY expression of satisfaction
-- ANY positive statement about work state
-- Committing, PR creation, task completion
-- Moving to next task
-- Delegating to agents
+**Use only before:**
+- Opening a pull request
+- Merging changes into a target branch
 
-**Rule applies to:**
-- Exact phrases
-- Paraphrases and synonyms
-- Implications of success
-- ANY communication suggesting completion/correctness
+It does not gate ordinary progress updates, commits, task transitions, or delegation.
 
 ## The Bottom Line
 
 **No shortcuts for verification.**
 
-Run the command. Read the output. THEN claim the result.
+Run the relevant commands. Read the output. THEN open the PR or merge.
 
 This is non-negotiable.
