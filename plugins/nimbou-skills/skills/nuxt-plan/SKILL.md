@@ -25,6 +25,27 @@ it. Prefer catalog validation, review, browser smoke, or another small relevant
 check when appropriate. This policy governs persistent E2E coverage; the later
 `browser-smoke` runtime may choose Playwright as its fallback driver.
 
+## Browser-smoke Handoff
+
+Consider a `nimbou-skills:browser-smoke` handoff when the plan changes a
+user-observable flow that benefits from an on-screen check: navigation, form input
+or submission, filtering, a mutation, an async loading/empty/error/success state,
+authentication, or responsive interaction. Name up to three candidate flows in the
+form `ação → resultado observável`.
+
+Add that handoff to `## Pos-execucao` only when one of its authorized callers is
+known:
+
+- this plan will be executed by `nimbou-skills:executing-plans`, which invokes the
+  smoke in `report` mode after a frontend-touching run; or
+- the user explicitly requested browser verification for this change.
+
+Use it as a conditional handoff, never as a wave task or a per-task `Verificação`.
+State the caller and candidate flows; do not make the plan itself authorization for
+a standalone smoke. Omit it for internal refactors, static copy/token/style-only
+changes, or configuration work without a meaningful user flow. A changed frontend
+file alone is not enough to add it.
+
 Read `reference/plan-format.md` before writing the plan.
 
 When the target project has relevant `DESIGN.md` and `GUIDELINES.md` files, consume them as input constraints. In a monorepo, default to the relevant app-level files and let a closer feature-level file override them.
@@ -102,9 +123,8 @@ to infer is a field it can infer wrong.
 | `**Onda:**` | The wave number. Must match the `Onda` column of the file's row in `## Arquivos`. |
 | `**Files:**` | Every file this task WRITES, comma-separated — its write set. Two tasks in the same wave must not share a file. |
 | `**Consome:**` | The contracts consumed from earlier waves — composable signatures, prop APIs, shared types — **pasted as actual declarations**, not referenced by name. Write `nada` only for Onda 1. |
-| `**RED:**` | `n/a — frontend, covered by review and browser smoke`. Frontend tasks do not invent a unit-level red run merely to mirror backend TDD. |
+| `**RED:**` | `n/a — frontend, covered by scoped verification and review`. Frontend tasks do not invent a unit-level red run merely to mirror backend TDD. Browser smoke, when authorized, belongs only in `## Pos-execucao`. |
 | `**Estimativa:**` | `curta`, `media`, or `longa`, including the scoped verification. Only `curta` tasks of the same Role may share one implementer; do not minimize it merely to increase fan-out. |
-| `**RED:**` | Always `n/a — frontend, coberto por review`. Frontend work is verified by the scoped command, review, and browser smoke rather than a unit-level red-green cycle. |
 | `**Verificação:**` | The smallest command that proves the task is done, scoped to the files it changed. Do not use Playwright/browser E2E or `typecheck` unless the user explicitly requested it. Never `/test` over the whole app or an unscoped `pnpm test`. |
 
 `## Arquivos` stays as the overview table; the per-task fields are what actually drives
@@ -206,6 +226,10 @@ Create a project details page using the existing status badge and a new sidebar.
 ## Pos-execucao
 - [ ] /nuxt-catalog
 - [ ] Sugestao de teste: somente se solicitada explicitamente pelo usuário
+- **Browser smoke (condicional):** execução via `nimbou-skills:executing-plans` em
+  `report` mode; fluxos candidatos: alterar o filtro → lista reduzida, abrir o
+  detalhe → resumo e estado de carregamento aparecem. Em execução direta, só rodar
+  se o usuário tiver pedido validação em browser.
 ```
 
 This is a response format, not a file requirement.
@@ -236,7 +260,7 @@ After writing the complete plan, check:
 5. **Boundary clarity:** page, component, and composable responsibilities are clear
 6. **Guideline clarity:** local wrapper reuse, state locality, and hardening obligations are represented where relevant
 7. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
-8. **Verification clarity:** `/nuxt-catalog` appears at the end. Playwright/browser E2E and `typecheck` appear only when explicitly requested; any explicitly requested test stays scoped to the routes/components/composables changed by this plan (never the full suite)
+8. **Verification clarity:** `/nuxt-catalog` appears at the end. Playwright/browser E2E and `typecheck` appear only when explicitly requested; any explicitly requested test stays scoped to the routes/components/composables changed by this plan (never the full suite). A browser-smoke handoff appears only for a meaningful user flow and names its authorized caller (`executing-plans` or an explicit user request).
 9. **Deletion ownership:** a task that deletes a component, composable, or util owns **every** consumer of it, or lands in a later wave than the last consumer to be migrated. Grep the component name before planning the delete — the catalog's `usedBy` is generated and can be stale, so it is a hint, not the check. The consumer that gets missed is almost never in the feature's own folder: it is some other route that adopted the component for an unrelated reason, and deleting under it leaves the wave committed with a page that fails to resolve. When that consumer belongs to a slice this feature has no mandate over, the deletion is out of scope too — say so, and leave the component in place rather than degrading someone else's screen to tidy up yours.
 
 Fix issues inline before handing off the plan.

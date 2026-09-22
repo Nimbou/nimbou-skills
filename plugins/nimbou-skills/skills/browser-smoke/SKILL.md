@@ -1,6 +1,6 @@
 ---
 name: browser-smoke
-description: Use after a change that touched frontend files to verify in a real browser that the promised behavior actually works — derive the flows from the plan or change description, prefer Codex's integrated browser when available, and report screenshot plus console evidence per flow. Runs as the last step of executing-plans, or standalone over any branch.
+description: Use only when the user explicitly asks for browser verification of a frontend change, or when nimbou-skills:executing-plans invokes it after executing a frontend-touching plan.
 ---
 
 # Browser Smoke
@@ -12,6 +12,21 @@ opens the application and looks.
 It is a **smoke pass, not a test suite**: it verifies the behavior the change
 promised, on the screen, and writes nothing permanent. Persistent E2E coverage is
 `nimbou-skills:nuxt-test`; investigating a known bug is `nimbou-skills:nuxt-debug`.
+
+## Authorization
+
+Run this skill only in either case:
+
+- the user explicitly requested browser verification (for example, asked to run a
+  browser smoke, validate the change in a browser, or check a flow on screen); or
+- `nimbou-skills:executing-plans` invokes it as its final `report`-mode step after
+  an executed plan touched frontend files.
+
+Do not infer authorization merely because frontend files changed, a frontend task
+was implemented, a plan mentions browser verification, or browser tooling is
+available. Outside `executing-plans`, a request to implement, fix, review, or test
+frontend work is not a request for this smoke unless the user explicitly asks for
+browser verification.
 
 **Announce at start:** "I'm using the browser-smoke skill to verify this in a browser."
 
@@ -25,11 +40,14 @@ promised, on the screen, and writes nothing permanent. Persistent E2E coverage i
 Default to `report` when a caller declared a mode. Default to `fix` when a human
 invoked the skill with no mode — a standalone run that only complains is useless.
 
-## Step 1: Does this apply?
+## Step 1: Does this apply to the authorized run?
 
-Run the smoke only when the change touched the frontend. Take the list of changed
-files (`git diff --name-only <base>..HEAD`, or the file list the caller handed you)
-and look for any of:
+First confirm the Authorization rule above. If neither allowed caller applies, do
+not run the smoke; say it was intentionally skipped because browser verification was
+not requested.
+
+For an authorized run, take the list of changed files (`git diff --name-only
+<base>..HEAD`, or the file list the caller handed you) and look for any of:
 
 ```
 *.vue   pages/   components/   layouts/   composables/   middleware/
@@ -182,7 +200,7 @@ Stop and report instead of pushing through when:
 
 | Skill | Use it when |
 |---|---|
-| `browser-smoke` | verifying that a change's promised behavior works on screen, once, right after building it |
+| `browser-smoke` | the user explicitly requests browser verification, or `executing-plans` reaches its final frontend smoke step |
 | `nimbou-skills:nuxt-debug` | investigating a known browser bug, with live evidence before any fix |
 | `nimbou-skills:nuxt-test` | building or stabilizing persistent Playwright coverage |
 | `nimbou-skills:e2e-test-quality` | auditing an existing E2E suite for a bounded flow |
