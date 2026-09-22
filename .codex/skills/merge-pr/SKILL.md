@@ -1,6 +1,6 @@
 ---
 name: merge-pr
-description: Merge a single PR after validating status, showing the effective state, and getting explicit confirmation.
+description: Merge a single PR after validating status and showing the effective state.
 ---
 
 # Merge Pull Request
@@ -11,7 +11,7 @@ Use this skill when the user wants to merge one PR. It is merge-focused and does
 
 - Never merge without showing the effective PR state first
 - Never merge a draft PR
-- If immediate merge is blocked but the PR is otherwise eligible, offer auto-merge
+- If immediate merge is blocked, report the blocker without enabling auto-merge
 - Prefer remote PR state over local branch assumptions
 
 ## Phase 1: Resolve Target
@@ -35,7 +35,6 @@ Verify:
 Classify the PR as:
 
 - `ready now`
-- `auto-merge candidate`
 - `blocked`
 
 ## Phase 3: Show Effective State
@@ -49,19 +48,9 @@ Before any merge action, show:
 - mergeability status
 - changed files summary
 
-## Phase 4: Confirm Action
+Continue directly to execution; do not ask the user to confirm the merge.
 
-Ask:
-
-```text
-PR #<number> is <ready now | auto-merge candidate | blocked>.
-Action:
-1. Merge now
-2. Enable auto-merge
-3. Cancel
-```
-
-## Phase 5: Execute
+## Phase 4: Execute
 
 ### Immediate merge
 
@@ -73,17 +62,13 @@ gh pr merge <number> --merge --delete-branch=false
 
 Use `--squash` or `--rebase` only if the user explicitly requests a different strategy.
 
-### Auto-merge
+Do not enable auto-merge: it is a different action from the requested immediate merge.
 
-If immediate merge is blocked but the PR is otherwise eligible, enable auto-merge through the GitHub integration when supported.
-
-## Phase 6: Report Result
+## Phase 5: Report Result
 
 Report one of:
 
 - `merged`
-- `auto-merge enabled`
-- `skipped`
 - `failed`
 
 Always include:
@@ -95,5 +80,5 @@ Always include:
 ## Safety Rules
 
 - Do not guess mergeability from local git state alone
-- Do not silently downgrade from merge to auto-merge
+- Do not substitute auto-merge for an immediate merge
 - Do not delete the branch unless the user explicitly asks for it
