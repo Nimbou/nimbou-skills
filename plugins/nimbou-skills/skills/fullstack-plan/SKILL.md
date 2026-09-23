@@ -49,6 +49,7 @@ Do not start until all of these hold. Each is a real input, not a formality:
 3. `docs/domain/<domain>/openapi.yaml` is closed when the feature changes HTTP. **This is what unblocks the frontend.** Without it there is no joint plan to write — frontend tasks would have nothing stable to consume, and you would be back to serializing.
 4. `nestjs-think` or `laravel-think` closed backend contract and persistence viability for the detected stack.
 5. `nuxt-think` closed UI structure, reuse, state ownership, and responsive behavior.
+6. Every exact value needed by a planned seed or migration (keys, labels, criteria, mapping rows) is present in a cited source available to the executor. A domain topic list is not a substitute for the rows. If a source is missing, close that decision upstream before writing an executable plan.
 
 If the contract is not closed, stop and close it. Planning around an unstable contract produces waves that look parallel and are not.
 
@@ -191,6 +192,8 @@ After writing the plan, check:
 13. **Platform rules:** backend tasks respect the selected `nestjs-plan` or `laravel-plan`; frontend tasks respect `nuxt-plan`
 14. **Final wave:** use the selected backend planner's scoped verification; never run an unfiltered backend suite
 15. **Balance is not a goal:** waves with work on one side only are fine when the dependency graph says so
+16. **Read and write impact:** for every changed contract, cardinality, status, or persisted shape, search the target repository for its writers, readers, projections, synchronizers, serializers, and tests. Compare the inventory with `Files` across all waves. Name every consumer that must change, including code outside the feature's obvious folder; cite the searches or paths under `## Riscos e Validacoes`. A task that promises a new representation while an old reader still assumes the former one is incomplete. Update the tasks and scoped tests before handoff.
+17. **Data provenance:** for each seed or catalog task, verify that its cited source supplies the exact rows and field values, and that the executor can access it from the intended checkout. Do not write "consult the approved source" without a concrete path or attached artifact. If the content requires a business decision, resolve it before handing off the plan.
 
 Fix issues inline before handing off.
 

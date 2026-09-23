@@ -132,6 +132,8 @@ Wait for every implementer in the wave to return, then:
 
 If an implementer reports failure, or a verification cannot be satisfied, stop downstream waves. Report the exact file/task/wave that blocked the flow. **Do not commit a partially completed wave.** Reviewer ❌ findings never trigger this stop — they go to follow-ups.
 
+When a wave exposes an omitted reader, integration, or test that is required by an already closed contract, pause that wave before commit and inspect the repository impact. If the needed behavior follows from the approved artifacts, amend the plan's task fields and wave placement, assign the newly affected files without write-set collisions, complete the work and its scoped verification, then commit the whole wave. Record the amendment in the run report. Seek a user decision only if the discovery changes business behavior or needs an unavailable external source. Do not commit a knowingly incomplete wave or offer the user a choice between completing required integration and leaving it out.
+
 ### 2.4 Commit the wave
 
 **Commit once per wave**, immediately after every task in the wave is implemented and its verifications pass:

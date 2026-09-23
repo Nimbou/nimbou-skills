@@ -39,6 +39,7 @@ Before routing to backend contract design:
 6. close the ownership boundary between frontend and backend
 7. close the feature-level states and interactions that are contract-dependent
 8. do not advance with stale domain or Gherkin artifacts
+9. inventory any concrete seed data, catalog keys, criteria text, mappings, and externally approved values required by the feature. Locate the source in the repository or supplied material and cite its path or attachment identifier in the domain artifact. A list of topics or examples does not establish the exact values. If the values are absent, resolve the business choice with the user before calling the specification closed; do not defer it to a planner or tell an implementer to find an unspecified "approved source"
 
 ## Shared Decisions To Close
 

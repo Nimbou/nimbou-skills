@@ -81,7 +81,7 @@ here, in conversation, first.**
 
 1. Read the plan file
 2. Review it critically
-3. Raise any blockers or missing assumptions before starting
+3. Check exact data sources for seed tasks and trace changed contracts through existing writers, readers, projections, synchronizers, and tests. Compare affected paths with task `Files`. Repair deterministic omissions in the plan yourself (tasks, `Files`, `Consome`, waves, and scoped tests), then repeat the review. Ask the user only for a missing business source or a choice that cannot be derived from the approved artifacts and repository. A missing file in a task is not itself a new approval gate.
 4. Confirm wave structure: the plan must contain `## Ondas de Execução` (or the legacy `## Grupos de Execucao`). If it does not, **stop** and ask the plan author to regenerate it via `nimbou-skills:nestjs-plan`, `nimbou-skills:laravel-plan`, `nimbou-skills:nuxt-plan`, or `nimbou-skills:fullstack-plan`. Do not fall back to a serial task list.
 5. Detect plan origin from the explicit planner named in the header, never from a generic “backend” path. A `nestjs-plan` MUST finish with scoped `nimbou-skills:nestjs-test`; never widen it into an unfiltered `pnpm test`. A `laravel-plan` MUST execute its declared scoped Laravel verification wave and MUST NOT receive `nestjs-test`.
 6. Detect `## Pos-execucao` (typical for `nuxt-plan` output). Capture those items now to seed the follow-ups artifact in Step 3.
@@ -98,16 +98,16 @@ Do not use it just because parallel work exists. If the real need is "split N un
 
 Stop immediately when:
 
-- an implementer subagent reports a blocker it could not resolve
-- the plan has critical gaps
-- an instruction is unclear
+- an implementer subagent reports a blocker the controller cannot resolve from the approved artifacts and repository
+- a critical gap remains after inspecting and repairing the plan and requires an unavailable source or a new business decision
+- an instruction remains unclear after checking the approved artifacts and repository
 - a verification fails repeatedly
 - a wave encounters a failure that invalidates downstream waves
 - a file an implementer reported writing shows no change in `WORKTREE_ROOT` — the wave is fractured across two checkouts and must not be committed in part
 
 Reviewer findings — including ❌ from either reviewer — do **not** stop execution. They go to follow-ups and are surfaced to the user at completion.
 
-Ask for clarification instead of guessing.
+Ask for clarification when the missing fact is a business decision or unavailable external source. Resolve mechanical scope omissions from repository evidence and update the plan before dispatch.
 
 ## When to Revisit Review
 
@@ -116,6 +116,8 @@ Return to Step 1 when:
 - the user updates the plan
 - the approach needs rethinking
 - a blocker shows the plan is incomplete or inconsistent
+
+When the blocker is an omitted integration implied by the closed contract, amend the plan and resume from the affected wave after rechecking its write sets and verification. A stopped Claude workflow may be relaunched after that repair; do not treat its stop as a request for user approval.
 
 ## Remember
 
