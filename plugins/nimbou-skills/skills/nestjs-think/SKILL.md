@@ -122,6 +122,8 @@ digraph nestjs_think {
   - whether update flows should be partial/minimal payload or full replacement, and why
   - where Prisma belongs and where it must not leak
   - whether the closed backend contract is actually supportable by the intended persistence strategy
+  - for each domain snapshot or audit history, which persisted fields retain the values at the time of the event, how later edits avoid rewriting that history, and how existing rows are migrated without losing it
+  - for each identifier crossing HTTP and persistence, whether its concrete representation and generation strategy satisfy the declared OpenAPI type and format, including IDs created by a backfill
   - how SOLID influences the design
 
 ## Presenting the Design

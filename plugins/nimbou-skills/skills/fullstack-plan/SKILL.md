@@ -50,6 +50,7 @@ Do not start until all of these hold. Each is a real input, not a formality:
 4. `nestjs-think` or `laravel-think` closed backend contract and persistence viability for the detected stack.
 5. `nuxt-think` closed UI structure, reuse, state ownership, and responsive behavior.
 6. Every exact value needed by a planned seed or migration (keys, labels, criteria, mapping rows) is present in a cited source available to the executor. A domain topic list is not a substitute for the rows. If a source is missing, close that decision upstream before writing an executable plan.
+7. The domain, OpenAPI, target schema, and planned migration/backfill describe compatible persisted values. In particular, a domain snapshot or revision history has a storage and retrieval strategy, and each generated identifier satisfies the API's declared type and format. Resolve mismatches in the design or plan before scheduling waves.
 
 If the contract is not closed, stop and close it. Planning around an unstable contract produces waves that look parallel and are not.
 
@@ -195,6 +196,8 @@ After writing the plan, check:
 16. **Read and write impact:** for every changed contract, cardinality, status, or persisted shape, search the target repository for its writers, readers, projections, synchronizers, serializers, and tests. Compare the inventory with `Files` across all waves. Name every consumer that must change, including code outside the feature's obvious folder; cite the searches or paths under `## Riscos e Validacoes`. A task that promises a new representation while an old reader still assumes the former one is incomplete. Update the tasks and scoped tests before handoff.
 17. **Data provenance:** for each seed or catalog task, verify that its cited source supplies the exact rows and field values, and that the executor can access it from the intended checkout. Do not write "consult the approved source" without a concrete path or attached artifact. If the content requires a business decision, resolve it before handing off the plan.
 18. **Prisma relation closure:** when the backend uses split Prisma schemas, inspect both models for each new or changed relation. Put the inverse model's schema file in the schema task's `Files` and check for same-wave write collisions. A relation whose inverse is omitted is an incomplete write set even when the task body never names that file.
+19. **Cross-artifact reconciliation:** make a compact evidence map under `## Riscos e Validacoes` for each new persisted snapshot, audit record, and generated ID: domain invariant → OpenAPI field and format when exposed → schema columns → writer/backfill → reader → scoped proof. Inspect existing files and the planned migration, not just the task titles. Repair missing columns, history storage, incompatible generated values, and tests before handing the plan to `executing-plans`.
+20. **Scenario-to-file coverage:** for every behavior promised by the domain scenarios or a task checklist, enumerate the existing entrypoints that can perform it and the tests that prove it. Check update and submission paths separately unless repository evidence shows they share the same validation path. Match each required edit against task `Files`; add omitted consumers and tests before handoff. Cite the flow paths under `## Riscos e Validacoes`.
 
 Fix issues inline before handing off.
 

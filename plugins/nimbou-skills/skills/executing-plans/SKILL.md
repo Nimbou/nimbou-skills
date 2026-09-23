@@ -81,12 +81,20 @@ here, in conversation, first.**
 
 1. Read the plan file
 2. Review it critically
-3. Check exact data sources for seed tasks and trace changed contracts through existing writers, readers, projections, synchronizers, and tests. For each changed Prisma relation, inspect both models, including inverse fields in split schema files. Compare affected paths with task `Files`. Repair deterministic omissions in the plan yourself (tasks, `Files`, `Consome`, waves, and scoped tests), then repeat the review. Ask the user only for a missing business source or a choice that cannot be derived from the approved artifacts and repository. A missing file in a task is not itself a new approval gate.
+3. Before dispatching any wave, reconcile the plan against repository evidence:
+   - Check exact data sources for seed tasks.
+   - Trace changed contracts through writers, readers, projections, synchronizers, serializers, and tests.
+   - Map each action in the domain scenarios and task checklists to its existing entrypoints and scoped tests. Check update and submission separately unless a shared validation path is proven. Compare every required edit with task `Files`.
+   - Compare domain invariants, OpenAPI types and formats, schema fields, and the actual values each planned migration/backfill will write. For snapshots and audit history, identify storage and retrieval of the value as of each revision. For generated IDs, check the concrete representation against the API format; 32 hex characters do not satisfy `format: uuid`.
+   - For each changed Prisma relation, inspect both models, including inverse fields in split schema files.
+   Repair deterministic omissions in the plan yourself (tasks, `Files`, `Consome`, waves, and scoped tests), then repeat the review. Ask the user only for a missing business source or a choice that cannot be derived from the approved artifacts and repository. A missing file in a task is not itself a new approval gate.
 4. Confirm wave structure: the plan must contain `## Ondas de Execução` (or the legacy `## Grupos de Execucao`). If it does not, **stop** and ask the plan author to regenerate it via `nimbou-skills:nestjs-plan`, `nimbou-skills:laravel-plan`, `nimbou-skills:nuxt-plan`, or `nimbou-skills:fullstack-plan`. Do not fall back to a serial task list.
 5. Detect plan origin from the explicit planner named in the header, never from a generic “backend” path. A `nestjs-plan` MUST finish with scoped `nimbou-skills:nestjs-test`; never widen it into an unfiltered `pnpm test`. A `laravel-plan` MUST execute its declared scoped Laravel verification wave and MUST NOT receive `nestjs-test`.
 6. Detect `## Pos-execucao` (typical for `nuxt-plan` output). Capture those items now to seed the follow-ups artifact in Step 3.
 7. Establish the checkout. Run `git rev-parse --show-toplevel`, `git rev-parse --abbrev-ref HEAD`, and `git worktree list`, and state the path, the branch, and the sibling checkouts in your opening message. **Refuse to implement on a long-lived branch** — `main`, `master`, `dev`, `develop`, `staging`, `production` — without explicit user consent: a run sitting on one is almost always the main checkout instead of the worktree set up for this plan. That absolute path is `WORKTREE_ROOT` — every implementer, commit, and reviewer in the run is anchored to it, because subagents do not reliably inherit a working directory and plans often write their paths as absolute. Both paths do this: the workflow re-derives it in its parse step, the prose path in Step 2.0.
 8. Create one progress entry per wave, its tasks, the post-wave commit, review collection, and follow-ups using the harness's native plan tracker when available. If none exists, keep that checklist in the controller's run report. Proceed only when the plan is executable.
+
+Record the Step 1 reconciliation in the opening report with concrete artifact/file references, including any checklist action whose coverage depends on a shared path. A list of task titles or a passing schema validator alone does not prove behavior coverage, retention of revision history, or a backfill's output format.
 
 ## Boundary
 

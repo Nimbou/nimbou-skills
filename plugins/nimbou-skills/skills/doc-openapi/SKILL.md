@@ -48,6 +48,7 @@ Do not ask the user to approve `openapi.yaml`. Write it, self-check traceability
 - preserve closed partial update semantics when the contract is intentionally minimal-payload
 - include error response shapes that make batch validation failures and missing identifiers explicit when relevant
 - include only the minimum schemas needed for the closed feature slice
+- declare identifier formats precisely and check that examples and the backend's planned generators/backfills produce values in that format; `format: uuid` requires the canonical UUID string representation, not an undelimited 32-character hex string
 - keep examples compact and illustrative
 - do not include controller names, class names, Eloquent/Prisma models, SQL details, or framework wiring
 - if the feature spans multiple unrelated HTTP slices, keep one coherent `openapi.yaml` per domain directory and scope it to the closed slice
