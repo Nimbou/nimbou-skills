@@ -130,9 +130,11 @@ Wait for every implementer in the wave to return, then:
 3. Re-run **only** the verifications whose implementer came back with a claim rather than a transcript. An implementer that pasted actual runner output already ran that suite; re-running it doubles the wave's test time on the sequential critical path, and the commit is the one step every later wave waits on. `passou` is a claim; a runner transcript is evidence. When you do re-run, run the command **exactly as the plan declares** — it is already scoped to the files the wave changes. Never substitute an unfiltered test command (no bare `pnpm test`, `npm test`, `pytest`).
 4. Mark each task complete in the harness's native plan tracker, or in the controller's run checklist when no tracker exists.
 
-If an implementer reports failure, or a verification cannot be satisfied, stop downstream waves. Report the exact file/task/wave that blocked the flow. **Do not commit a partially completed wave.** Reviewer ❌ findings never trigger this stop — they go to follow-ups.
+If an implementer reports failure, or a verification cannot be satisfied, pause dispatch and commits for downstream waves. Inspect the blocker before deciding whether the run must stop. **Do not commit a partially completed wave.** Reviewer ❌ findings never trigger this pause — they go to follow-ups.
 
 When a wave exposes an omitted reader, integration, or test that is required by an already closed contract, pause that wave before commit and inspect the repository impact. If the needed behavior follows from the approved artifacts, amend the plan's task fields and wave placement, assign the newly affected files without write-set collisions, complete the work and its scoped verification, then commit the whole wave. Record the amendment in the run report. Seek a user decision only if the discovery changes business behavior or needs an unavailable external source. Do not commit a knowingly incomplete wave or offer the user a choice between completing required integration and leaving it out.
+
+An omitted inverse Prisma relation is this repair case: inspect both schema models; add the inverse file to the schema task's `Files`; check whether another active task owns it; update the plan; then redispatch the affected task with the corrected write set. If no files have changed yet, continue the same wave after the repair. Preserve the worker's rule against writing undeclared files; the controller widens the declaration before any worker writes.
 
 ### 2.4 Commit the wave
 

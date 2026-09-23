@@ -157,4 +157,4 @@ spawn_agent:
 4. **Contracts are mandatory for waves 2+.** A wave exists as a separate wave precisely because it consumes something an earlier wave produced. If you cannot name what this task consumes, the wave boundary was wrong.
 5. **Never let an implementer commit.** Commits are wave-level and controller-owned (Step 2.4). Concurrent implementers committing would interleave into unreviewable history.
 6. **Treat `DONE_WITH_CONCERNS` as done.** It does not block the wave. Route the concerns into Step 3's follow-ups collection.
-7. **Treat `BLOCKED` as a wave stop.** Do not commit a partial wave; report which task and file blocked it.
+7. **Treat `BLOCKED` as a pause before commit.** Inspect the reported dependency. If a required file follows mechanically from the approved contract (for example, the inverse Prisma relation in a split schema), amend the plan and task `Files`, check ownership collisions, and redispatch the affected task. Stop the run for a missing business decision, unavailable source, or unresolved verification failure. Never commit a partial wave.

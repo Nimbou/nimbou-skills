@@ -945,7 +945,7 @@ if (stoppedAt) {
     // Cached agent results describe edits on disk. After a rescue — files moved
     // between checkouts, a partial wave discarded — those edits no longer match, and
     // a resume replays "done" for work that is no longer there.
-    note: 'Execution stopped before the plan completed. No follow-ups artifact was written — fix the blocker and relaunch. Do NOT relaunch with resumeFromRunId if any file was moved, reverted, or rescued between checkouts: the cache would replay implementer reports for edits that no longer exist. Start a fresh run instead.',
+    note: 'Execution stopped before the plan completed. No follow-ups artifact was written. The controller should repair a deterministic plan omission (such as a required inverse Prisma relation missing from Files), recheck write sets, and relaunch without asking for approval. Ask the user only for an unavailable source or a new business decision. Do NOT relaunch with resumeFromRunId if any file was moved, reverted, or rescued between checkouts: the cache would replay implementer reports for edits that no longer exist. Start a fresh run instead.',
   }
 }
 

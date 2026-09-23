@@ -194,6 +194,7 @@ After writing the plan, check:
 15. **Balance is not a goal:** waves with work on one side only are fine when the dependency graph says so
 16. **Read and write impact:** for every changed contract, cardinality, status, or persisted shape, search the target repository for its writers, readers, projections, synchronizers, serializers, and tests. Compare the inventory with `Files` across all waves. Name every consumer that must change, including code outside the feature's obvious folder; cite the searches or paths under `## Riscos e Validacoes`. A task that promises a new representation while an old reader still assumes the former one is incomplete. Update the tasks and scoped tests before handoff.
 17. **Data provenance:** for each seed or catalog task, verify that its cited source supplies the exact rows and field values, and that the executor can access it from the intended checkout. Do not write "consult the approved source" without a concrete path or attached artifact. If the content requires a business decision, resolve it before handing off the plan.
+18. **Prisma relation closure:** when the backend uses split Prisma schemas, inspect both models for each new or changed relation. Put the inverse model's schema file in the schema task's `Files` and check for same-wave write collisions. A relation whose inverse is omitted is an incomplete write set even when the task body never names that file.
 
 Fix issues inline before handing off.
 
