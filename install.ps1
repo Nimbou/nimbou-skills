@@ -13,9 +13,16 @@ pnpm install --dir $RepoRoot
 if ($LASTEXITCODE -ne 0) { throw 'pnpm install failed.' }
 codex plugin marketplace add $RepoRoot
 if ($LASTEXITCODE -ne 0) { throw 'Codex marketplace registration failed.' }
+codex plugin add 'nimbou-skills@nimbou-skills'
+if ($LASTEXITCODE -ne 0) { throw 'Codex plugin installation failed.' }
 $env:npm_config_prefix = $LocalPrefix
-npm link --prefix $RepoRoot
-if ($LASTEXITCODE -ne 0) { throw 'npm link failed for nb-catalog.' }
+Push-Location $RepoRoot
+try {
+  npm link
+  if ($LASTEXITCODE -ne 0) { throw 'npm link failed for nb-catalog.' }
+} finally {
+  Pop-Location
+}
 npm install -g '@google/design.md'
 if ($LASTEXITCODE -ne 0) { throw 'Installing @google/design.md failed.' }
 $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')

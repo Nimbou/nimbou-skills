@@ -37,7 +37,7 @@ const [, , configPath, wrapperPath] = process.argv;
 
 let content = existsSync(configPath) ? readFileSync(configPath, 'utf8') : '';
 const normalizedBlock = `[mcp_servers.chrome-devtools]\ncommand = "${wrapperPath}"\nargs = []\n`;
-const blockPattern = /^\[mcp_servers\.chrome-devtools\]\n(?:[^\[].*\n)*/m;
+const blockPattern = /^\[mcp_servers\.chrome-devtools\]\r?\n(?:(?!\[)[^\r\n]*\r?\n)*/m;
 
 if (blockPattern.test(content)) {
   content = content.replace(blockPattern, `${normalizedBlock}\n`);

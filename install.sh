@@ -17,7 +17,8 @@ if ! codex plugin marketplace --help >/dev/null 2>&1; then
 fi
 pnpm install --dir "$REPO_ROOT"
 codex plugin marketplace add "$REPO_ROOT"
-npm_config_prefix="$HOME/.local" npm link --prefix "$REPO_ROOT"
+codex plugin add nimbou-skills@nimbou-skills
+(cd "$REPO_ROOT" && npm_config_prefix="$HOME/.local" npm link)
 npm_config_prefix="$HOME/.local" npm install -g @google/design.md
 bash "$REPO_ROOT/scripts/setup-codex-full-wrapper.sh"
 bash "$REPO_ROOT/scripts/setup-chrome-devtools-wrapper.sh"

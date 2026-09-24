@@ -79,7 +79,7 @@ Clone the repository into `/var/www/nimbou-skills` and run:
 ./install.sh
 ```
 
-The bootstrap installs local dependencies, registers the Codex marketplace, links skills into `~/.codex/skills`, installs `nb-catalog` and `@google/design.md`, and configures the Codex wrapper and Chrome DevTools MCP wrapper. Codex `rust-v0.121.0+` is required for marketplace installation. Restart Codex after installation.
+The bootstrap installs local dependencies, registers the Codex marketplace and plugin, links skills into `~/.codex/skills`, installs `nb-catalog` and `@google/design.md`, and configures the Codex wrapper and Chrome DevTools MCP wrapper. Codex `rust-v0.121.0+` is required for marketplace installation. Restart Codex after installation.
 
 ### Installation (Windows / PowerShell)
 

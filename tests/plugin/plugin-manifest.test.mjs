@@ -236,6 +236,7 @@ test('README and installer document Codex distribution', () => {
   assert.match(readme, /design-md/)
   assert.match(readme, /merge-pr/)
   assert.match(install, /codex plugin marketplace add/)
+  assert.match(install, /codex plugin add nimbou-skills@nimbou-skills/)
   assert.match(install, /setup-codex-skills\.sh/)
   assert.doesNotMatch(install, /claude|copilot/i)
 })
@@ -252,6 +253,7 @@ test('Windows PowerShell installer mirrors the bootstrap flow', () => {
   assert.match(install, /setup-python-docx\.ps1/)
   assert.match(install, /@google\/design\.md/)
   assert.match(install, /codex plugin marketplace/i)
+  assert.match(install, /codex plugin add 'nimbou-skills@nimbou-skills'/)
   // The Wayland/X11 DevTools wrapper is Linux-only and must not be ported.
   assert.doesNotMatch(install, /setup-chrome-devtools-wrapper/)
   assert.doesNotMatch(install, /chrome-devtools-mcp-wayland/)
