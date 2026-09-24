@@ -51,8 +51,8 @@ Do not ask the user to install `tsx` globally. The root bootstrap installs the l
 
 If a project explicitly wants a copied local fallback instead of the shared `/var/www/nimbou-skills` checkout:
 
-1. Copy `skills/nuxt-catalog/` into the target project as `.claude/skills/nuxt-catalog/`
-2. Run `.claude/skills/nuxt-catalog/scripts/install.sh <project-root>`
+1. Copy `skills/nuxt-catalog/` into the target project as `.agents/skills/nuxt-catalog/`
+2. Run `.agents/skills/nuxt-catalog/scripts/install.sh <project-root>`
 3. Use the local project scripts after bootstrap:
    - `npm run nb-catalog:validate`
    - `npm run catalog`
@@ -70,6 +70,6 @@ If a project explicitly wants a copied local fallback instead of the shared `/va
   - `pnpm nb-catalog:validate`
   - `pnpm catalog:generate`
 - If the skill was embedded into the target project:
-  - `.claude/skills/nuxt-catalog/scripts/install.sh "$PWD"`
+  - `.agents/skills/nuxt-catalog/scripts/install.sh "$PWD"`
   - `npm run nb-catalog:validate`
   - `npm run catalog`

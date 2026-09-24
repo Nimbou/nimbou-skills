@@ -5,7 +5,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SHARED_SKILLS_DIR="$REPO_ROOT/plugins/nimbou-skills/skills"
-CODEX_COMMAND_SKILLS_DIR="$REPO_ROOT/.codex/skills"
 CODEX_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 
 link_path() {
@@ -32,7 +31,7 @@ link_path() {
 
 mkdir -p "$CODEX_SKILLS_DIR"
 
-for skills_dir in "$SHARED_SKILLS_DIR" "$CODEX_COMMAND_SKILLS_DIR"; do
+for skills_dir in "$SHARED_SKILLS_DIR"; do
   [ -d "$skills_dir" ] || continue
 
   for source in "$skills_dir"/*; do

@@ -1,6 +1,6 @@
 ---
 name: doc-approval
-description: Use this skill to generate a non-technical visual presentation deck (PDF) for management or stakeholders from a domain spec (`docs/domain/<domain>/domain.md` + `*.feature`). Trigger when the user asks to "gerar PDF de aprovação", "apresentação de domínio", "documento de aprovação da gerência", "aprovação do stakeholder", or "doc-approval <domain>". Renders a cover + themed sections (mini-diagram + rules checklist + description, two per page) in plain business Portuguese — no endpoints, DTOs, class names, code-level states, or Prisma details.
+description: Gere um PDF de aprovação para gestores a partir de domain.md e cenários Gherkin fechados.
 ---
 
 # Doc Approval
@@ -186,7 +186,7 @@ alongside for edits.
 
 ## Rules
 
-- support only Claude Code and Codex;
+- support Codex only;
 - one domain per run; stop if `domain.md` or `*.feature` is missing;
 - the deck is **business-facing** — never leak technical detail (endpoints, DTOs,
   class names, raw states, Prisma);

@@ -1,6 +1,6 @@
 # idea — processo da entrevista
 
-Referência de consulta de `idea`. Leia antes da primeira pergunta e mantenha aberta durante o ciclo.
+Referência para ideias que exigem exploração mais profunda. Percorra as etapas pertinentes e ajuste a ordem conforme as respostas; esta lista não é um questionário obrigatório.
 
 ## Process
 
@@ -16,7 +16,7 @@ Your restatement should include:
 - The expected outcome, if known
 - Any assumptions you are already making
 
-Then open with one numbered textual questionnaire containing every independent doubt you can already shape, with no numerical cap. Defer only questions whose framing or options depend on an earlier answer. Give each question exactly three options (`A`, `B`, `C`), put the recommended option first, and finish with the compact answer format described in `SKILL.md`.
+Then ask the independent questions that could change the next decision, grouped into an answerable batch. Defer questions whose framing depends on an earlier answer. Use options only when they describe real alternatives, as explained in `SKILL.md`.
 
 ### 2. Identify the Type of Idea
 
@@ -43,10 +43,10 @@ Do not refine the idea deeply until the problem is clear.
 
 Clarify who the idea is for. Typical question shapes:
 
-- Primary audience (single-select among exactly 3 personas, with the recommended persona first)
+- Primary audience, when the idea has one
 - Context of use (single-select)
-- Secondary audiences in scope (multi-select)
-- Willingness to pay / adopt / change behavior (single-select with explicit trade-offs)
+- Secondary audiences in scope, when relevant
+- Willingness to pay, adopt, or change behavior, when relevant
 
 If the target audience is too broad, help narrow it.
 
@@ -60,17 +60,17 @@ Clarify what success means. Push the user to define success concretely. Where po
 
 ### 6. Surface Assumptions
 
-Identify assumptions behind the idea. For each important assumption, ask whether there is evidence — typically as a single-select with exactly 3 options such as "Tenho evidência direta", "Tenho evidência indireta" and "Ainda não tenho evidência".
+Identify assumptions behind the idea. For each assumption that could change the direction, establish whether there is direct evidence, indirect evidence, or no evidence yet. Ask openly when the answer cannot be represented honestly by predefined choices.
 
 If there is no evidence, mark it as an assumption to validate.
 
 ### 7. Find Gaps and Contradictions
 
-Look for unclear or conflicting parts. When a contradiction appears, pause and surface it directly — usually as a single-select question framing the trade-off the contradiction implies (e.g. "Esta tensão entre simplicidade prometida e setup complexo deve ser resolvida cortando setup, ajustando a promessa, ou aceitando a fricção?").
+Look for unclear or conflicting parts. When a contradiction appears, surface it directly and ask which trade-off the user accepts (e.g. "Esta tensão entre simplicidade prometida e setup complexo deve ser resolvida cortando setup, ajustando a promessa, ou aceitando a fricção?").
 
 ### 8. Explore Constraints
 
-Clarify the limits around the idea. Constraints are an excellent fit for `multiSelect: true`:
+Clarify the limits around the idea. Let the user name more than one constraint when appropriate:
 
 - Tempo, orçamento, capacidade técnica, tamanho do time, restrições legais, posicionamento de marca, sistemas existentes, timing de mercado, disponibilidade pessoal, tolerância a risco.
 
@@ -78,7 +78,7 @@ Do not suggest solutions that ignore the user's constraints.
 
 ### 9. Explore Alternatives
 
-Once the idea is reasonably clear, propose alternative framings as a textual question with exactly 3 options, placing the recommended framing first. For each option, include:
+Once the idea is reasonably clear, propose plausible alternative framings. For each option, include:
 
 - What it is in one phrase
 - Main trade-off
@@ -90,9 +90,9 @@ Examples of option labels: "Versão menor", "Versão mais ambiciosa", "Versão d
 
 Challenge the idea before refining it. Useful question shapes:
 
-- "Qual é a objeção mais forte?" (single-select with exactly the 3 most plausible objections you can articulate)
-- "O que precisa ser testado primeiro?" (single-select)
-- "Qual é a menor versão útil?" (single-select)
+- "Qual é a objeção mais forte?"
+- "O que precisa ser testado primeiro?"
+- "Qual é a menor versão útil?"
 
 Be direct and useful, not harsh.
 
@@ -100,7 +100,7 @@ Be direct and useful, not harsh.
 
 After the main doubts are answered, help sharpen the idea. Refinement may include: clearer positioning, better target audience, narrower scope, stronger value proposition, simpler first version, better problem framing, better differentiation, better success criteria, better validation path.
 
-When proposing a refinement, validate it with the user — typically a single-select between "Aceitar como proposto (Recomendado)", "Aceitar com ajuste", "Rejeitar".
+When proposing a refinement that changes the user's intent, validate it with the user. Possible responses include accepting it, adjusting it, or rejecting it; do not preselect acceptance without a reason.
 
 ### 12. Check for Remaining Doubts
 
@@ -116,23 +116,20 @@ Before ending, perform an internal uncertainty check:
 - Do I understand what should be tested first?
 - Do I understand what the idea is not?
 
-If any answer is unclear, include it in the next textual questionnaire together with every other newly shapeable independent doubt. Do not finalize while important doubts remain.
+If an unanswered doubt blocks the next decision, ask about it. Otherwise, record it as an assumption to validate and conclude.
 
 ## Question Style
 
-Good (delivered in the numbered textual questionnaire):
+Good when these are three plausible audiences and the recommendation has a stated basis:
 
 > **1. Quem sente este problema mais fortemente?**
-> - A. Iniciantes (Recomendado) — pouca familiaridade, alta fricção, alta disposição a pagar por simplicidade
+> - A. Iniciantes — pouca familiaridade, alta fricção, possível disposição a pagar por simplicidade
 > - B. Intermediários — já têm workaround manual, trocam por ganho marginal de tempo
 > - C. Avançados — querem controle, rejeitam soluções opinionadas
 
-Good (custom response kept within the three-option format):
+Good when a concrete answer is not known in advance:
 
-> **2. Qual transformação o usuário deve sentir?**
-> - A. Ganho de tempo (Recomendado) — benefício concreto e fácil de validar
-> - B. Mais controle — valor percebido maior, mas mais difícil de medir
-> - C. Outra transformação — escreva em uma frase
+> **2. Qual transformação o usuário deve sentir?** Responda em uma frase; posso comparar opções depois de conhecer seu objetivo.
 
 Bad:
 
@@ -142,7 +139,9 @@ Bad:
 
 > "Ótima ideia, aqui está o plano final."
 
-Bad (unstructured text where three comparable options were possible):
+Good when the three alternatives are real and comparable:
 
-> "O foco é validar demanda, gerar receita ou aprender?"
-> *(should be a numbered textual question with exactly 3 options, the recommended one first, and each option carrying its trade-off)*
+> **3. Qual foco vem primeiro?**
+> - A. Validar demanda — reduz investimento inicial, mas adia receita.
+> - B. Gerar receita — testa disposição a pagar, mas exige uma oferta pronta.
+> - C. Aprender com uso interno — simplifica o acesso a usuários, mas não prova demanda externa.

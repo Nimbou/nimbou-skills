@@ -1,6 +1,6 @@
 ---
 name: laravel-plan
-description: Use after approval of a conventional Laravel backend design to produce an exact, test-first implementation plan covering Eloquent persistence, migrations, Actions or Services, authorization, HTTP resources, transactions, queues, and scoped verification. Not for Nimbou CMS modules.
+description: Planeje a implementação de um backend Laravel após aprovação do desenho e do contrato.
 ---
 
 # Laravel Plan
@@ -9,7 +9,7 @@ description: Use after approval of a conventional Laravel backend design to prod
 
 Write a backend implementation plan that an engineer with no prior context can execute. Use the approved `laravel-think` design and, for HTTP work, the approved `docs/domain/<domain>/openapi.yaml`. Use `nimbou-cms-plan` instead for CMS modules.
 
-Announce this skill and save the plan to `docs/plans/YYYY-MM-DD-<feature-name>.md` unless the user chooses another path. Read `CLAUDE.md`, the nearest `GUIDELINES.md`, `composer.json`, neighboring Laravel files, and the actual test/quality scripts before naming files or commands.
+Announce this skill and save the plan to `docs/plans/YYYY-MM-DD-<feature-name>.md` unless the user chooses another path. Read `AGENTS.md`, the nearest `GUIDELINES.md`, `composer.json`, neighboring Laravel files, and the actual test/quality scripts before naming files or commands.
 
 ## Preconditions
 

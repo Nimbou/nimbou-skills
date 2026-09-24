@@ -38,7 +38,7 @@ test('nuxt catalog skill files exist and describe validate-then-generate mode', 
   assert.match(skill, /nb-catalog validate/)
   assert.match(skill, /CATALOG_ROOT/)
   assert.match(skill, /npm --prefix/)
-  assert.match(skill, /\.claude\/skills\/nuxt-catalog/)
+  assert.match(skill, /\.agents\/skills\/nuxt-catalog/)
   assert.match(skill, /install\.sh/)
   assert.match(skill, /Machine Bootstrap/)
   assert.match(skill, /machine-level/i)
@@ -48,8 +48,7 @@ test('nuxt catalog skill files exist and describe validate-then-generate mode', 
   assert.doesNotMatch(skill, /(^|\n)\s*catalog validate/m)
 })
 
-test('distribution manifests exist for Claude and Codex packaging', () => {
-  assert.equal(existsSync(resolve(root, '.claude-plugin/marketplace.json')), true)
+test('Codex distribution manifest exists', () => {
   assert.equal(existsSync(resolve(root, 'plugins/nimbou-skills/.codex-plugin/plugin.json')), true)
   assert.equal(existsSync(resolve(root, '.agents/plugins/marketplace.json')), true)
 })
@@ -167,7 +166,7 @@ test('core and audit skills document their new guardrails', () => {
   assert.match(read('plugins/nimbou-skills/skills/executing-plans/prose-execution.md'), /commit once per wave/i)
   assert.doesNotMatch(execute, /task mode/i)
   assert.match(e2eQuality, /^---\nname: e2e-test-quality/m)
-  assert.match(e2eQuality, /e2e-quality-auditor/)
+  assert.match(e2eQuality, /Classify each failure as test/)
   assert.match(e2eQuality, /Playwright/)
   assert.match(e2eQuality, /Cypress/)
   assert.match(e2eQuality, /bounded user flow/i)
@@ -238,158 +237,9 @@ test('core and audit skills document their new guardrails', () => {
   assert.match(guidelinesTemplate, /## Audit Expectations/)
 })
 
-test('design, merge, and review agents remain scaffolded', () => {
-  const designCommand = read('plugins/nimbou-skills/commands/design-md.md')
-  const mergeCommand = read('plugins/nimbou-skills/commands/merge-pr.md')
-  const designSkill = read('.codex/skills/design-md/SKILL.md')
-  const mergeSkill = read('.codex/skills/merge-pr/SKILL.md')
-  const explorer = read('plugins/nimbou-skills/agents/code-explorer.md')
-  const architect = read('plugins/nimbou-skills/agents/code-architect.md')
-  const reviewer = read('plugins/nimbou-skills/agents/code-reviewer.md')
-  const guidelinesAnalyzer = read('plugins/nimbou-skills/agents/guidelines-gap-analyzer.md')
-  const e2eAuditor = read('plugins/nimbou-skills/agents/e2e-quality-auditor.md')
-
-  assert.match(designCommand, /^---\ndescription:/m)
-  assert.match(designCommand, /DESIGN\.md/)
-  assert.match(designCommand, /GUIDELINES\.md/)
-  assert.match(designCommand, /register/i)
-  assert.match(designCommand, /scan mode/i)
-  assert.match(designCommand, /seed mode/i)
-  assert.match(designCommand, /monorepo/i)
-  assert.match(designCommand, /app root/i)
-  assert.match(designCommand, /repository root/i)
-  assert.match(designCommand, /design-md-template\.md/i)
-  assert.match(designCommand, /guidelines-template\.md/i)
-  assert.match(designCommand, /CSS custom properties/i)
-  assert.match(designCommand, /Never silently overwrite/i)
-  assert.match(designCommand, /design\.md lint/i)
-  assert.match(designCommand, /npx @google\/design\.md lint/i)
-  assert.match(designCommand, /create or refresh/i)
-  assert.match(designSkill, /^---\nname: design-md/m)
-  assert.match(designSkill, /Capture the target from the user's request/)
-  assert.match(designSkill, /Ask only the missing high-impact strategic and qualitative questions/)
-  assert.match(designSkill, /complement it instead of replacing it/i)
-  assert.match(designSkill, /design\.md lint/i)
-  assert.match(designSkill, /scan mode/i)
-  assert.match(designSkill, /seed mode/i)
-  assert.match(designSkill, /register/i)
-
-  assert.match(mergeCommand, /^---\ndescription:/m)
-  assert.match(mergeCommand, /Merge a single PR/i)
-  assert.match(mergeCommand, /Never merge without showing the effective PR state first/)
-  assert.match(mergeCommand, /Never merge a draft PR/)
-  assert.match(mergeCommand, /auto-merge/i)
-  assert.match(mergeCommand, /gh pr merge/)
-  assert.match(mergeCommand, /1\. Merge now/)
-  assert.match(mergeCommand, /merged/)
-  assert.match(mergeCommand, /auto-merge enabled/)
-  assert.match(mergeCommand, /skipped/)
-  assert.match(mergeCommand, /failed/)
-  assert.doesNotMatch(mergeCommand, /batch/i)
-  assert.match(mergeSkill, /^---\nname: merge-pr/m)
-  assert.match(mergeSkill, /Merge a single PR/i)
-  assert.match(mergeSkill, /Never merge without showing the effective PR state first/)
-  assert.doesNotMatch(mergeSkill, /batch/i)
-
-  assert.match(explorer, /^---\nname: code-explorer/m)
-  assert.match(explorer, /Key Files To Read/)
-  assert.match(explorer, /path:line - why it matters/)
-
-  assert.match(architect, /^---\nname: code-architect/m)
-  assert.match(architect, /minimal changes/)
-  assert.match(architect, /clean architecture/)
-  assert.match(architect, /pragmatic balance/)
-
-  assert.match(reviewer, /^---\nname: code-reviewer/m)
-  assert.match(reviewer, /Only report issues with confidence `>= 80`/)
-  assert.match(reviewer, /Optional Review Focus/)
-  assert.match(reviewer, /Critical/)
-  assert.match(reviewer, /Important/)
-
-  assert.match(guidelinesAnalyzer, /^---\nname: guidelines-gap-analyzer/m)
-  assert.match(guidelinesAnalyzer, /Only report findings with confidence `>= 80`/)
-  assert.match(guidelinesAnalyzer, /AGENTS\.md/)
-  assert.match(guidelinesAnalyzer, /GUIDELINES\.md/)
-  assert.match(guidelinesAnalyzer, /`code-reviewer` remains the default reviewer/)
-
-  assert.match(e2eAuditor, /^---\nname: 'e2e-quality-auditor'/m)
-  assert.match(e2eAuditor, /Playwright, Cypress/)
-  assert.match(e2eAuditor, /deterministic, trustworthy E2E confidence/i)
-  assert.match(e2eAuditor, /Run only the target E2E tests/i)
-  assert.match(e2eAuditor, /selectors tied to unstable markup/i)
-  assert.match(e2eAuditor, /waitForTimeout/i)
-})
-
-test('role-specialized author agents are scaffolded for SDD routing', () => {
-  const roleAgents = [
-    {
-      file: 'plugins/nimbou-skills/agents/prisma-schema-author.md',
-      slug: 'prisma-schema-author',
-      scopeMatch: /schema\.prisma/,
-      boundaryMatch: /expand\/migrate\/contract/i,
-    },
-    {
-      file: 'plugins/nimbou-skills/agents/prisma-repository-author.md',
-      slug: 'prisma-repository-author',
-      scopeMatch: /repository adapter/i,
-      boundaryMatch: /Prisma stays here, port lives in application/i,
-    },
-    {
-      file: 'plugins/nimbou-skills/agents/nestjs-usecase-author.md',
-      slug: 'nestjs-usecase-author',
-      scopeMatch: /one application use-case/i,
-      boundaryMatch: /No imports from `@prisma\/client`/,
-    },
-    {
-      file: 'plugins/nimbou-skills/agents/nestjs-controller-author.md',
-      slug: 'nestjs-controller-author',
-      // The only author whose task is pure transport wiring against a contract that
-      // already exists: parse -> call the use-case -> map. No design decision is left
-      // for it to make, so it runs a tier below the other authors.
-      model: 'haiku',
-      scopeMatch: /HTTP transport/,
-      boundaryMatch: /3-step coordinator/i,
-    },
-    {
-      file: 'plugins/nimbou-skills/agents/vue-component-author.md',
-      slug: 'vue-component-author',
-      scopeMatch: /Vue 3 SFC/,
-      boundaryMatch: /component catalog/i,
-    },
-    {
-      file: 'plugins/nimbou-skills/agents/nuxt-composable-author.md',
-      slug: 'nuxt-composable-author',
-      scopeMatch: /composable/,
-      boundaryMatch: /no markup/i,
-    },
-    {
-      file: 'plugins/nimbou-skills/agents/nuxt-page-author.md',
-      slug: 'nuxt-page-author',
-      scopeMatch: /Nuxt page, layout, or route/i,
-      boundaryMatch: /No new component\/composable\/store crept in/i,
-    },
-  ]
-
-  for (const { file, slug, model = 'sonnet', scopeMatch, boundaryMatch } of roleAgents) {
-    assert.equal(existsSync(resolve(root, file)), true, `${file} should exist`)
-    const body = read(file)
-    assert.match(body, new RegExp(`^---\\nname: ${slug}`, 'm'), `${slug} frontmatter name`)
-    // Every agent in this list is a code author: bounded work against a task the
-    // plan already closed. `inherit` would put each one on the session model, which
-    // on an opus setup means a full opus session per implementer dispatched. Sonnet
-    // is the default; an entry may drop a tier, but never inherit and never opus.
-    assert.match(body, new RegExp(`^model: ${model}$`, 'm'), `${slug} should pin model: ${model}`)
-    assert.match(body, /memory: project/, `${slug} should set memory: project`)
-    assert.match(body, /## Scope/, `${slug} should declare ## Scope`)
-    assert.match(body, /## Mandatory Execution Order/, `${slug} should declare ## Mandatory Execution Order`)
-    assert.match(body, /## You may not/, `${slug} should declare ## You may not`)
-    assert.match(body, /## Delivery Format/, `${slug} should declare ## Delivery Format`)
-    assert.match(body, /DONE_WITH_CONCERNS/, `${slug} should mention DONE_WITH_CONCERNS`)
-    assert.match(body, /NEEDS_CONTEXT/, `${slug} should mention NEEDS_CONTEXT`)
-    assert.match(body, /BLOCKED/, `${slug} should mention BLOCKED`)
-    assert.match(body, scopeMatch, `${slug} body should mention its scope keyword`)
-    assert.match(body, boundaryMatch, `${slug} body should mention its boundary rule`)
-  }
+test('Codex design and merge skills are packaged', () => {
+  assert.match(read('plugins/nimbou-skills/skills/design-md/SKILL.md'), /^---\nname: design-md/m)
+  assert.match(read('plugins/nimbou-skills/skills/merge-pr/SKILL.md'), /^---\nname: merge-pr/m)
 })
 
 test('planners and executing-plans wire the Role: routing contract', () => {
@@ -634,20 +484,23 @@ test('nestjs-plan sizes a task by behavior, not by a wall-clock estimate', () =>
   assert.match(body, /one behavior with one RED/i, 'nestjs-plan must define the task unit as one behavior + one RED')
 })
 
-test('run-waves accounts for what it spends and projects it before spending', () => {
-  // A wave-structured plan hides its cost: task count is not dispatch count, and the
-  // phases after the last wave are invisible from the plan entirely.
-  const body = read('plugins/nimbou-skills/workflows/run-waves.js')
-  assert.match(body, /const tally = \{/, 'run-waves must keep a per-phase agent tally')
-  assert.match(body, /agentsDispatched/, 'run-waves must return the tally to the caller')
-  assert.match(body, /Projected floor/, 'run-waves must project the dispatch floor before the first wave')
+test('executing-plans reports agent dispatches', () => {
+  assert.match(read('plugins/nimbou-skills/skills/executing-plans/SKILL.md'), /total agent count/)
+})
 
-  const skill = read('plugins/nimbou-skills/skills/executing-plans/SKILL.md')
-  assert.match(
-    skill,
-    /agentsDispatched/,
-    'executing-plans Output Discipline must require reporting the run\'s agent count',
-  )
+test('delegating skills respect the GPT-6 Sol medium ceiling', () => {
+  for (const skill of [
+    'executing-plans/prose-execution.md',
+    'dispatching-parallel-agents/SKILL.md',
+    'request-review/SKILL.md',
+    'nestjs-refactor/SKILL.md',
+  ]) {
+    const body = read(`plugins/nimbou-skills/skills/${skill}`)
+    assert.match(body, /gpt-6-sol/)
+    assert.match(body, /medium/)
+  }
+  assert.match(read('plugins/nimbou-skills/skills/executing-plans/prose-execution.md'), /explicitly authorized\s+multi-agent execution/)
+  assert.match(read('plugins/nimbou-skills/skills/request-review/SKILL.md'), /explicitly authorized a\s+multi-agent review/)
 })
 
 test('fullstack-plan resolves the final-wave Role exception instead of leaving it to guesswork', () => {

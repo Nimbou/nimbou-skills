@@ -51,17 +51,14 @@ test('skills tree ships the unified skill set directly', () => {
     assert.match(readFileSync(skillFile, 'utf8'), /^---\nname: /, `Missing frontmatter in ${skillFile}`)
   }
 
-  assert.equal(existsSync(resolve(root, '.claude-plugin/marketplace.json')), true)
   assert.equal(existsSync(resolve(root, 'plugins/nimbou-skills/.codex-plugin/plugin.json')), true)
   assert.equal(existsSync(resolve(root, '.agents/plugins/marketplace.json')), true)
 
   const codexPlugin = JSON.parse(read('plugins/nimbou-skills/.codex-plugin/plugin.json'))
-  const claudePlugin = JSON.parse(read('plugins/nimbou-skills/.claude-plugin/plugin.json'))
   const codexMarketplace = JSON.parse(read('.agents/plugins/marketplace.json'))
 
   assert.equal(codexPlugin.name, 'nimbou-skills')
   assert.equal(codexPlugin.skills, './skills/')
-  assert.equal(codexPlugin.version, claudePlugin.version, 'Codex and Claude must ship the same release')
   assert.match(codexPlugin.description, /Laravel/i)
   assert.equal(codexMarketplace.name, 'nimbou-skills')
   assert.equal(codexMarketplace.plugins[0].policy.installation, 'INSTALLED_BY_DEFAULT')
@@ -69,21 +66,12 @@ test('skills tree ships the unified skill set directly', () => {
   assert.equal(codexMarketplace.plugins[0].source.path, './plugins/nimbou-skills')
 })
 
-test('command and agent scaffolds exist for design, merge, and review workflows', () => {
+test('Codex skills and supporting templates are packaged', () => {
   const files = [
-    'plugins/nimbou-skills/commands/design-md.md',
-    'plugins/nimbou-skills/commands/merge-pr.md',
-    '.codex/skills/design-md/SKILL.md',
-    '.codex/skills/merge-pr/SKILL.md',
+    'plugins/nimbou-skills/skills/design-md/SKILL.md',
+    'plugins/nimbou-skills/skills/merge-pr/SKILL.md',
     'scripts/setup-chrome-devtools-wrapper.sh',
     'scripts/setup-codex-skills.sh',
-    'plugins/nimbou-skills/agents/code-explorer.md',
-    'plugins/nimbou-skills/agents/code-architect.md',
-    'plugins/nimbou-skills/agents/code-reviewer.md',
-    'plugins/nimbou-skills/agents/guidelines-gap-analyzer.md',
-    'plugins/nimbou-skills/agents/e2e-quality-auditor.md',
-    'plugins/nimbou-skills/agents/nestjs-boundary-refactorer.md',
-    'plugins/nimbou-skills/agents/prisma-boundary-refactorer.md',
     'plugins/nimbou-skills/skills/nuxt-audit/reference/design-md-template.md',
     'plugins/nimbou-skills/skills/nuxt-audit/reference/guidelines-template.md',
   ]
@@ -240,151 +228,29 @@ test('platform test skills consume approved Gherkin and route backend audits', (
   assert.match(nestjsRules, /nestjs-debug/i)
 })
 
-test('nestjs-refactor defines bounded backend refactor orchestration and agent ownership', () => {
-  const skillFile = 'plugins/nimbou-skills/skills/nestjs-refactor/SKILL.md'
-  const boundaryAgentFile = 'plugins/nimbou-skills/agents/nestjs-boundary-refactorer.md'
-  const prismaAgentFile = 'plugins/nimbou-skills/agents/prisma-boundary-refactorer.md'
-
-  for (const file of [skillFile, boundaryAgentFile, prismaAgentFile]) {
-    assert.equal(existsSync(resolve(root, file)), true, `${file} should exist`)
-  }
-
-  const skill = read(skillFile)
-  const boundaryAgent = read(boundaryAgentFile)
-  const prismaAgent = read(prismaAgentFile)
-
-  assert.match(skill, /^---\nname: nestjs-refactor/m)
-  assert.match(skill, /restore SOLID and Clean Architecture boundaries/i)
-  assert.match(skill, /Stabilize behavior first\. Refactor structure second\./i)
-  assert.match(skill, /docs\/plans\/YYYY-MM-DD-<topic>-refactor\.md/i)
-  assert.match(skill, /`nestjs-boundary-refactorer`/i)
-  assert.match(skill, /`prisma-boundary-refactorer`/i)
-  assert.match(skill, /Dispatch agents in parallel only when they have different bounded slices and disjoint write sets/i)
-  assert.match(skill, /if the refactor is within one module, run the batches sequentially/i)
-  assert.match(skill, /use `nestjs-debug`/i)
-  assert.match(skill, /use `nestjs-think`/i)
-  assert.match(skill, /use `nestjs-test`/i)
-
-  assert.match(boundaryAgent, /^---\nname: 'nestjs-boundary-refactorer'/m)
-  assert.match(boundaryAgent, /controllers stay thin/i)
-  assert.match(boundaryAgent, /You are not alone in the codebase/i)
-  assert.match(boundaryAgent, /Prisma schema changes/i)
-  assert.match(boundaryAgent, /application-layer interfaces such as repository contracts/i)
-
-  assert.match(prismaAgent, /^---\nname: 'prisma-boundary-refactorer'/m)
-  assert.match(prismaAgent, /Prisma remains an infrastructure concern/i)
-  assert.match(prismaAgent, /You are not alone in the codebase/i)
-  assert.match(prismaAgent, /repository integration tests and persistence fixtures/i)
-  assert.match(prismaAgent, /controller or DTO refactors/i)
-})
-
-test('README documents backend-first core and prefixed NestJS and Nuxt skills', () => {
-  const readme = readFileSync(resolve(root, 'README.md'), 'utf8')
-  const install = readFileSync(resolve(root, 'install.sh'), 'utf8')
-
-  assert.match(readme, /canonical skill library/i)
-  assert.match(readme, /backend-first/i)
-  assert.match(readme, /NestJS/)
-  assert.match(readme, /Prisma/)
+test('README and installer document Codex distribution', () => {
+  const readme = read('README.md')
+  const install = read('install.sh')
+  assert.match(readme, /Codex skill library/)
+  assert.match(readme, /Codex marketplace/)
   assert.match(readme, /design-md/)
   assert.match(readme, /merge-pr/)
-  assert.match(readme, /\.codex\/skills\//)
-  assert.match(readme, /e2e-test-quality/)
-  assert.match(readme, /change-plan/)
-  assert.match(readme, /feat-spec/)
-  assert.match(readme, /doc-domain/)
-  assert.match(readme, /doc-gherkin/)
-  assert.match(readme, /doc-openapi/)
-  assert.match(readme, /nestjs-refactor/)
-  assert.match(readme, /request-review/)
-  assert.match(readme, /apply-review/)
-  assert.match(
-    readme,
-    /### Core workflow skills[\s\S]*- `change-plan`[\s\S]*- `feat-spec`[\s\S]*?### NestJS-specific skills/s,
-  )
-  assert.match(readme, /nestjs-think/)
-  assert.match(readme, /nestjs-plan/)
-  assert.match(readme, /nestjs-test/)
-  assert.match(readme, /nuxt-think/)
-  assert.match(readme, /nuxt-plan/)
-  assert.match(readme, /nuxt-catalog/)
-  assert.match(readme, /nuxt-audit/)
-  assert.match(readme, /nuxt-test/)
-  assert.match(readme, /nuxt-debug/)
-  assert.match(readme, /mixed-request entry point/i)
-  assert.match(readme, /`change-plan` is the single entry point for a small fullstack change/i)
-  assert.match(readme, /closes the shared feature contract and ownership boundary first/i)
-  assert.match(readme, /hands contract closure to `nestjs-think` or `laravel-think`/i)
-  assert.match(readme, /keeps backend contract and persistence viability together/i)
-  assert.match(readme, /publishes the canonical HTTP transport artifact .* after the selected backend think skill and before `nuxt-think`/i)
-  assert.match(readme, /canonical HTTP transport artifact/i)
-  assert.match(readme, /frontend-only requests stay in `nuxt-think`/i)
-  assert.match(readme, /backend-only requests use the detected backend think skill/i)
-  assert.doesNotMatch(readme, /feature-dev/)
-  assert.doesNotMatch(readme, /nestjs-audit-http-tests/)
-  assert.doesNotMatch(readme, /nestjs-audit-prisma-repositories/)
-  assert.match(readme, /\.\/install\.sh/)
-  assert.match(readme, /Codex-only mirrors/)
-  assert.match(readme, /nb-catalog/)
-  assert.match(readme, /single frontend review pass/i)
-  assert.match(readme, /\.generated\/component-catalog\/components\.meta\.json/)
-  assert.match(readme, /codex-full/)
-  assert.match(readme, /dangerously-bypass-approvals-and-sandbox/)
-  assert.match(readme, /registers and installs the Claude Code plugin/)
-  assert.match(readme, /compares the installed Claude Code plugin version/)
-  assert.match(readme, /Codex marketplace/i)
-  assert.match(readme, /\.agents\/plugins\/marketplace\.json/)
-  assert.match(readme, /Codex `rust-v0\.121\.0\+` or newer/i)
-  assert.match(readme, /does not support `codex plugin marketplace add`/i)
-  assert.match(readme, /runs `npm link` for `nb-catalog`/)
-  assert.match(readme, /installs `@google\/design\.md` globally/i)
-  assert.match(readme, /design\.md lint/i)
-  assert.match(readme, /chrome-devtools-mcp-wayland/)
-  assert.match(readme, /rewrites `~\/\.codex\/config\.toml`/)
-  assert.match(readme, /VS Code Copilot Chat/i)
-  assert.match(readme, /~\/\.copilot\/skills/)
-  assert.match(readme, /~\/\.config\/Code\/User\/prompts/)
-  assert.match(install, /setup-codex-full-wrapper\.sh/)
-  assert.match(install, /setup-chrome-devtools-wrapper\.sh/)
-  assert.match(install, /setup-vscode-copilot-chat\.sh/)
+  assert.match(install, /codex plugin marketplace add/)
   assert.match(install, /setup-codex-skills\.sh/)
-  assert.match(install, /@google\/design\.md/)
-  assert.match(install, /design\.md/)
-  assert.match(install, /CODEX_WRAPPER_PATH/)
-  assert.match(install, /CHROME_DEVTOOLS_MCP_WRAPPER_PATH/)
-  assert.match(install, /VS Code Copilot Chat/i)
-  assert.match(install, /COPILOT_CHAT_SKILLS_DIR/)
-  assert.match(install, /VSCODE_USER_PROMPTS_DIR/)
-  assert.match(install, /Codex skills/i)
-  assert.match(install, /\.codex\/skills/)
-  assert.match(install, /\.claude-plugin\/plugin\.json/)
-  assert.match(install, /claude plugin list --json/)
-  assert.match(install, /Claude Code plugin already installed at version/)
-  assert.match(install, /Installing Claude Code plugin version/)
-  assert.match(install, /codex plugin marketplace/i)
-  assert.match(install, /Install Codex rust-v0\.121\.0\+ or newer/)
-  assert.match(install, /Codex marketplace support is required/)
-  assert.match(install, /\.agents\/plugins\/marketplace\.json/)
-  assert.doesNotMatch(install, /local skill-tree fallback/)
-  assert.doesNotMatch(install, /link_skill_tree/)
-  assert.equal(existsSync(resolve(root, 'scripts/setup-vscode-copilot-chat.sh')), true)
-  assert.equal(existsSync(resolve(root, 'LICENSE')), true)
+  assert.doesNotMatch(install, /claude|copilot/i)
 })
 
 test('Windows PowerShell installer mirrors the bootstrap flow', () => {
   assert.equal(existsSync(resolve(root, 'install.ps1')), true)
   assert.equal(existsSync(resolve(root, 'scripts/setup-codex-skills.ps1')), true)
-  assert.equal(existsSync(resolve(root, 'scripts/setup-vscode-copilot-chat.ps1')), true)
   assert.equal(existsSync(resolve(root, 'scripts/setup-codex-full-wrapper.ps1')), true)
   assert.equal(existsSync(resolve(root, 'scripts/setup-python-docx.ps1')), true)
 
   const install = read('install.ps1')
   assert.match(install, /setup-codex-full-wrapper\.ps1/)
-  assert.match(install, /setup-vscode-copilot-chat\.ps1/)
   assert.match(install, /setup-codex-skills\.ps1/)
   assert.match(install, /setup-python-docx\.ps1/)
   assert.match(install, /@google\/design\.md/)
-  assert.match(install, /claude plugin list --json/)
   assert.match(install, /codex plugin marketplace/i)
   // The Wayland/X11 DevTools wrapper is Linux-only and must not be ported.
   assert.doesNotMatch(install, /setup-chrome-devtools-wrapper/)

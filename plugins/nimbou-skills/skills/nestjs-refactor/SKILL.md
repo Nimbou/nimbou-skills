@@ -1,6 +1,6 @@
 ---
 name: nestjs-refactor
-description: Use when an existing NestJS + Prisma backend needs structural refactoring to restore SOLID and Clean Architecture boundaries, reduce fat services or leaked framework concerns, and batch safe cleanup work without changing the product contract first.
+description: Use ao refatorar limites de arquitetura em um módulo NestJS com Prisma sem mudar o contrato do produto.
 ---
 
 # NestJS Refactor
@@ -114,7 +114,13 @@ Bad batches:
 
 ## Agent Model
 
-This skill uses two execution agents:
+When the user explicitly authorizes multi-agent work, these are the two execution
+ownership briefs. Otherwise, execute the bounded batches in the current task:
+
+When delegation is authorized, both roles use at most `gpt-6-sol` with `medium`
+reasoning. Keep a user's lower choice; split a slice that cannot be handled
+reliably within that ceiling. The role names below are ownership briefs, not
+separate model tiers.
 
 - `nestjs-boundary-refactorer`
   - owns controllers, DTO-to-use-case seams, use-cases, application services, and boundary interfaces inside one bounded slice

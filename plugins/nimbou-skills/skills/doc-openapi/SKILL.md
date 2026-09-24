@@ -40,7 +40,7 @@ Do not ask the user to approve `openapi.yaml`. Write it, self-check traceability
 
 ## Rules
 
-- support only Claude Code and Codex
+- support Codex only
 - generate only HTTP transport contracts
 - reflect closed domain states and Gherkin behavior; do not invent transport behavior
 - include paths, methods, params, request body, success responses, error responses, and auth expectations when relevant

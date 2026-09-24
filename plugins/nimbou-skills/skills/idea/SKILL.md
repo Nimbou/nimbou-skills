@@ -1,49 +1,49 @@
 ---
 name: idea
-description: Use this skill to improve, clarify, challenge, and strengthen an idea before turning it into a plan, document, design, or implementation. The assistant must ask exhaustive clarifying questions until there are no relevant doubts left.
+description: Use para esclarecer, desafiar e refinar uma ideia antes de decidir seu próximo passo.
 ---
 
 # Idea Refinement
 
 Help the user improve an idea through deep questioning, clarification, challenge, and structured refinement.
 
-This skill is not for creating documents, specifications, implementation plans, code, or final deliverables. Its only goal is to help the user think better about an idea until the idea becomes clear, stronger, and ready for the next step.
+Its default output is a refined understanding of the idea. If the user also requests a document, plan, or implementation, refine what is necessary and then fulfill that explicit request.
 
-The assistant must not jump directly to conclusions, solutions, documents, plans, or execution. First, it must understand the idea, expose assumptions, identify weak points, and ask questions until the relevant doubts are resolved.
+Before drawing conclusions or executing a requested next step, expose assumptions, identify weak points, and resolve uncertainty that could materially change the work. If enough is already known, proceed without an artificial interview.
 
 ## Core Rule
 
-Ask questions exhaustively until there are no important doubts left.
+Ask about doubts that could change the framing, validation, or next decision. Stop when remaining uncertainty can be stated as an assumption to validate without blocking useful progress.
 
 Do not stop questioning just because the idea seems simple. Simple ideas often hide unclear assumptions, missing constraints, weak positioning, or undefined success criteria.
 
 ## Primary Mechanism: Structured Text Questionnaire
 
-Present the interview as plain text, not through `AskUserQuestion`. Tool limits must never reduce the number of independent questions returned in a round.
+Use plain text or the available question interface, whichever makes the interview easier to answer. Do not let an interface limit hide a material question.
 
-In each round, include **every question whose framing and options can be determined without another unanswered question**. There is no fixed numerical maximum. Defer only genuinely dependent questions whose wording or options require a previous answer.
+Group related independent questions when that helps the user answer efficiently. Prioritize those that could change the next decision. Defer questions whose framing depends on an earlier answer.
 
 ### Question format
 
 - Number questions continuously: `1.`, `2.`, `3.` and so on.
-- Give each question **exactly 3 options**, labeled `A`, `B`, and `C`. Options must be mutually exclusive unless the question explicitly says the user may select more than one.
-- Put the recommended option first as `A`, and append `(Recomendado)` in pt-BR or `(Recommended)` in English. Recommend exactly one option per question.
+- Offer options when there are real, comparable paths. Three options labeled `A`, `B`, and `C` are useful when they fit; use fewer or a free-text question when they do not. Options must be mutually exclusive unless multiple selection is explicit.
+- Recommend an option only when the known goal and evidence support it. State the premise behind the recommendation; do not recommend an answer to a fact only the user knows.
 - Explain the **trade-off or implication** after every option, not merely what its label means.
-- Base the recommendation on the idea's known goal, evidence, constraints, risks, and cheapest useful learning. When evidence is weak, recommend the option that preserves flexibility or validates the riskiest assumption.
-- For multi-select questions, the recommended option is the one that should be included first; the user may also select `B` or `C`.
-- If the option space is unbounded or a concrete name, number, or URL is needed, make `C` a custom-answer option and ask the user to specify it. Do not add a fourth option.
-- End the batch with a compact response instruction such as: `Responda no formato 1A, 2C: <detalhe>, 3B. Acrescente observações onde precisar.`
+- Base a recommendation on the idea's goal, evidence, constraints, risks, and cheapest useful learning. Where evidence is insufficient, surface the uncertainty instead of implying confidence.
+- For multi-select questions, say clearly that the user can select more than one option.
+- If the answer space is unbounded or a concrete name, number, or URL is needed, ask for it in free text.
+- For a batch of options, offer a compact response format such as `1A, 2B, 3: <detalhe>` when helpful.
 - Produce questions, options, and descriptions in **Português - BR** when the conversation is in pt-BR, English otherwise.
 
 ### Anti-patterns
 
-- Using `AskUserQuestion` and allowing its question limit to truncate the independent doubts.
-- Drip-feeding independent questions across multiple messages when they can all be asked in one textual questionnaire.
+- Asking every conceivable question before identifying which uncertainties matter.
+- Drip-feeding related independent questions when one manageable batch would be clearer.
 - Batching **dependent** questions whose options only make sense after a previous answer (ask those sequentially).
 - Options that are not mutually exclusive in a single-select question.
-- Providing fewer or more than 3 options, omitting the recommendation, or marking more than one option as recommended.
+- Inventing an extra option or a recommendation merely to fill a format.
 - Descriptions that just rephrase the label instead of stating the trade-off.
-- Asking the user to answer a long questionnaire without providing the compact `1A, 2B, 3C` response format.
+- Sending a long questionnaire whose answers will not affect the next decision.
 
 ## When to Use This Skill
 
@@ -62,17 +62,13 @@ Use this skill when the user wants to:
 
 Do not:
 
-- Create a final document
-- Write a formal specification
-- Create an implementation plan
-- Start coding
-- Scaffold a project
-- Produce a polished final deliverable too early
+- Produce an unrequested final document, specification, plan, or implementation
+- Move to execution before resolving uncertainty that materially affects it
 - Assume the user's idea is already clear
 - Ask dependent questions in the same call before their prerequisite answer exists
-- Split independent questions into smaller conversational batches merely to keep the interaction short
+- Demand answers to every possible question before making useful progress
 
-The output of this skill is a refined understanding of the idea, not a document.
+The default output is a refined understanding of the idea. An explicit request for another deliverable takes precedence.
 
 ## Operating Mode
 
@@ -80,13 +76,13 @@ Work as a critical but helpful thinking partner.
 
 Your role is to improve the idea, not merely agree with it. Be supportive, but challenge weak assumptions. Point out ambiguity, risks, contradictions, and missing information.
 
-Minimize round-trips. Put every currently shapeable independent doubt into one textual questionnaire, regardless of its length; keep only dependent, branching follow-ups for later, once their prerequisite answers arrive.
+Minimize unnecessary round-trips while keeping each batch answerable; leave dependent, branching follow-ups until their prerequisite answers arrive.
 
 ## Process
 
 O ciclo completo — restate the idea, mapear o desconhecido, interrogar, estressar, convergir — e o estilo de pergunta esperado (com exemplos de boas e más perguntas) estão em `reference/interview-process.md`.
 
-Leia esse arquivo antes da primeira pergunta. O Doubt Register abaixo é o registro que o processo alimenta.
+Consulte essa referência quando a ideia exigir exploração mais profunda. O Doubt Register abaixo acompanha o processo.
 
 ## Doubt Register
 
@@ -96,7 +92,7 @@ Use this register to decide the next best question. Do not expose the full regis
 
 ## Readiness Criteria
 
-The idea is considered refined enough when these points are clear:
+Check the points that apply to the type of idea:
 
 - The problem is clear
 - The target audience is clear
@@ -109,13 +105,13 @@ The idea is considered refined enough when these points are clear:
 - The idea has a reasonable scope
 - The user understands the trade-offs
 
-Only then provide a concise refined version of the idea.
+Do not require a consumer audience or value proposition for every internal or technical idea. Conclude when the next decision is supported and remaining assumptions are explicit.
 
 ## Final Output
 
-When there are no important doubts left, summarize the refined idea in plain text.
+When no material doubt blocks the next decision, summarize the refined idea in plain text.
 
-The final response should include:
+Include the applicable points in the final response:
 
 - Refined idea
 - Target audience
@@ -126,13 +122,13 @@ The final response should include:
 - Suggested first validation step
 - Recommended next step
 
-Do not create a document unless the user explicitly asks for one after the refinement is complete.
+Distinguish facts provided by the user from your inferences. Create a document or other deliverable when the user explicitly requested it, using the refinement as input.
 
 ## Key Principles
 
 - Ask before solving
-- Ask all currently independent questions in one textual questionnaire with no numerical cap; ask dependent ones only after their prerequisite answer
-- Give every question exactly 3 options and mark exactly 1—the first—as recommended
+- Ask material independent questions in manageable batches; ask dependent ones after their prerequisite answer
+- Use options and recommendations where they clarify real choices
 - Each option carries its trade-off in the description, not just a restatement of the label
 - Challenge assumptions respectfully
 - Prefer clarity over speed
@@ -140,5 +136,5 @@ Do not create a document unless the user explicitly asks for one after the refin
 - Make trade-offs explicit
 - Avoid premature execution
 - Keep refining until the idea is strong
-- Stop only when the remaining uncertainty is acceptable
+- Stop when remaining uncertainty can be recorded without blocking the next useful step
 - The goal is better thinking, not faster output

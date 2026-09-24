@@ -64,7 +64,7 @@ Nor is the commit a task: `executing-plans` commits once per wave, after every t
 in it lands and verifies.
 
 Size against the dispatch, not the clock. Every implementer pays the same setup
-before its first write — `CLAUDE.md`, the nearest `GUIDELINES.md`, a neighboring file
+before its first write — `AGENTS.md`, the nearest `GUIDELINES.md`, a neighboring file
 for style, the ports it consumes. Below one behavior, that setup *is* the cost, and a
 task too small to justify it should have been folded into its sibling. Above it, an
 implementer holding two unrelated behaviors reports them as one and blurs which
@@ -288,23 +288,19 @@ Fix issues inline before handing off the plan.
 
 ## Execution Handoff
 
-After saving the plan, offer the execution choice using the `AskUserQuestion` tool. Do not narrate the options as prose.
-
-Question: "Plan saved to `docs/plans/<filename>.md`. Which execution mode?"
-
-Use `nimbou-skills:executing-plans` to implement this plan wave-by-wave.
+After saving the plan, continue with `nimbou-skills:executing-plans` when the original request includes implementation. Otherwise, report the saved plan path and its execution prerequisites.
 
 ## How To Ask The User
 
-This skill assumes design is closed. Use `AskUserQuestion` only when execution topology is genuinely blocked by a missing structural decision that resolves to 2-4 discrete options, such as:
+This skill assumes design is closed. Ask only when execution topology is genuinely blocked by a missing structural decision, such as:
 
 - whether a shared file or contract must land before dependent files (serial vs parallel groups)
 - which target file path or module owns a contested capability when more than one is viable
 - whether to reuse an existing repository/use-case or introduce a new one
 
-Lead with your recommendation as the first option and append `(Recommended)` to its label.
+Lead with a recommendation and its trade-off; use a structured question UI when available.
 
-Do not use `AskUserQuestion` for:
+Do not ask for:
 
 - open file naming or describing prose
 - plan-approval gates — present the plan and wait for review, do not multiple-choice the approval itself

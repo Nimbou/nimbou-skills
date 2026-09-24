@@ -1,16 +1,13 @@
 ---
-description: Generate or refresh a Google-format DESIGN.md plus a complementary GUIDELINES.md by exploring the target codebase, asking only the missing questions, and writing at the correct app or repo root.
-argument-hint: Optional project path, app path, route, or feature description
+name: design-md
+description: Create or refresh DESIGN.md and GUIDELINES.md for a Nuxt/Vuetify app.
 ---
 
 # Generate DESIGN.MD
 
-Use this command when the user wants frontend design guidance created, refreshed, or standardized for a Nuxt/Vuetify project.
+**Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
-This command is not a one-shot template dump. It should produce:
-
-- a Google-format `DESIGN.md` grounded in the actual codebase and local visual system
-- a project-facing `GUIDELINES.md` grounded in the actual codebase and local implementation patterns
+Use this skill when the user wants frontend design guidance created, refreshed, or standardized for a Nuxt/Vuetify project.
 
 ## Core Rules
 
@@ -19,20 +16,18 @@ This command is not a one-shot template dump. It should produce:
 - Generate concrete guidance, not placeholders
 - Resolve the current file state before deciding what to write
 - Infer a `register` hypothesis early: `brand`, `product`, or `hybrid` with one primary default
-- Use `skills/nuxt-audit/reference/design-md-template.md` for `DESIGN.md`
-- Use `skills/nuxt-audit/reference/guidelines-template.md` for `GUIDELINES.md`
+- `DESIGN.md` must follow the Google `design.md` format shape used in `skills/nuxt-audit/reference/design-md-template.md`
+- `GUIDELINES.md` is the local implementation companion, using `skills/nuxt-audit/reference/guidelines-template.md`
 - If a useful `DESIGN.md` or `GUIDELINES.md` already exists, update it instead of replacing good project-specific guidance with generic prose
-- If `GUIDELINES.md` already exists, complement it instead of rewriting it
 - Never silently overwrite an existing `DESIGN.md` or rewrite an existing `GUIDELINES.md` from scratch
-- Keep visual identity and tokens in `DESIGN.md`; keep implementation and review behavior in `GUIDELINES.md`
-- If the two files overlap, `DESIGN.md` wins for visual rules
+- Keep visual identity and design tokens in `DESIGN.md`; keep implementation, architecture, audit, and review rules in `GUIDELINES.md`
+- When both files mention a visual rule, `DESIGN.md` wins
 
 ## Phase 1: Resolve Target Scope
 
-1. Capture the target from `$ARGUMENTS`
+1. Capture the target from the user's request.
 2. If the target is a monorepo:
-   - identify the relevant app or package root
-   - use that app root as the default write location
+   - identify the relevant app or package root and use that app root as the default write location
 3. If the target is not a monorepo:
    - use the repository root as the default write location
 4. If the user named a route, feature, or path:
@@ -104,11 +99,10 @@ Do not ask about colors, fonts, spacing, radius, or motion if the codebase alrea
 
 ## Phase 6: Create or Refresh `DESIGN.md`
 
-Use `skills/nuxt-audit/reference/design-md-template.md` as the base structure, and consult `skills/nuxt-audit/reference/design-md-example.md` for a concrete example of the expected fidelity. Use the example for granularity and format, not for its values.
+Use `skills/nuxt-audit/reference/design-md-template.md` as the base structure, and consult `skills/nuxt-audit/reference/design-md-example.md` for the expected level of specificity.
 
 The resulting `DESIGN.md` should:
-
-- follow the Google `design.md` shape: YAML front matter for tokens plus the canonical prose sections
+- follow the Google `design.md` format: YAML front matter for tokens plus the canonical prose sections
 - stay specific to the target app
 - reflect the real visual system already present in the codebase
 - avoid implementation-policy sections that belong in `GUIDELINES.md`
@@ -117,7 +111,6 @@ The resulting `DESIGN.md` should:
 - stay free of filler such as `TBD`, `TODO`, or vague brand language
 
 If a `DESIGN.md` already exists:
-
 - preserve the good project-specific rules
 - remove contradictions and stale guidance
 - tighten generic language
@@ -145,37 +138,34 @@ Validation rules:
 
 ## Phase 7: Create or Refresh `GUIDELINES.md`
 
-Use `skills/nuxt-audit/reference/guidelines-template.md` as the base structure, and consult `skills/nuxt-audit/reference/guidelines-example.md` for a concrete example of how project-specific implementation rules should look.
+Use `skills/nuxt-audit/reference/guidelines-template.md` as the base structure, and consult `skills/nuxt-audit/reference/guidelines-example.md` for granularity.
 
 When writing each section, consult the corresponding skill as the source of generic posture, and let local project decisions override:
 
-- **Mode** and **Page Composition** → `nimbou-skills:nuxt-design-composition` (landing vs product UI, hero rules, motion ritmo).
-- **Visual Posture** → `nimbou-skills:nuxt-design-posture` (typography, color tokens, spacing scale, CSS bans).
-- **Component Architecture** → `nimbou-skills:nuxt-design-architecture` (tiers, SOLID boundaries, extraction heuristics, communication contracts).
-
-Local `GUIDELINES.md` decisions override the generic skills, and local `DESIGN.md` decisions override `GUIDELINES.md` on visual conflicts.
+- **Mode** and **Page Composition** -> `nimbou-skills:nuxt-design-composition`
+- **Visual implementation guardrails** -> `nimbou-skills:nuxt-design-posture`
+- **Component Architecture** -> `nimbou-skills:nuxt-design-architecture`
 
 The resulting `GUIDELINES.md` should:
-- stay specific to the target app
-- align with the real primitives, wrappers, and patterns already present
-- be explicit about ownership, reuse, layout, hardening, performance, and audit expectations
+- capture implementation, architecture, reuse, hardening, performance, and audit rules for the target app
+- reference local primitives, wrappers, and ownership boundaries that real frontend work should follow
+- not duplicate token tables or visual prose already owned by `DESIGN.md`
 - absorb the implementation-side details that do not fit cleanly into the `DESIGN.md` schema, such as motion policy, shadow usage doctrine, focus treatment, local wrapper rules, and review expectations
-- avoid filler such as `TBD`, `TODO`, or vague process language
 
 If a `GUIDELINES.md` already exists:
 - complement it instead of replacing it
-- preserve the current structure and project-specific wording when still valid
+- preserve the current structure and wording where they are already project-specific and still valid
 - add missing sections, tighten stale rules, and remove contradictions only when necessary
 
 ## Phase 8: Confirm Result
 
-After writing or updating the files:
-- show the resolved target root
-- show the resolved file state and whether the flow ran in `scan` or `seed` mode
-- show the inferred `register`
-- show whether `DESIGN.md` was created or updated
-- show whether `GUIDELINES.md` was created, updated, or only complemented
-- show the `design.md lint` result for `DESIGN.md`
-- summarize the most important visual rules captured in `DESIGN.md`
-- summarize the most important implementation rules captured in `GUIDELINES.md`
-- point out any important unknowns that remain intentionally undecided
+After writing or updating the files, show:
+- the resolved target root
+- the resolved file state and whether the flow ran in `scan` or `seed` mode
+- the inferred `register`
+- whether `DESIGN.md` was created or updated
+- whether `GUIDELINES.md` was created, updated, or only complemented
+- the `design.md lint` result for `DESIGN.md`
+- the most important visual rules captured in `DESIGN.md`
+- the most important implementation rules captured in `GUIDELINES.md`
+- any intentionally undecided unknowns

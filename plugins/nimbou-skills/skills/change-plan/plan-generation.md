@@ -47,4 +47,4 @@ may choose Playwright as its fallback driver. `typecheck` remains opt-in for bot
 
 Write the plan to `docs/plans/change-plan-<slug>.md`, `<slug>` a short kebab-case name, using `fullstack-plan`'s Response Shape (with the inline `## Contrato (inline)` when HTTP changes). Run `fullstack-plan`'s Self-Review before handing off.
 
-Then respond in chat with the file path and the closed decisions and impact — do not paste the whole file back. Recommend `nimbou-skills:executing-plans` (or `run-waves`) as the next step.
+Then respond in chat with the file path and the closed decisions and impact — do not paste the whole file back. Recommend `nimbou-skills:executing-plans` as the next step.

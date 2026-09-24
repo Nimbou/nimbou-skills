@@ -21,7 +21,7 @@ Use this from `nuxt-think`, `nestjs-think`, or `laravel-think` during specificat
 
 ## Rules
 
-- support only Claude Code and Codex
+- support Codex only
 - never invent states that are not in `domain.md`
 - use `Feature`, `Rule`, and `Scenario` in business language
 - keep one functional slice per `.feature` file

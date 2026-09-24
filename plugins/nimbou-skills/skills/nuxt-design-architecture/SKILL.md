@@ -1,6 +1,6 @@
 ---
 name: nuxt-design-architecture
-description: Use when deciding how to decompose a Nuxt 4 + Vuetify 4 interface into components, composables, utils, and config — component tiers, SOLID boundaries, extraction heuristics, and communication contracts. Pairs with nuxt-design-posture (micro visual) and nuxt-design-composition (macro hierarchy). Local GUIDELINES.md wins on implementation conflict.
+description: Defina os limites entre componentes, composables, utilitários e configuração de uma interface Nuxt.
 ---
 
 # Nuxt Design — Architecture

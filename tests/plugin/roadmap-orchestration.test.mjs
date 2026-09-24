@@ -24,7 +24,7 @@ test('roadmap orchestration ships an executable, authorization-safe skill', () =
   const evaluations = read(examples)
 
   assert.match(entrypoint, /^---\nname: roadmap-orchestration/m)
-  assert.match(entrypoint, /idea, approved specification, or feature inventory/i)
+  assert.match(entrypoint, /description: Coordene entregas, tarefas Codex e PRs autorizados/i)
   assert.match(entrypoint, /autorização explícita/i)
   assert.match(entrypoint, /nimbou-skills:executing-plans/)
   assert.match(entrypoint, /nimbou-skills:browser-smoke/)
@@ -36,6 +36,9 @@ test('roadmap orchestration ships an executable, authorization-safe skill', () =
   assert.match(operatingModel, /Never merge.*explicit confirmation/is)
   assert.match(operatingModel, /reconcilie.*tarefas.*PRs existentes/is)
   assert.match(operatingModel, /planning.*model.*effort.*execution.*model.*effort/is)
+  assert.match(operatingModel, /gpt-6-sol.*medium/is)
+  assert.match(operatingModel, /gpt-6-luna.*high/is)
+  assert.match(operatingModel, /Não recomende `gpt-6-astra`/)
   assert.match(operatingModel, /pause automation|delete it/i)
 
   for (const scenario of ['Urgent launch', 'Resume without duplication', 'PR ready to merge']) {

@@ -33,8 +33,8 @@ const path = require('node:path')
 const packagePath = path.resolve(process.cwd(), 'package.json')
 const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
 pkg.scripts ||= {}
-pkg.scripts.catalog ||= 'tsx .claude/skills/nuxt-catalog/scripts/generate-catalog.ts'
-pkg.scripts['nb-catalog:validate'] ||= 'tsx .claude/skills/nuxt-catalog/scripts/generate-catalog.ts --validate'
+pkg.scripts.catalog ||= 'tsx .agents/skills/nuxt-catalog/scripts/generate-catalog.ts'
+pkg.scripts['nb-catalog:validate'] ||= 'tsx .agents/skills/nuxt-catalog/scripts/generate-catalog.ts --validate'
 fs.writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)
 NODE
   echo "Added package scripts: catalog, nb-catalog:validate"

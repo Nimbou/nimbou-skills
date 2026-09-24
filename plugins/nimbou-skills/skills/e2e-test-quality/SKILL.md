@@ -7,10 +7,9 @@ description: Use when auditing, fixing, stabilizing, or expanding bounded end-to
 
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
-For frontend flows, dispatch `e2e-quality-auditor` only when the user explicitly asks
-for browser-driven end-to-end coverage or its audit. Do not infer that request from
-ordinary frontend implementation. Backend flows may use this skill when browser-driven
-coverage is the appropriate test level.
+For frontend flows, use this skill only when the user explicitly asks for
+browser-driven end-to-end coverage or its audit. Backend flows may use it when
+browser-driven coverage is the appropriate test level.
 
 **Core principle:** Audit one bounded user flow at a time. Keep selectors, waits, auth, data setup, and end-to-end assertions explicit.
 
@@ -30,7 +29,7 @@ Do not use this skill for Nuxt/Vuetify module-local Playwright work when `nuxt-t
 
 ## Required Inputs
 
-Before dispatching the auditor, gather:
+Before auditing, gather:
 - the target user flow or bounded feature slice
 - the relevant E2E test files or command
 - the expected user-visible behavior to preserve
@@ -41,25 +40,11 @@ If the request is broad, reduce it to one critical flow first.
 
 ## How to Run
 
-Use Task tool with `e2e-quality-auditor`.
-
-Include:
-- what user flow or feature slice is under audit
-- which test files or command cover that flow
-- what user-visible behavior must be preserved
-- any known flaky behavior, failures, or timing problems
-- how auth, seed, environment, and reset are currently expected to work
-
-## Dispatch Template
-
-```text
-Task tool (e2e-quality-auditor):
-  TARGET: [bounded user flow or feature slice]
-  TEST_SCOPE: [test file(s) or command]
-  EXPECTED_BEHAVIOR: [critical end-to-end behavior to preserve]
-  KNOWN_ISSUES: [optional flakes, failures, or missing scenarios]
-  CONTEXT: [auth, seed, reset, orchestration, environment assumptions]
-```
+Inspect the bounded flow, its test files, and its auth, seed, reset, and timing
+assumptions. Run only the relevant E2E command. Classify each failure as test,
+environment, product, or mixed before changing assertions or product code.
+Delegate only when the user explicitly authorizes multi-agent work; pass the
+same bounded scope and ask for conclusions rather than raw logs.
 
 ## After the Audit
 

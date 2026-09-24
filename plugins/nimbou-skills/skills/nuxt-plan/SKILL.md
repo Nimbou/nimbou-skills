@@ -1,6 +1,6 @@
 ---
 name: nuxt-plan
-description: Use after frontend design approval to write a Nuxt implementation plan with exact files, reuse decisions, and execution waves that maximize parallelism.
+description: Planeje arquivos, dependências e ondas de uma interface Nuxt após aprovação do desenho.
 ---
 
 # Nuxt Plan
@@ -65,9 +65,9 @@ Ask follow-up questions only when the execution topology is blocked by missing s
 - whether a shared file must land before dependent files
 - whether the work should stay in one wave or split because a later wave consumes a contract from an earlier one
 
-When such a question reduces to 2-4 discrete, mutually-exclusive options, use the `AskUserQuestion` tool. Lead with your recommendation as the first option and append `(Recommended)` to its label. Do not narrate the options as free-form prose.
+When a material question has a few discrete options, offer them concisely through the structured question UI when available, or in text otherwise. Lead with your recommendation and its trade-off.
 
-Do not use `AskUserQuestion` for:
+Do not use a structured question UI for:
 
 - open file or component naming
 - plan-approval gates — present the plan and wait for review
@@ -157,7 +157,7 @@ Two consequences for how you write the plan:
 
 A task is one coherent unit of frontend work — one SFC, one composable, one page's
 wiring — not one edit. Every implementer pays the same setup before its first write:
-`CLAUDE.md`, `DESIGN.md`/`GUIDELINES.md`, the component catalog, a neighboring file
+`AGENTS.md`, `DESIGN.md`/`GUIDELINES.md`, the component catalog, a neighboring file
 for style. Below that unit, the setup *is* the cost.
 
 ## Role Mapping

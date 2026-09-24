@@ -1,6 +1,6 @@
 ---
 name: apply-review
-description: Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation
+description: Use ao receber feedback de revisão de código que precisa ser avaliado e aplicado.
 ---
 
 # Apply Review
@@ -28,7 +28,7 @@ WHEN receiving code review feedback:
 
 **NEVER:**
 
-- "You're absolutely right!" (explicit CLAUDE.md violation)
+- "You're absolutely right!" (explicit AGENTS.md violation)
 - "Great point!" / "Excellent feedback!" (performative)
 - "Let me implement that now" (before verification)
 

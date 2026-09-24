@@ -5,7 +5,18 @@ description: Use when completing tasks, implementing major features, or before m
 
 # Request Review
 
-Dispatch one general `spawn_agent` reviewer using `code-reviewer.md` to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+Review the bounded diff against requirements using `code-reviewer.md`. Dispatch one
+general `spawn_agent` reviewer only when the user explicitly authorized a
+multi-agent review; otherwise perform the review in the current task. A dispatched
+reviewer gets precise context rather than the session history.
+
+Reviewers use at most `gpt-6-sol` with `medium` reasoning. Use that setting for
+behavioral, security, permission, migration, and concurrency review. A narrow
+mechanical diff may use `gpt-6-luna` at `high`, never below `high`. Preserve an
+explicit user choice that meets these bounds; narrow the review or report the
+configuration conflict when it does not.
+For an explicit model override, send a self-contained prompt with
+`fork_turns: "none"` so the reviewer does not inherit a model above the ceiling.
 
 **Core principle:** Review early, review often.
 
@@ -34,7 +45,10 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **2. Dispatch the reviewer:**
 
-Use `spawn_agent` with a concise message built from `code-reviewer.md`. Include the base and head SHAs rather than pasting the full diff; the reviewer reads it locally. Do not dispatch this reviewer while a wave's implementers are still active.
+When delegation is authorized, use `spawn_agent` with a concise message built from
+`code-reviewer.md`. Include the base and head SHAs rather than pasting the full diff;
+the reviewer reads it locally. Otherwise, inspect that range directly. Do not
+dispatch a reviewer while a wave's implementers are still active.
 
 **Placeholders:**
 

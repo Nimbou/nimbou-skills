@@ -1,6 +1,6 @@
 ---
 name: doc-pop
-description: Use this skill to map a work process into a POP (Procedimento Operacional Padrão) through a guided interview with the person who executes it. Trigger when the user asks to "documentar meu processo", "transformar isso num POP", "mapear o fluxo do meu setor", or pastes a process description asking for the finished document. Produces a Portuguese markdown record plus a neutral process JSON — never a PDF, Word file, or code.
+description: Documente um processo de trabalho em POP a partir do relato de quem o executa.
 ---
 
 # Doc POP
@@ -161,7 +161,7 @@ a mechanical pass, not a judgement call — it is easy to get right reading step
 easy to miss reading the whole flow for sense, because a waiting-and-chasing-up step
 *reads* correctly as `espera` even though it fails this check.
 
-If the target repository ships its own validator for this JSON (check its `CLAUDE.md` or
+If the target repository ships its own validator for this JSON (check its `AGENTS.md` or
 README — a project may wire the same schema the import endpoint enforces into a CLI), run
 it before handing the JSON over. A green read-through is not the same guarantee: the
 validator catches structural rules — like Test 3 above — that no amount of careful

@@ -109,9 +109,17 @@ autorização, não reescreve as tarefas desse plano.
 ## Modelos, esforço, monitoramento e encerramento
 
 O usuário pode definir `planning.model/effort` e `execution.model/effort`
-independentemente. Recomende maior capacidade para ambiguidade de domínio, contratos,
-segurança, dependências ou revisão; use capacidade menor para inventário, reconciliação
-e formatação quando o risco estiver fechado. Não substitua uma escolha explícita.
+independentemente. O maior modelo permitido é `gpt-6-sol`, com esforço até
+`medium`. Use
+`gpt-6-sol`/`medium` para ambiguidade de domínio, contratos, segurança,
+dependências, implementação comportamental e revisão substantiva. Use
+`gpt-6-luna`/`high` para inventário, reconciliação e formatação
+com fonte e critério de aceite fechados. Não recomende `gpt-6-astra` nem esforço
+abaixo de `high` para Luna ou acima de `medium` para Sol. Preserve uma escolha
+explícita que respeite esses limites;
+se ela for insuficiente, reduza o escopo ou exponha a limitação, sem elevar o
+modelo silenciosamente. Ao criar tarefas, registre o modelo e o esforço efetivos
+e confira que ambos respeitam o teto.
 
 Crie monitoramento recorrente somente com autorização explícita. Uma automação já
 ativa pode continuar somente durante o escopo e a duração registrados; nunca a reative

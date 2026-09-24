@@ -1,6 +1,6 @@
 ---
 name: nuxt-component-harden
-description: Use when one Vue/Nuxt component must be rendered in isolation across its states and viewports to fix visual breakage and polish its UX (spacing, typography, hierarchy) until it stabilizes against the project design guides. Symptoms — a single SFC looks off or breaks at some breakpoints, needs a spacing/font pass, "test this component on the main screens and make it nicer".
+description: Use para renderizar e corrigir um único componente Vue em estados e viewports definidos.
 ---
 
 # Nuxt Component Harden

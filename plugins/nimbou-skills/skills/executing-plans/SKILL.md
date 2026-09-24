@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-description: Use when you have an approved wave-structured plan and want it executed wave by wave, fanning each wave's tasks out to parallel implementer subagents, committing once per wave, and running spec compliance review as a non-blocking subagent whose findings feed an end-of-plan follow-ups artifact.
+description: Use when you have an approved wave-structured plan and want it executed wave by wave with one commit per wave and an end-of-plan follow-ups artifact.
 ---
 
 # Executing Plans
@@ -19,63 +19,18 @@ This restriction applies to persistent project E2E coverage, not to the ephemera
 
 ## Overview
 
-Load the plan, review it critically, confirm it is wave-structured, then hand it to an executor. Inside a wave, implementer subagents run in parallel: short same-Role tasks may share setup, while medium and long tasks get their own lanes whenever their write sets are disjoint. Each wave is committed as soon as its tasks land and verify. Every task is driven by its own failing test, and the red run is reported as evidence. Two **non-blocking** reviewers run once at the end — spec compliance against the plan, and a boundary lens over the diff; their findings never gate progression, they accumulate into `<plan>.followups.md`. Those follow-ups are then executed, not just filed. Last, when the plan touched frontend files, a browser smoke verifies the promised flows on screen. Full code review is deliberately **not** part of this skill: run `/code-review` over the branch when the change warrants a further pass.
+Load the plan, review it critically, and execute its waves in order. Use parallel implementer subagents only when the user explicitly authorized multi-agent work; otherwise run each task in the current task. Each wave is committed as soon as its tasks land and verify. Every task is driven by its own failing test, and the red run is reported as evidence. Spec compliance and boundary review run once at the end; findings accumulate into `<plan>.followups.md` and are then executed. When the plan touched frontend files, a browser smoke verifies the promised flows on screen. Full code review is a separate pass over the branch when the change warrants it.
 
-Parallelism only happens within a wave, exactly as the plan declares it. Waves stay sequential because later waves consume contracts earlier waves produce. Reviews run alongside execution, not in front of it.
+When authorized, parallelism only happens within a wave, exactly as the plan declares it. Waves stay sequential because later waves consume contracts earlier waves produce.
 
 **Why fan out:** `nestjs-plan`, `laravel-plan`, and `nuxt-plan` guarantee that tasks inside a wave are parallel-safe — no shared file writes, no implicit ordering.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-## Routing: where the run actually happens
+## Routing: Codex execution
 
-**This file is a router. It owns Step 1 and nothing else executable.** The body of
-the run — the per-task fan-out, the per-wave commit, the spec review, the follow-ups,
-the browser smoke — lives in `./prose-execution.md` and in the `run-waves` workflow. The split is
-deliberate: with an executable prose path and a workflow in the same document, the
-prose wins by default and the workflow never runs. Pick one, in this order:
-
-**Claude Code — use the workflow.** Once Step 1 is done, launch:
-
-```
-/nimbou-skills:run-waves docs/plans/<plan>.md
-```
-
-Then read the returned report and surface it per Output Discipline below. Do **not**
-walk `./prose-execution.md` turn by turn when the workflow is available — that is the
-slow path, and running it by hand is the mistake this split exists to prevent.
-
-**Codex — follow `./prose-execution.md`.** Codex does not run workflows. The prose
-path is complete and end to end there.
-
-**Claude Code without workflows — follow `./prose-execution.md`, and say so.** Dynamic
-workflows can be off: disabled in `/config`, `disableWorkflows` in settings, turned off
-org-wide in managed settings, or a Claude Code older than v2.1.154. Announce that you
-are on the prose path before starting, so the slower run is a visible choice rather
-than a silent regression.
-
-`./prose-execution.md` is **normative**. `workflows/run-waves.js` mirrors it; when the
-two disagree, the prose file wins and the workflow is the bug.
-
-### What the workflow gets you
-
-- task results stay in script variables instead of the controller's context
-- a stopped run resumes without re-running completed tasks
-- the orchestration is a file you can read, diff, and rerun
-- mechanical steps (parse, commit, follow-ups artifact) run on a small model at low
-  effort, and implementers get their spec as a line range into the plan rather than
-  as re-emitted prose — both are cost decisions a hand-walked prose run will not make
-
-### What the workflow cannot do
-
-It enforces the structural guards on its own — it still refuses a plan without
-`## Ondas de Execução`, and still adds the final `nestjs-test` wave when a
-`nestjs-plan` forgot to declare one, recording that as a `concern`.
-
-What it cannot do is Step 1's judgement: spotting a missing assumption, a
-contradiction between two waves, or a requirement the plan never covered. A workflow
-takes no user input mid-run, so there is nobody to raise it to. **Step 1 always runs
-here, in conversation, first.**
+This file owns Step 1. After reviewing the plan, follow `./prose-execution.md`
+for Steps 2-5. That file is the normative execution path.
 
 ## Step 1: Load and Review
 
@@ -125,7 +80,7 @@ Return to Step 1 when:
 - the approach needs rethinking
 - a blocker shows the plan is incomplete or inconsistent
 
-When the blocker is an omitted integration implied by the closed contract, amend the plan and resume from the affected wave after rechecking its write sets and verification. A stopped Claude workflow may be relaunched after that repair; do not treat its stop as a request for user approval.
+When the blocker is an omitted integration implied by the closed contract, amend the plan and resume from the affected wave after rechecking its write sets and verification. Resume from the affected wave after the repair; do not treat the stop as a request for user approval.
 
 ## Remember
 
@@ -136,12 +91,12 @@ commit-per-wave, end-of-plan spec review, follow-up execution — belong to
 - review the plan critically first — Step 1 is this file's only executable content
 - anchor the run to one absolute checkout before dispatching anything, and stop a wave whose reported files are not in it
 - wave mode only — refuse plans without `## Ondas de Execução`
-- on Claude Code, delegate Steps 2-5 to `/nimbou-skills:run-waves`; walk `./prose-execution.md` by hand only when workflows are unavailable, and announce it
+- follow `./prose-execution.md` for Steps 2-5
 - never let reviewer output gate a wave — findings feed `<plan>.followups.md`; full code review is `/code-review` over the branch, not part of this skill
 - close a frontend-touching run with the browser smoke — a skipped smoke is reported as a gap, never as a pass
 - run `nestjs-test` as the final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (explicit suite paths only — never an unfiltered `pnpm test`)
 - stop when blocked by implementation, not by reviewer output
-- do not start implementation on a long-lived branch (`main`, `master`, `dev`, `develop`, `staging`, `production`) without explicit user consent — on the workflow path that is a hard stop, overridable with `allowDefaultBranch: true`
+- do not start implementation on a long-lived branch (`main`, `master`, `dev`, `develop`, `staging`, `production`) without explicit user consent
 
 ## Integration
 
@@ -153,12 +108,9 @@ Required workflow skills:
 - `nimbou-skills:nestjs-test` — REQUIRED final wave when the plan came from `nestjs-plan`, scoped strictly to the files this plan changed (no full-suite runs)
 - `nimbou-skills:browser-smoke` — Step 5, in `report` mode, when the committed diff touched frontend files. The only lens here that looks at the running application; in Codex it prefers the integrated browser, then Chrome DevTools MCP, then Playwright as the automatic fallback. It skips itself cleanly only when no driver is available
 
-Execution body — see Routing above for which one applies:
+Execution body: `./prose-execution.md` — Steps 2-5, normative.
 
-- `./prose-execution.md` — Steps 2-5, normative.
-- `/nimbou-skills:run-waves` — the same Steps 2-5 as a script. The default on Claude Code.
-
-Local templates, used by both paths:
+Local templates:
 
 - `./implementer-prompt.md` — per-task implementer subagent prompt, dispatched in parallel inside a wave
 - `./spec-reviewer-prompt.md` — spec compliance reviewer prompt (one subagent at the end of the run, over every committed wave)
@@ -169,7 +121,7 @@ Local templates, used by both paths:
 When execution completes or stops, report:
 
 - which waves were executed and committed, and how many implementer subagents ran in each
-- the run's total agent count, broken down by phase. The workflow returns it as `agentsDispatched`; on the prose path, count as you dispatch. A plan's task count is not its dispatch count, and the phases after the last wave — two reviewers over every commit, one fixer per file group, the smoke and its own fixes — are invisible from the plan. Report the number so the next plan can be shaped against it
+- the run's total agent count, broken down by phase. Count agents as you dispatch. A plan's task count is not its dispatch count, and the phases after the last wave — two reviewers over every commit, one fixer per file group, the smoke and its own fixes — are invisible from the plan. Report the number so the next plan can be shaped against it
 - what each reviewer returned (✅ / ❌ / ⚠️ Deferred), attributed per wave
 - that every task reported a red run, or which ones did not
 - which lenses ran (red runs, spec compliance, boundaries, browser smoke), so the user can judge whether `/code-review` over the branch is worth it before merging

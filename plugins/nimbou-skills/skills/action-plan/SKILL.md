@@ -1,6 +1,6 @@
 ---
 name: action-plan
-description: 'Transforma um objetivo de trabalho, mesmo cru, num plano de ação executável em PDF via entrevista estruturada (5W2H + PDCA + GTD), do plano pequeno ao programa multi-fase. Use quando o usuário pedir plano de ação/de trabalho, planejamento de projeto ou iniciativa, roadmap de execução, 5W2H, PDCA, "como tiro isso do papel", ou trouxer meta/OKR sem saber executar — mesmo sem dizer "plano". Também no modo revisão, para fechar um ciclo e gerar a próxima versão (v2, v3…). NÃO use para tarefas pessoais triviais nem backlog já estruturado em Jira/Asana.'
+description: Crie ou revise um plano de ação em PDF para um objetivo de trabalho ainda sem execução clara.
 ---
 
 # Plano de Ação
@@ -54,7 +54,7 @@ Use **Perguntas Poderosas**: qual é o resultado real (não a atividade)? Por qu
 
 Saída da fase: **objetivo em uma frase, com indicador e prazo**. Se não dá para medir se foi atingido, ainda não é objetivo — é desejo.
 
-**Confirme o objetivo campo a campo, com opções, antes de seguir.** O objetivo é a raiz do plano — se ele estiver torto, todo o resto herda o erro, e aqui é onde consertar é mais barato. Use um único `AskUserQuestion` (até 4 sub-perguntas por chamada) e ofereça **opções concretas** para cada campo que você **inferiu ou reformulou** — nunca para o que o usuário já ditou literal:
+**Confirme o objetivo campo a campo, com opções, antes de seguir.** O objetivo é a raiz do plano — se ele estiver torto, todo o resto herda o erro, e aqui é onde consertar é mais barato. Ofereça, numa rodada concisa, **opções concretas** para cada campo que você **inferiu ou reformulou** — nunca para o que o usuário já ditou literal:
 
 - **Resultado (frase)**: ofereça 2-3 reformulações — a sua proposta + variações de escopo (mais estreita / mais ampla).
 - **Indicador**: ofereça os candidatos de métrica ("churn mensal %" vs "nº de cancelamentos" vs "NRR").
@@ -90,14 +90,14 @@ Cada ação **da fase ativa** carrega o 5W2H completo — *o quê, por quê, que
 
 Estruturar marcos é a decisão mais cara do plano: é onde o objetivo vira arquitetura. **Não detalhe ações (fase 4) sobre marcos que o usuário ainda não confirmou** — detalhar um marco errado é o retrabalho mais caro de desfazer.
 
-Volte ao usuário com os marcos propostos e confirme, via `AskUserQuestion`, sempre com **opções para clicar**. Duas camadas:
+Volte ao usuário com os marcos propostos e confirme com opções claras, usando a interface estruturada quando disponível. Duas camadas:
 
 **Camada 1 — o conjunto (uma rodada):**
 
 1. **O conjunto está certo?** Apresente os marcos como lista curta (estado do mundo, não tarefa). Falta algum? Sobra algum? Deixe o usuário adicionar/remover.
 2. **A sequência e o corte de fase.** Qual marco vem primeiro? Onde termina a fase que começa agora e onde começa a próxima? (é o que separa **fase ativa** de **roadmap**). Confirme aqui também o **porte** inferido.
 
-**Camada 2 — item a item de cada marco, com opções, só onde necessário.** Para cada marco confirmado, confirme os campos que você **inferiu** (não os que o usuário ditou), oferecendo opções — um `AskUserQuestion` por marco (agrupe os marcos leves numa chamada só):
+**Camada 2 — item a item de cada marco, com opções, só onde necessário.** Para cada marco confirmado, confirme os campos que você **inferiu** (não os que o usuário ditou), oferecendo opções — uma pergunta por marco quando necessário (agrupe os marcos leves):
 
 - **Nome / resultado verificável**: ofereça a formulação como estado do mundo + variações ("Cobrança recorrente em produção" vs "Cobrança recorrente para clientes novos"). É aqui que "estudar concorrentes" é flagrado como não-marco antes de custar caro.
 - **Prazo**: ofereça datas candidatas (não deixe o usuário digitar do zero se você já tem âncoras).
@@ -144,12 +144,12 @@ Verbos suspeitos: melhorar, otimizar, alinhar, acompanhar, revisar, estruturar, 
 
 ## Como conduzir a entrevista
 
-Use `AskUserQuestion` com opções concretas — o usuário responde clicando, e opções bem-formadas já fazem metade do trabalho de decomposição.
+Ofereça opções concretas na interface estruturada quando ela estiver disponível; caso contrário, use texto conciso.
 
 **Orçamento em duas naturezas diferentes — não as confunda:**
 
 - **Descoberta (fases 1-2): 5 a 8 perguntas abertas**, em 2 ou 3 rodadas. É o orçamento caro: pergunta aberta cansa. Cubra, nesta ordem: resultado real e indicador → prazo/ciclo → quem está envolvido (nomes) → restrições (orçamento, time, sistemas, legal) → o que já foi tentado → o que já existe pendente (captura). Passar disso e o usuário abandona na fase mais valiosa.
-- **Confirmação por opções (objetivo ao fim da fase 1; marcos no portão fase 3→4): barato, pode ser item a item.** Aqui o usuário **clica** em vez de redigir, então a régua não é "quantas perguntas" e sim "confirme só o que você inferiu". Agrupe até 4 campos por chamada de `AskUserQuestion`. Regra: campo que o usuário ditou exato → confirme no resumo, não pergunte; campo que você preencheu por inferência → ofereça opções e deixe ele escolher. Uma rodada de opções para o objetivo, mais uma por marco de peso (agrupando os leves).
+- **Confirmação por opções (objetivo ao fim da fase 1; marcos no portão fase 3→4): barato, pode ser item a item.** Confirme só o que você inferiu; agrupe campos relacionados em uma rodada curta. Regra: campo que o usuário ditou exato → confirme no resumo, não pergunte; campo que você preencheu por inferência → ofereça opções e deixe ele escolher. Uma rodada de opções para o objetivo, mais uma por marco de peso (agrupando os leves).
 
 Descubra e estruture primeiro; confirme (objetivo e marcos) depois, sempre por opções. Confirmar marcos antes de ter capturado é confirmar um palpite.
 
@@ -184,7 +184,7 @@ Monte o plano num `plano.json` e rode o script — ele já produz layout, tabela
 python3 "<skill-dir>/scripts/build_plan_pdf.py" plano.json plano_v1.pdf
 ```
 
-O script fica no diretório da skill, não no diretório de trabalho — use o caminho absoluto da pasta da skill (em Claude Code, `${CLAUDE_SKILL_DIR}`; em outros ambientes, o caminho da pasta). Ele depende de `reportlab`: se faltar, `pip install reportlab` (ou `pip install --break-system-packages reportlab`).
+O script fica no diretório da skill, não no diretório de trabalho — use o caminho absoluto da pasta da skill (use o caminho da pasta da skill no Codex). Ele depende de `reportlab`: se faltar, `pip install reportlab` (ou `pip install --break-system-packages reportlab`).
 
 O schema completo está em `references/schema.md`. Estrutura mínima (os campos `escopo` e `fases_futuras` só aparecem em plano grande/programa):
 

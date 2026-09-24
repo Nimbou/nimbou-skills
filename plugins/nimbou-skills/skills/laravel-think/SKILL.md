@@ -1,6 +1,6 @@
 ---
 name: laravel-think
-description: Use before designing or implementing a conventional Laravel backend, especially when API contracts, authorization, Eloquent persistence, transactions, queues, or a Nuxt consumer must be reconciled. Not for the Nimbou CMS shell.
+description: Desenhe um backend Laravel convencional antes de implementar contratos, autorização ou persistência.
 ---
 
 # Laravel Think

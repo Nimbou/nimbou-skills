@@ -1,6 +1,6 @@
 ---
 name: roadmap-orchestration
-description: Use when turning an idea, approved specification, or feature inventory into an execution roadmap, coordinating authorized Codex tasks and PRs across real dependencies, or resuming that coordination safely.
+description: Coordene entregas, tarefas Codex e PRs autorizados em um roadmap com dependências reais.
 ---
 
 # Roadmap Orchestration
@@ -59,8 +59,10 @@ PR e peça confirmação explícita via `merge-pr`.
 
 Guarde identificadores e evidências curtas, não históricos completos. Faça snapshots
 compactos e só acompanhe novamente diante de mudança acionável. Registre modelos e
-esforços diferentes para planejamento e execução; não imponha baixo esforço a decisão
-de arquitetura, dependência ou merge.
+esforços diferentes para planejamento e execução conforme
+[references/operating-model.md](references/operating-model.md). O teto é
+`gpt-6-sol`/`medium`; uma decisão de arquitetura, dependência ou merge que não caiba
+nesse teto precisa de escopo menor ou mais evidência, sem escalada de modelo.
 
 ## Saída mínima
 

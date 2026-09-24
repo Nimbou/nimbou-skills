@@ -1,6 +1,6 @@
 ---
 name: nuxt-design-composition
-description: Use when shaping the overall composition, hierarchy, and narrative of a Nuxt 4 + Vuetify 4 interface — landing pages, first viewports, page sequences, or product UI shells (dashboards, admin, workspaces). Pairs with nuxt-design-posture for micro aesthetic details (fonts, color tokens, CSS bans).
+description: Defina a hierarquia, sequência e composição geral de uma interface Nuxt/Vuetify.
 ---
 
 # Nuxt Design — Composition

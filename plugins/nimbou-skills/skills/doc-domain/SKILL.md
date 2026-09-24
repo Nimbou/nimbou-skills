@@ -1,6 +1,6 @@
 ---
 name: doc-domain
-description: Use when a backend or Nuxt feature needs one framework-neutral business-domain map of terms, states, transitions, invariants, and derived statuses before planning or test generation.
+description: Map business terms, states, and invariants before planning a backend or Nuxt feature.
 ---
 
 # Doc Domain
@@ -23,7 +23,7 @@ Use this from `nuxt-think`, `nestjs-think`, or `laravel-think` during specificat
 
 ## Rules
 
-- support only Claude Code and Codex
+- support Codex only
 - document one domain per run
 - write states in `UPPER_CASE`
 - keep derived statuses separate from real states

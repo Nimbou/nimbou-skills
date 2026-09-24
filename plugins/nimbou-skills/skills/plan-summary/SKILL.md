@@ -1,6 +1,6 @@
 ---
 name: plan-summary
-description: Use quando um plano de ação (action-plan / plano-de-acao) já existe e um stakeholder que NÃO executa o plano — direção, gerência geral, patrocinador — precisa acompanhá-lo sem ler o documento de execução inteiro. Gera um PDF de uma página (altura dinâmica) com linha do tempo. Gatilhos "resumo executivo do plano", "versão de uma página pra gerência", "folha de acompanhamento", "linha do tempo do plano pra diretoria".
+description: Gere um resumo executivo em PDF de um plano de ação já existente.
 ---
 
 # Resumo Executivo de Plano de Ação

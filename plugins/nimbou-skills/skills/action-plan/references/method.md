@@ -48,7 +48,7 @@ As respostas dizem se você está diante de um plano pequeno/médio (um ciclo) o
 
 Fechada a Fase 1, você tem um objetivo *proposto* — quase sempre reformulado a partir do que o usuário disse. Confirme-o antes de capturar, porque o objetivo é a raiz: erro aqui contamina marcos, ações e indicadores, e consertar depois custa o plano inteiro.
 
-Um `AskUserQuestion` (até 4 sub-perguntas), **opções concretas** por campo, só para o que você inferiu:
+Uma rodada concisa de **opções concretas** por campo, só para o que você inferiu. Use a interface estruturada quando disponível:
 
 | Campo | Opções que você oferece |
 |---|---|
@@ -126,7 +126,7 @@ Se a ação começa com "definir", "decidir" ou "entender", ela ainda é um proj
 
 Entre estruturar (fase 3) e detalhar (fase 4) existe uma decisão que não pode ser presumida: **o usuário concorda com esta arquitetura de marcos?** Detalhar 5W2H e ação de 48h sobre um marco que o usuário vai rejeitar é o retrabalho mais caro do processo. Por isso este portão é obrigatório e explícito.
 
-Conduza a confirmação por `AskUserQuestion`, sempre com **opções para clicar**, em duas camadas.
+Conduza a confirmação com opções claras, usando a interface estruturada quando disponível, em duas camadas.
 
 **Camada 1 — o conjunto (uma rodada):**
 
@@ -135,7 +135,7 @@ Conduza a confirmação por `AskUserQuestion`, sempre com **opções para clicar
 
 **Camada 2 — item a item de cada marco, com opções, só onde necessário:**
 
-Para cada marco confirmado, confirme os campos que **você inferiu** — não os que o usuário ditou. Um `AskUserQuestion` por marco (agrupe os leves numa chamada), oferecendo opções:
+Para cada marco confirmado, confirme os campos que **você inferiu** — não os que o usuário ditou. Agrupe marcos leves numa pergunta, oferecendo opções:
 
 | Campo do marco | Opções que você oferece |
 |---|---|

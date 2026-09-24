@@ -1,6 +1,6 @@
 ---
 name: docx-builder-gen
-description: Use this skill to turn a mail-merge .docx template into a NestJS docx builder. Trigger when the user asks to "gerar builder do docx", "criar builder a partir do template", "docx-builder-gen <arquivo.docx> <NomeBuilder>", or wants TypeScript code (builder class + context interface + module registration) generated from a Word document prepared with mail-merge fields.
+description: Gere um builder NestJS a partir de um template Word com campos de mala direta.
 ---
 
 # DOCX Builder Generator

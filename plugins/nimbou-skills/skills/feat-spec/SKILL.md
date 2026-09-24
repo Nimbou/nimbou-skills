@@ -55,9 +55,9 @@ Before routing to backend contract design:
 
 ## How To Ask The User
 
-When any decision above resolves to 2-4 discrete, mutually-exclusive options, use the `AskUserQuestion` tool instead of free-form prose. The structured UI keeps shared decisions auditable on both sides of the boundary.
+For material discrete decisions, offer concise options through the structured question UI when available, or in text otherwise.
 
-Use `AskUserQuestion` for:
+Ask when these decisions remain unresolved:
 
 - contract shape (chunky/batch vs chatty)
 - update payload posture (partial vs full replacement)
@@ -65,9 +65,9 @@ Use `AskUserQuestion` for:
 - where lifecycle state lives (client-derived vs server-authoritative)
 - error-mapping posture (transport-level vs domain-shaped errors)
 
-Lead with your recommendation as the first option and append `(Recommended)` to its label. Keep options to 2-4. Use free-form text only when the answer is genuinely open (naming, descriptions, free-text rationale).
+Lead with a recommendation and its trade-off. Use free-form text for genuinely open answers.
 
-Do not use `AskUserQuestion` for:
+Do not ask for:
 
 - yes/no confirmations of an obvious next step
 - plan-approval gates — do not ask for them; continue unless the user explicitly requests a review checkpoint

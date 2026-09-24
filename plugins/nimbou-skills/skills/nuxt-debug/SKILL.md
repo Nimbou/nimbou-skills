@@ -1,6 +1,6 @@
 ---
 name: nuxt-debug
-description: Use for Nuxt/Vuetify browser bugs, hydration issues, or flaky frontend behavior before proposing fixes. Prefer Chrome DevTools MCP evidence first; use Playwright only on the user's explicit request when scripted reproduction is required.
+description: Investigue bugs de navegador, hidratação ou comportamento instável em Nuxt/Vuetify.
 ---
 
 # Nuxt Systematic Debugging
@@ -21,11 +21,13 @@ A guessed selector change, watcher tweak, or SSR guard is still guessing if you 
 
 ## Tool Bias
 
-This skill is Codex-first and dual-harness friendly.
-
 Prefer live evidence from the browser before editing code.
 
-### Primary path in Codex: Chrome DevTools MCP
+### Browser evidence
+
+Use the Codex integrated browser when available to inspect the rendered state and
+reproduce the interaction. Use Chrome DevTools MCP when the integrated browser
+cannot expose the console, network, or performance evidence the bug requires:
 
 - use `mcp__chrome-devtools__take_snapshot` to inspect the rendered accessibility tree
 - use `mcp__chrome-devtools__list_console_messages` for hydration, runtime, and Vue warnings
@@ -44,8 +46,8 @@ explicitly requests it and:
 - the failure already exists in E2E coverage
 - a visual or multi-step regression needs a repeatable script
 
-If DevTools MCP is unavailable in the current harness, use application logs. Fall back to
-Playwright only when the user explicitly requested it. Do not require `js_repl`, helper
+If neither browser path is available, use application logs. Fall back to
+Playwright only when the user explicitly requested it. Do not require helper
 scripts, or a repo-specific browser wrapper that does not exist in this project.
 
 ## When To Use

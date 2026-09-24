@@ -1,6 +1,6 @@
 ---
 name: browser-smoke
-description: Use only when the user explicitly asks for browser verification of a frontend change, or when nimbou-skills:executing-plans invokes it after executing a frontend-touching plan.
+description: Verify a frontend change in a browser when requested or at the end of an executing-plans run.
 ---
 
 # Browser Smoke

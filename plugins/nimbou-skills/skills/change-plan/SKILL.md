@@ -9,7 +9,7 @@ description: Use when a small change or bugfix touches both a NestJS or Laravel 
 
 ## Overview
 
-Single entry point for a **small** fullstack change (NestJS or Laravel + Nuxt). Detect the backend from the repository before selecting platform rules. When the work is small, this skill produces one wave-structured plan that `run-waves`/`executing-plans` runs directly — no domain-artifact gate or separate spec step. Its tasks still declare `Estimativa` so the executor can choose setup-sharing only for short work. When the work is not small, it routes to the heavier path instead of under-planning it.
+Single entry point for a **small** fullstack change (NestJS or Laravel + Nuxt). Detect the backend from the repository before selecting platform rules. When the work is small, this skill produces one wave-structured plan that `executing-plans` runs directly — no domain-artifact gate or separate spec step. Its tasks still declare `Estimativa` so the executor can choose setup-sharing only for short work. When the work is not small, it routes to the heavier path instead of under-planning it.
 
 This skill **replaces `change-spec`**. It covers what `change-spec` covered (evolving an existing flow) and, additionally, small new features that span both stacks.
 
@@ -53,10 +53,10 @@ No domain artifacts are required. The **only** gate: when the change alters the 
 
 ## Producing the Plan
 
-Once the gate says "stay," follow **REQUIRED SUB-SKILL:** `change-plan/plan-generation.md`. It writes a `run-waves`-ready plan to `docs/plans/change-plan-<slug>.md` and defers platform rules to `fullstack-plan`, the detected backend planner, and `nuxt-plan`.
+Once the gate says "stay," follow **REQUIRED SUB-SKILL:** `change-plan/plan-generation.md`. It writes a `executing-plans`-ready plan to `docs/plans/change-plan-<slug>.md` and defers platform rules to `fullstack-plan`, the detected backend planner, and `nuxt-plan`.
 
 ## Integration
 
 - **Replaces** `change-spec`.
-- Downstream (small): `nimbou-skills:executing-plans` / `run-waves` consume the plan directly.
+- Downstream (small): `nimbou-skills:executing-plans` consume the plan directly.
 - Escalation: `nimbou-skills:feat-spec` (new) or the detected backend think skill + `nimbou-skills:nuxt-think` → `nimbou-skills:fullstack-plan` (existing).

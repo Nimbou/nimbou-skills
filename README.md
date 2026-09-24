@@ -1,17 +1,11 @@
 # nimbou-skills
 
-`nimbou-skills` is the canonical skill library for `Claude Code`, `Codex`, and `VS Code Copilot Chat`. It ships backend workflows for `NestJS + Prisma` and conventional `Laravel + Eloquent`, plus Nuxt/Vuetify skills and Codex-only mirrors for Claude command workflows under `.codex/skills/`.
-
-This fork consolidates:
-- backend-first workflow skills
-- NestJS auditing skills
-- Nuxt/Vuetify skills
-- Claude commands and Codex integration
+`nimbou-skills` is a Codex skill library for NestJS/Prisma, Laravel/Eloquent, and Nuxt/Vuetify workflows.
 
 ## Skill Model
 
-- Supported harnesses: `Claude Code` and `Codex`
-- VS Code integration: shared skills in `~/.copilot/skills` and agents in `~/.config/Code/User/prompts`
+- Supported environment: Codex
+- Model policy: `gpt-6-sol` at most `medium`; `gpt-6-luna` at least `high` (normally `high` for bounded mechanical work)
 - Backend architecture follows the detected stack and the target project's local conventions
 - Use `nestjs-*` for NestJS/Prisma, `laravel-*` for conventional Laravel/Eloquent, `nimbou-cms-*` for the Nimbou CMS shell, and `nuxt-*` for frontend work
 
@@ -71,67 +65,25 @@ plugin.
 
 ## Repository Layout
 
-- `plugins/nimbou-skills/skills/` — shared skill library
-- `plugins/nimbou-skills/agents/` — auxiliary review and auditing agents
-- `plugins/nimbou-skills/commands/` — Claude command entrypoints such as `/design-md` and `/merge-pr`
-- `plugins/nimbou-skills/workflows/` — Claude Code dynamic workflows such as `/nimbou-skills:run-waves` (Claude Code only; Codex does not run these)
-- `~/.codex/skills/` — Codex skill links installed from the shared library and command mirrors
-- `.codex/skills/` — Codex-only mirrors for the Claude command workflows
-- `.agents/plugins/marketplace.json` — repo-scoped Codex marketplace catalog
-- `.claude-plugin/marketplace.json` — marketplace manifest for `claude plugin marketplace add`
+- `plugins/nimbou-skills/skills/` — Codex skill library, including `design-md` and `merge-pr`
+- `plugins/nimbou-skills/.codex-plugin/plugin.json` — Codex plugin manifest
+- `.agents/plugins/marketplace.json` — repository marketplace catalog
 - `docs/plans/` — generated plans and design artifacts
-- `tests/` — skill tree, install flow, and catalog coverage
+- `tests/` — skill and catalog coverage
 
 ## Installation
 
-Clone the repository once into `/var/www` and run the single bootstrap script:
+Clone the repository into `/var/www/nimbou-skills` and run:
 
 ```bash
-cd /var/www
-git clone <your-fork-url> nimbou-skills
-cd /var/www/nimbou-skills
 ./install.sh
 ```
 
-The bootstrap script:
-- runs `pnpm install`
-- registers and installs the Claude Code plugin
-- installs the same plugin into GitHub Copilot CLI from the local repo path
-- links the shared skills and Codex command mirrors into `~/.copilot/skills` for VS Code Copilot Chat
-- links the review and auditing agents into `~/.config/Code/User/prompts` and `~/.config/Code/User/prompts/agents`
-- links the shared skills and Codex command mirrors into `~/.codex/skills`
-- compares the installed Claude Code plugin version against `plugins/nimbou-skills/.claude-plugin/plugin.json` and skips reinstall when it already matches
-- requires Codex `rust-v0.121.0+` or newer for marketplace installation
-- registers the Codex marketplace from the repository root, backed by `.agents/plugins/marketplace.json`, and marks `nimbou-skills` as installed by default
-- runs `npm link` for `nb-catalog`
-- installs `@google/design.md` globally into the same local npm prefix so `design.md lint` is available
-- creates `~/.local/bin/codex-full` when missing, wired to `codex --dangerously-bypass-approvals-and-sandbox`
-- creates `~/.local/bin/chrome-devtools-mcp-wayland` and rewrites `~/.codex/config.toml` so the `chrome-devtools` MCP inherits the local X/Wayland session automatically
-
-If your installed Codex build does not support `codex plugin marketplace add`, upgrade to `rust-v0.121.0+` or newer and rerun `./install.sh`.
-
-After the bootstrap finishes, restart Claude Code and Codex, then reload VS Code so VS Code Copilot Chat picks up the updated skills and agents.
-If Codex already had a session open, close it fully and start a new one so it reloads `~/.codex/skills`.
+The bootstrap installs local dependencies, registers the Codex marketplace, links skills into `~/.codex/skills`, installs `nb-catalog` and `@google/design.md`, and configures the Codex wrapper and Chrome DevTools MCP wrapper. Codex `rust-v0.121.0+` is required for marketplace installation. Restart Codex after installation.
 
 ### Installation (Windows / PowerShell)
 
-On Windows, run the PowerShell bootstrap instead of `install.sh` (PowerShell 7+ required):
-
-```powershell
-cd C:\www
-git clone <your-fork-url> nimbou-skills
-cd C:\www\nimbou-skills
-pwsh -File .\install.ps1
-```
-
-`install.ps1` mirrors the Linux flow with these Windows-specific differences:
-- installs `nb-catalog` and `@google/design.md` under the npm prefix `%USERPROFILE%\.local`, and adds that directory to your user `PATH`
-- links the shared skills and Codex command mirrors into `%USERPROFILE%\.codex\skills` and `%USERPROFILE%\.copilot\skills` as directory junctions (no administrator or Developer Mode required)
-- copies the review and auditing agents into `%APPDATA%\Code\User\prompts` and `%APPDATA%\Code\User\prompts\agents` (Windows cannot junction individual files)
-- creates `%USERPROFILE%\.local\codex-full.cmd`, wired to `codex --dangerously-bypass-approvals-and-sandbox`
-- skips the `chrome-devtools-mcp-wayland` wrapper and the `config.toml` rewrite, which are specific to Linux Wayland/X11 sessions
-
-After it finishes, restart Claude Code, Codex, and VS Code, and open a new terminal so the updated `PATH` takes effect.
+Run `pwsh -File .\install.ps1` with PowerShell 7+. It installs the same Codex skills and CLIs. The Wayland/X11 Chrome DevTools wrapper is Linux only.
 
 ## Nuxt Catalog Workflow
 
@@ -153,13 +105,13 @@ This workflow writes `components.meta.json` and `.generated/component-catalog/co
 
 `nuxt-catalog` defaults to `validate -> generate` and runs the bundled generator from this repository via `CATALOG_ROOT`.
 
-If a project wants a copied local fallback instead of depending on `/var/www/nimbou-skills` at runtime, copy `skills/nuxt-catalog/` into `.claude/skills/nuxt-catalog/` and run `.claude/skills/nuxt-catalog/scripts/install.sh <project-root>`.
+If a project wants a copied local fallback instead of depending on `/var/www/nimbou-skills` at runtime, copy `skills/nuxt-catalog/` into `.agents/skills/nuxt-catalog/` and run `.agents/skills/nuxt-catalog/scripts/install.sh <project-root>`.
 
 ## Notes
 
-- `/design-md` and `/merge-pr` stay as Claude commands, with matching Codex mirrors in `.codex/skills/`.
+- `design-md` and `merge-pr` are Codex skills in `plugins/nimbou-skills/skills/`.
 - `/design-md` validates generated `DESIGN.md` files with the official Google CLI via `design.md lint` (or `npx @google/design.md lint` as fallback).
-- `change-plan` is the single entry point for a small fullstack change (existing flow or a small new feature). It emits a `run-waves`-ready plan directly, with no domain-artifact gate, and escalates to `feat-spec` or `fullstack-plan` when a size threshold trips. It replaces the former `change-spec`.
+- `change-plan` is the single entry point for a small fullstack change (existing flow or a small new feature). It emits a plan ready for `executing-plans` directly, with no domain-artifact gate, and escalates to `feat-spec` or `fullstack-plan` when a size threshold trips. It replaces the former `change-spec`.
 - `feat-spec` is the mixed-request entry point for a large new feature or a new backend contract. It closes the shared feature contract and ownership boundary first, then detects the backend and hands contract closure to `nestjs-think` or `laravel-think`. Frontend-only requests stay in `nuxt-think`; backend-only requests use the detected backend think skill.
 - `nestjs-think` keeps backend contract and persistence viability together, including Prisma/schema impact when relevant, instead of splitting data modeling into a separate default step.
 - `doc-openapi` publishes the canonical HTTP transport artifact beside `domain.md` and the approved `.feature` files after the selected backend think skill and before `nuxt-think`.
@@ -171,9 +123,7 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `nestjs-debug` handles NestJS, Prisma, and boundary failures across controller, use-case, repository, and transaction layers.
 - `nuxt-debug` is the Codex browser-debugging flow; `nuxt-test` turns the result into bounded coverage; `browser-smoke` is neither — it verifies once, right after building, that what a change promised actually happens on screen, and writes no tests.
 - `nuxt-audit` is the single frontend review pass; `executing-plans` runs wave-structured plans by fanning each wave's tasks out to parallel implementer subagents, committing once per wave, and collecting non-blocking spec-compliance findings into an end-of-plan follow-ups artifact. It runs **no code review**: `/code-review` over the branch covers that axis better in one pass than N per-wave passes. The spec reviewer stays because it holds the plan — it is the only thing that can tell a requirement never implemented from one never requested.
-- `executing-plans` is split by harness: `SKILL.md` owns Step 1 and the routing decision, `prose-execution.md` holds Steps 2-5 for Codex, and `/nimbou-skills:run-waves` runs the same Steps 2-5 as a Claude Code workflow. Keeping the executable body out of `SKILL.md` is what stops Claude from walking the slow prose path by default.
 - `roadmap-orchestration` turns an idea, specification, or feature inventory into an authorization-safe delivery roadmap. It reconciles existing Codex tasks and PRs before proposing work, keeps planning/implementation/review/smoke/PR/merge distinct, and routes implementation and merge to their dedicated skills. It never creates external work, starts a task, or merges a PR without the corresponding explicit authorization.
-- `prose-execution.md` is normative. `workflows/run-waves.js` mirrors it; when the two disagree, the prose file wins. Step 1 always runs in conversation, since a workflow takes no user input mid-run.
 - `e2e-test-quality` covers broader end-to-end reliability beyond one Nuxt module slice.
 - This fork intentionally removed upstream bootstrap hooks and unsupported harness integrations.
 

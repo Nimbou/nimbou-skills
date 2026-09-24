@@ -1,9 +1,12 @@
 ---
 name: dispatching-parallel-agents
-description: Use when facing 2+ independent failures or work items that can be investigated or implemented in parallel without shared state or sequential dependencies.
+description: Use quando o usuário autorizou agentes paralelos para trabalhos independentes.
 ---
 
 # Dispatching Parallel Agents
+
+Use this pattern only when the user explicitly requests multi-agent or parallel
+agent work. Independent work alone is not authorization to dispatch.
 
 ## Overview
 
@@ -14,6 +17,13 @@ This is a coordination pattern, not a full development workflow. It is for split
 When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
 
 **Core principle:** Dispatch one agent per independent problem domain, but never exceed the worker capacity available to the current Codex session.
+
+**Model policy:** use at most `gpt-6-sol` with `medium` reasoning for investigation or
+implementation that requires judgment; use `gpt-6-luna` at `high` for bounded
+mechanical work, never below `high`. Preserve an explicit user choice that meets
+these bounds. If a
+worker needs an explicit model, give it a self-contained prompt with
+`fork_turns: "none"`; do not inherit a controller model above the ceiling.
 
 ## When to Use
 

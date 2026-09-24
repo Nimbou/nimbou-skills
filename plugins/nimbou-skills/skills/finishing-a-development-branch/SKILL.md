@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: Use quando a implementação está concluída e o usuário quer integrar, manter ou descartar o branch.
 ---
 
 # Finishing a Development Branch
@@ -57,7 +57,8 @@ Or ask: "This branch split from main - is that correct?"
 
 ### Step 3: Present Options
 
-Present the 4 options using the `AskUserQuestion` tool. Do not narrate them as free-form prose.
+If the user has not already chosen the integration action, present the available options concisely. Use the structured question UI when available.
+If the user already chose an action, proceed directly to its applicable checks and execution.
 
 Question: "Implementation complete. What would you like to do?"
 
@@ -68,7 +69,7 @@ Options (in this order, single-select):
 3. **Keep as-is** — leave the branch and worktree untouched
 4. **Discard** — delete the branch and worktree (requires typed confirmation in Step 4)
 
-**Don't add explanation outside the option `description` fields** — keep the prompt tight.
+Explain the relevant consequences briefly.
 
 ### Step 4: Execute Choice
 
@@ -177,7 +178,7 @@ git worktree remove <worktree-path>
 
 **Open-ended questions**
 - **Problem:** "What should I do next?" → ambiguous
-- **Fix:** Present exactly 4 structured options via `AskUserQuestion`
+- **Fix:** Present the available options only when the user has not already chosen one
 
 **Automatic worktree cleanup**
 - **Problem:** Remove worktree when might need it (Option 2, 3)
@@ -198,7 +199,7 @@ git worktree remove <worktree-path>
 
 **Always:**
 - Verify tests before offering options, scoped to the branch's diff
-- Present exactly 4 options
+- Present integration options only when the user has not chosen an action
 - Get typed confirmation for Option 4
 - Clean up worktree for Options 1 & 4 only
 

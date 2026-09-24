@@ -1,6 +1,6 @@
 ---
 name: release-notes
-description: Use para gerar as Notas de Versão em PDF do Sistema de Gestão de Projetos da FAEPEN, destinadas a stakeholders e usuários (não a devs). Gatilhos "gere as notas de versão", "notas de versão da X.Y.Z", "novidades desde a X.Y.Z", "release notes pra gerência/usuários". Traduz o CHANGELOG técnico em linguagem de negócio, agrupa em frentes temáticas e aplica selos de fase (NOVO/ALPHA/BETA), com a identidade visual FAEPEN. NÃO use para changelog técnico bruto, para outros produtos, nem para versionar o PDF no repositório.
+description: Gere notas de versão em PDF para usuários do Sistema de Gestão de Projetos da FAEPEN.
 ---
 
 # Notas de Versão FAEPEN

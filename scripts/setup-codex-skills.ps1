@@ -1,7 +1,7 @@
 #Requires -Version 7
 
 # Windows counterpart of setup-codex-skills.sh.
-# Links the shared skills and Codex command mirrors into the Codex user
+# Links the plugin skills into the Codex user
 # skills directory using directory junctions (no admin/Developer Mode needed).
 
 $ErrorActionPreference = 'Stop'
@@ -9,7 +9,6 @@ $ErrorActionPreference = 'Stop'
 $ScriptDir = $PSScriptRoot
 $RepoRoot = Split-Path -Parent $ScriptDir
 $SharedSkillsDir = Join-Path $RepoRoot 'plugins\nimbou-skills\skills'
-$CodexCommandSkillsDir = Join-Path $RepoRoot '.codex\skills'
 $CodexSkillsDir = if ($env:CODEX_SKILLS_DIR) {
   $env:CODEX_SKILLS_DIR
 } else {
@@ -48,7 +47,7 @@ function Set-DirJunction {
 
 New-Item -ItemType Directory -Force -Path $CodexSkillsDir | Out-Null
 
-foreach ($skillsDir in @($SharedSkillsDir, $CodexCommandSkillsDir)) {
+foreach ($skillsDir in @($SharedSkillsDir)) {
   if (-not (Test-Path -LiteralPath $skillsDir)) { continue }
 
   Get-ChildItem -LiteralPath $skillsDir -Directory | ForEach-Object {

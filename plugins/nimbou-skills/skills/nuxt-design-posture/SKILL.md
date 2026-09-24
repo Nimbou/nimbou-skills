@@ -1,6 +1,6 @@
 ---
 name: nuxt-design-posture
-description: Use when the composition is already framed and the remaining decisions are micro-aesthetic — font selection, color tokens, spacing scale, motion techniques, and forbidden CSS patterns (border-left stripes, gradient text). Pairs with nuxt-design-composition (macro hierarchy, landing vs product UI) and /design-md (project guardrails).
+description: Ajuste tipografia, cor, espaçamento e movimento depois de definida a composição da interface Nuxt.
 ---
 
 # Nuxt Design — Posture

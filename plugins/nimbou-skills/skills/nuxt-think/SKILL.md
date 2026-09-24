@@ -1,6 +1,6 @@
 ---
 name: nuxt-think
-description: Explore Nuxt 4 + Vuetify 4 frontend requests, reuse the catalog when present, and return a structured design brief without editing code.
+description: Explore uma solicitação de frontend Nuxt/Vuetify e feche o desenho antes de planejar ou codar.
 ---
 
 # Nuxt Think
@@ -42,7 +42,7 @@ Treat `docs/domain/<domain>/` as the canonical specification bundle for the feat
 2. Read the nearest `DESIGN.md` and `GUIDELINES.md` that apply to the target area in the target project. If one or both do not exist, note that explicitly, continue, and suggest generating or refreshing them with `/design-md`.
 3. Classify the request as simple, medium, or complex.
 4. Search for reusable components by `tags`, `category`, and `domain`. Use `useWhen` only when the rich catalog includes it.
-5. Ask focused follow-up questions only when the request still has material ambiguity. When the question reduces to 2-4 discrete, mutually-exclusive options, use the `AskUserQuestion` tool — do not narrate the options as free-form prose.
+5. Ask focused follow-up questions only when the request still has material ambiguity. For discrete choices, offer concise options through the structured question UI when available, or in text otherwise.
 6. Close the design decisions that matter for implementation:
    - what product context affects the implementation posture, such as dense data, keyboard-heavy use, responsive priority, or long-session workflows
    - what screen, route, modal, or dashboard slice owns the work
@@ -64,7 +64,7 @@ Consult `nimbou-skills:nuxt-design-architecture`, the local `GUIDELINES.md`, and
 
 ## How To Ask The User
 
-Decisions inside this skill that should use `AskUserQuestion` when they resolve to 2-4 discrete options:
+Decisions inside this skill that may use a structured question UI when available:
 
 - which existing component or wrapper to reuse versus creating a new one
 - where state lives (child component, page, subtree composable, app-wide store)
@@ -74,7 +74,7 @@ Decisions inside this skill that should use `AskUserQuestion` when they resolve 
 
 Lead with your recommendation as the first option and append `(Recommended)` to its label. Keep options to 2-4.
 
-Do not use `AskUserQuestion` for:
+Do not use a structured question UI for:
 
 - open naming, copy, or visual-direction prose
 - yes/no confirmations of an already-recommended path

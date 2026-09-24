@@ -3,12 +3,9 @@
 The executable body of `nimbou-skills:executing-plans`, extracted so the skill itself
 stays a router.
 
-**Who follows this file:** Codex, always. Claude Code only when
-`/nimbou-skills:run-waves` is unavailable — dynamic workflows disabled, an older
-Claude Code, or a plan small enough that launching a workflow is not worth it.
+**Who follows this file:** Codex.
 
-**This file is normative.** `plugins/nimbou-skills/workflows/run-waves.js` mirrors it.
-When the two disagree, this file wins and the workflow is the bug.
+**This file is normative** for Steps 2-5.
 
 Step 1 lives in `SKILL.md` and runs before anything here. Do not start at Step 2.
 
@@ -29,9 +26,25 @@ Two checks before dispatching anything:
 
 ### Codex delegation and capacity
 
-Use `spawn_agent` for every delegation in this file. A role is prompt context, not
+The agent dispatch steps below apply only when the user explicitly authorized
+multi-agent execution. Otherwise, the controller performs the same wave tasks
+sequentially, retaining each task's `Files`, `RED`, and `Verificação` boundary and
+recording zero dispatched agents. Review and smoke stay in the controller too.
+Do not delegate merely to obtain a different model.
+
+When authorized, use `spawn_agent` for every delegation in this file. A role is prompt context, not
 an agent type: read the matching compact brief in `./codex-role-briefs.md` and include
 it in the worker message.
+
+The highest model tier is `gpt-6-sol`, at most `medium` reasoning. Use that setting for
+behavioral implementation, spec review, boundary review, and fixes. A genuinely
+mechanical task with a closed contract may use `gpt-6-luna` at `high`, never below
+`high`. Never request `gpt-6-astra` or Sol reasoning above `medium`. Preserve an
+explicit user choice that meets these bounds; otherwise narrow the task or report
+the configuration conflict.
+When a worker needs a model override, provide a self-contained prompt and set
+`fork_turns: "none"` with the chosen model and reasoning effort. Do not let an
+unspecified worker inherit a controller setting above the ceiling.
 
 Before each fan-out, determine the number of agent slots the current Codex environment
 exposes. The controller occupies one slot, so the maximum active workers is **available
@@ -56,7 +69,7 @@ After retaining any mandatory write-set collision group, merge only groups whose
 `media` and `longa` tasks each keep an independent implementer when their write sets
 are disjoint.
 
-Every implementer pays the same setup before its first write — `CLAUDE.md`, the nearest `GUIDELINES.md`, a neighbouring file for style, the ports it consumes. The planners size tasks at "a small action, typically 2-5 minutes", so on a task that size the setup *is* the cost, and two authors of the same Role in one wave pay it twice for identical reads. Coalescing short work pays that setup once. Medium and long work stays isolated: putting it behind a same-Role sibling manufactures a sequential critical path and makes the entire wave wait for it.
+Every implementer pays the same setup before its first write — `AGENTS.md`, the nearest `GUIDELINES.md`, a neighbouring file for style, the ports it consumes. The planners size tasks at "a small action, typically 2-5 minutes", so on a task that size the setup *is* the cost, and two authors of the same Role in one wave pay it twice for identical reads. Coalescing short work pays that setup once. Medium and long work stays isolated: putting it behind a same-Role sibling manufactures a sequential critical path and makes the entire wave wait for it.
 
 - **Only short groups where every task declared the same Role merge.** A group that fell back to `general-purpose` — unrouted, or a collision with conflicting Roles — stays on its own. It already carries a `concern`, and burying it inside a coalesced agent makes a planning bug harder to act on.
 - **A write-set collision group is never split by the cap.** It must stay with its file.
