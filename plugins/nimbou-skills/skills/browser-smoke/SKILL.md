@@ -1,6 +1,6 @@
 ---
 name: browser-smoke
-description: Verify a frontend change in a browser when requested or at the end of an executing-plans run.
+description: Use for real-browser verification after an approved nuxt-plan touched frontend files, when explicitly requested or invoked by executing-plans. Do not use for direct frontend edits outside nuxt-plan.
 ---
 
 # Browser Smoke
@@ -15,18 +15,18 @@ promised, on the screen, and writes nothing permanent. Persistent E2E coverage i
 
 ## Authorization
 
-Run this skill only in either case:
+Run this skill only when the current work is executing an approved
+`nimbou-skills:nuxt-plan`, and either case below applies:
 
 - the user explicitly requested browser verification (for example, asked to run a
   browser smoke, validate the change in a browser, or check a flow on screen); or
 - `nimbou-skills:executing-plans` invokes it as its final `report`-mode step after
-  an executed plan touched frontend files.
+  an approved Nuxt plan touched frontend files.
 
 Do not infer authorization merely because frontend files changed, a frontend task
 was implemented, a plan mentions browser verification, or browser tooling is
-available. Outside `executing-plans`, a request to implement, fix, review, or test
-frontend work is not a request for this smoke unless the user explicitly asks for
-browser verification.
+available. A direct frontend request outside an approved `nuxt-plan` does not
+authorize this smoke, even if it changes behavior or appearance.
 
 **Announce at start:** "I'm using the browser-smoke skill to verify this in a browser."
 
@@ -42,9 +42,13 @@ invoked the skill with no mode — a standalone run that only complains is usele
 
 ## Step 1: Does this apply to the authorized run?
 
-First confirm the Authorization rule above. If neither allowed caller applies, do
-not run the smoke; say it was intentionally skipped because browser verification was
-not requested.
+First confirm that the current work is executing an approved `nimbou-skills:nuxt-plan`.
+If it is a direct frontend request outside `nuxt-plan`, stop without opening a browser,
+creating tests, or running verification commands.
+
+Then confirm the Authorization rule above. If neither allowed caller applies, do not
+run the smoke; say it was intentionally skipped because browser verification was not
+requested.
 
 For an authorized run, take the list of changed files (`git diff --name-only
 <base>..HEAD`, or the file list the caller handed you) and look for any of:

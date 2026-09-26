@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing or changing NestJS, Laravel, Prisma, or other backend production code, before writing implementation code
+description: Use for backend features or bugfixes and approved implementation plans. For frontend work, use only when executing an approved nuxt-plan; do not use for direct Nuxt/frontend edits outside nuxt-plan.
 ---
 
 # Test-Driven Development (TDD)
@@ -9,7 +9,7 @@ description: Use when implementing or changing NestJS, Laravel, Prisma, or other
 
 Write the test first. Watch it fail. Write minimal code to pass.
 
-This skill applies only to backend production code. Do not load or enforce it for frontend, UI, or client-side implementation work.
+This skill applies to backend production code and approved implementation plans as specified below. For frontend work, use it only when executing an approved `nimbou-skills:nuxt-plan`.
 
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
 
@@ -23,9 +23,13 @@ This skill applies only to backend production code. Do not load or enforce it fo
 - Backend refactoring
 - Backend behavior changes
 
-**Do not use for:**
-- Frontend, UI, or client-side implementation
-- Vue, Nuxt, React, component, styling, or browser-only changes
+**Approved implementation plans:**
+- Work executed from an approved implementation plan
+
+**Frontend boundary:**
+- For direct Nuxt, Vue, Vuetify, CSS, SCSS, layout, or visual changes requested outside `nimbou-skills:nuxt-plan`, edit the frontend without creating, modifying, or running tests.
+- Frontend tests apply only when the work is executing an approved `nimbou-skills:nuxt-plan`.
+- Do not invoke this skill merely because a direct frontend request changes behavior or appearance.
 
 **Exceptions (ask your human partner):**
 - Throwaway prototypes
