@@ -11,8 +11,8 @@ description: Planeje arquivos, dependências e ondas de uma interface Nuxt após
 
 Turn an approved frontend design direction into a concrete file tree and execution sequence. The plan must make component reuse, route ownership, state boundaries, and responsive behavior explicit before implementation starts.
 
-This skill never writes code and never runs without user approval.
-By default, return the plan in the chat as a structured response. Do not write a standalone Markdown document unless the user explicitly asks for one.
+This skill never writes implementation code and never runs without approval of the design.
+Use the planner subagent and execution-task handoff in `../executing-plans/plan-session-handoff.md`. The planning worker writes the plan to `docs/plans/<slug>/doc.md` by default; user-chosen paths take precedence.
 
 **Announce at start:** "I'm using the nuxt-plan skill to create the frontend implementation plan."
 
@@ -70,7 +70,7 @@ When a material question has a few discrete options, offer them concisely throug
 Do not use a structured question UI for:
 
 - open file or component naming
-- plan-approval gates — present the plan and wait for review
+- execution-task creation — follow the shared handoff after self-review
 
 Do not reopen settled UX, reuse, state, interaction, or responsive decisions unless the prior output is contradictory.
 
@@ -232,7 +232,7 @@ Create a project details page using the existing status badge and a new sidebar.
   se o usuário tiver pedido validação em browser.
 ```
 
-This is a response format, not a file requirement.
+This is the required shape of the saved plan.
 
 ## No Placeholders
 
@@ -267,6 +267,4 @@ Fix issues inline before handing off the plan.
 
 ## Execution Handoff
 
-Present the plan and wait for user approval.
-
-When the user approves this shape, `executing-plans` is the execution skill. Do not introduce a separate `nuxt-execute` skill.
+Follow `../executing-plans/plan-session-handoff.md` after the planning worker's self-review. `executing-plans` remains the execution skill; do not introduce a separate `nuxt-execute` skill.

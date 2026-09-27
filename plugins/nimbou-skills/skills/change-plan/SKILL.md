@@ -53,7 +53,9 @@ No domain artifacts are required. The **only** gate: when the change alters the 
 
 ## Producing the Plan
 
-Once the gate says "stay," follow **REQUIRED SUB-SKILL:** `change-plan/plan-generation.md`. It writes a `executing-plans`-ready plan to `docs/plans/change-plan-<slug>.md` and defers platform rules to `fullstack-plan`, the detected backend planner, and `nuxt-plan`.
+Once the gate says "stay," follow **REQUIRED SUB-SKILL:** `change-plan/plan-generation.md`. It writes an `executing-plans`-ready plan to `docs/plans/<slug>/doc.md` and defers platform rules to `fullstack-plan`, the detected backend planner, and `nuxt-plan`.
+
+Use the planner subagent and execution-task handoff in `../executing-plans/plan-session-handoff.md` for this small-plan path. The planning worker applies `plan-generation.md`; the controller handles the execution task after validating its output.
 
 ## Integration
 

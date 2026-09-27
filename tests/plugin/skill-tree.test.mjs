@@ -91,8 +91,20 @@ test('nuxt think and plan skills explain catalog-aware design and execution topo
   assert.match(plan, /GUIDELINES\.md/)
   assert.match(plan, /catalog verification/i)
   assert.match(plan, /validate -> generate/)
-  assert.match(plan, /wait for user approval/i)
+  assert.match(plan, /plan-session-handoff\.md/)
   assert.match(plan, /executing-plans/)
+})
+
+test('planning skills hand off a saved plan to a separate execution task', () => {
+  const handoff = read('plugins/nimbou-skills/skills/executing-plans/plan-session-handoff.md')
+  for (const planner of ['nuxt-plan', 'nestjs-plan', 'laravel-plan', 'change-plan']) {
+    assert.match(read(`plugins/nimbou-skills/skills/${planner}/SKILL.md`), /plan-session-handoff\.md/)
+  }
+  assert.match(handoff, /docs\/plans\/<slug>\/doc\.md/)
+  assert.match(handoff, /gpt-6-sol/)
+  assert.match(handoff, /gpt-6-luna/)
+  assert.match(handoff, /create_thread/)
+  assert.match(handoff, /working-tree/)
 })
 
 test('shared specification skills are shipped with the tree', () => {

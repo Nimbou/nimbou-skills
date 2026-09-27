@@ -20,8 +20,7 @@ Playwright when appropriate. Do not include or run `typecheck` unless the user
 explicitly requests it. Keep ordinary verification scoped to the behavior and files
 being changed.
 
-**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
-- User preferences override this default.
+Use the planner subagent and execution-task handoff in `../executing-plans/plan-session-handoff.md`. Save the plan to `docs/plans/<slug>/doc.md` by default; user-chosen paths take precedence.
 
 When the target backend has a relevant `GUIDELINES.md`, consume it as a constraint source before writing the plan. Default to the nearest app-level or module-level file and let a closer file override a broader one.
 
@@ -288,7 +287,7 @@ Fix issues inline before handing off the plan.
 
 ## Execution Handoff
 
-After saving the plan, continue with `nimbou-skills:executing-plans` when the original request includes implementation. Otherwise, report the saved plan path and its execution prerequisites.
+After the planning worker saves and self-reviews the plan, follow `../executing-plans/plan-session-handoff.md`. When execution is authorized, create a separate execution task; do not execute in the planning task.
 
 ## How To Ask The User
 
@@ -303,4 +302,4 @@ Lead with a recommendation and its trade-off; use a structured question UI when 
 Do not ask for:
 
 - open file naming or describing prose
-- plan-approval gates — present the plan and wait for review, do not multiple-choice the approval itself
+- execution-task creation — follow the shared handoff after self-review

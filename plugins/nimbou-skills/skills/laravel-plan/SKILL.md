@@ -9,7 +9,7 @@ description: Planeje a implementação de um backend Laravel após aprovação d
 
 Write a backend implementation plan that an engineer with no prior context can execute. Use the approved `laravel-think` design and, for HTTP work, the approved `docs/domain/<domain>/openapi.yaml`. Use `nimbou-cms-plan` instead for CMS modules.
 
-Announce this skill and save the plan to `docs/plans/YYYY-MM-DD-<feature-name>.md` unless the user chooses another path. Read `AGENTS.md`, the nearest `GUIDELINES.md`, `composer.json`, neighboring Laravel files, and the actual test/quality scripts before naming files or commands.
+Announce this skill and follow the planner subagent and execution-task handoff in `../executing-plans/plan-session-handoff.md`. Save the plan to `docs/plans/<slug>/doc.md` unless the user chooses another path. Read `AGENTS.md`, the nearest `GUIDELINES.md`, `composer.json`, neighboring Laravel files, and the actual test/quality scripts before naming files or commands.
 
 ## Preconditions
 
@@ -98,4 +98,4 @@ Before handing off, verify: every requirement maps to a task; no placeholders; e
 
 Delete tombstone task headings such as “Task N: removed” instead of leaving them in the plan: every task heading is dispatched. `Role` contains only the slug because the executor copies it verbatim into the agent type; prose there becomes a nonexistent agent.
 
-After saving the plan, ask the user to review it. Execution begins only after approval through `executing-plans`.
+After the planning worker saves and self-reviews the plan, follow `../executing-plans/plan-session-handoff.md`. When execution is authorized, create a separate execution task using `executing-plans`.
