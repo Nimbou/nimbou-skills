@@ -1,146 +1,79 @@
 # Operating model
 
-Este é o contrato operacional de `roadmap-orchestration`. Ele complementa, mas não
-substitui, os planos de `change-plan`, `nestjs-plan`, `laravel-plan`, `nuxt-plan` e
-`fullstack-plan`. Quando um desses planos existe, preserve seus contratos e use este
-modelo para coordenar autorização, estado e interfaces entre atividades.
+Este é o adaptador técnico de `roadmap-orchestration`. Coordenação, autorização,
+retomada, chats persistentes e trabalho humano pertencem ao
+[núcleo compartilhado](execution-core.md), com dados no
+[registro de execução](execution-record.md). Não duplique essa máquina de estados.
+Os planos de `change-plan`, `nestjs-plan`, `laravel-plan`, `nuxt-plan` e
+`fullstack-plan` continuam donos dos contratos e ondas de implementação.
 
 ## Entradas e saída
 
-Aceite uma ideia, especificação aprovada, plano existente ou inventário de features.
-Para cada fonte, registre o que é fato, a origem e o que ainda é hipótese. A saída é
-um roadmap enxuto: entregas necessárias, não épicos duplicados ou tarefas de cada
-papel.
+Aceite ideia, especificação, plano de ação ou inventário de features. Registre
+fatos, fonte, hipóteses, objetivo, exclusões e evidências. A saída contém apenas
+entregas necessárias, sem criar um épico duplicado para cada papel técnico.
 
-```yaml
-roadmap:
-  objective: "resultado observável"
-  exclusions: ["fora do escopo"]
-  planning: { model: "opcional", effort: "opcional" }
-  execution: { model: "opcional", effort: "opcional" }
-  deliveries:
-    - id: metrics-api
-      outcome: "cards recebem métricas confiáveis"
-      evidence: "contrato e teste/observação definidos"
-      depends_on: []
-      state: ready
-      activity: implementation
-  waves:
-    - id: 1
-      entries: [metrics-api]
-      release_condition: "contratos e write sets independentes"
-  pending_authorizations: ["criar as tarefas candidatas da onda 1"]
-```
+Cada entrega corresponde a um `milestone.id` do registro compartilhado. Campos
+`planning.model/effort` e `execution.model/effort` podem preservar a preferência
+do usuário. Use `gpt-6-sol`/`medium` para decisões abertas e revisão substantiva,
+`gpt-6-luna`/`high` para inventário/reconciliação mecânicos com contrato fechado.
+Não recomende `gpt-6-astra` nem Sol acima de medium. O handoff técnico existente
+define a exceção Luna/max somente para seu controller de execução.
 
-## Estados e atividades
+## Atividade e estado técnico
 
-Use somente o menor estado que explica a situação atual. `blocked` sempre exige uma
-causa e uma evidência/decisão que o remove.
+`activity`: `planning`, `implementation`, `review`, `smoke`, `PR` ou `merge`.
+Para um marco de software, `technical_state` pode registrar os estados abaixo;
+o estado canônico do marco segue o núcleo comum, inclusive `completed` verificado.
 
-| Estado | Significado | Próxima transição permitida |
-| --- | --- | --- |
-| `proposed` | Entrega candidata ainda não autorizada | `ready`, `blocked`, `deferred` |
-| `ready` | Tem escopo, dependências e autorização para a atividade seguinte | `running` |
-| `blocked` | Falta decisão, contrato, acesso ou predecessor observável | `proposed`, `ready`, `deferred` |
-| `running` | Atividade autorizada em curso | `review`, `blocked` |
-| `review` | Implementação concluída; revisão delimitada em curso | `smoke`, `pr-open`, `blocked` |
-| `smoke` | Fluxo de tela/integração aguardando ou passando smoke | `pr-open`, `blocked` |
-| `pr-open` | PR aberto, ainda não integrado | `integrated`, `blocked` |
-| `integrated` | PR efetivamente integrado na base | terminal |
-| `deferred` | Usuário excluiu/adiou explicitamente | terminal |
+| Estado técnico | Evidência/transição |
+| --- | --- |
+| `proposed` | Entrega candidata, escopo ainda não fechado. |
+| `ready` | Contratos, dependências e autorização da atividade fechados. |
+| `blocked` | Causa registrada e evidência/decisão que a remove. |
+| `running` | Implementação autorizada em curso. |
+| `review` | Implementação entregue para revisão delimitada. |
+| `smoke` | Fluxo de tela/integração em verificação. |
+| `pr-open` | PR remoto aberto; integração ainda pendente. |
+| `integrated` | PR efetivamente integrado na base observada. |
+| `deferred` | Adiamento explícito; não satisfaz dependências. |
 
-`activity` é uma destas fases: `planning`, `implementation`, `review`, `smoke`, `PR`
-ou `merge`. Elas não são sinônimos de estado. Por exemplo, uma entrega em `pr-open`
-tem atividade `PR`; merge só começa após uma confirmação explícita separada.
+Um PR `integrated` comprova integração, não garante todo critério de negócio.
+Um marco administrativo não precisa de PR para estar `completed`.
 
 ## Dependências e ondas
 
-Declare `A -> B` somente se B não pode produzir sua evidência sem A. Cada aresta
-precisa de uma razão: contrato, esquema/dados, autorização, write set, ambiente ou
-decisão de produto. “É mais confortável fazer antes” não é dependência.
-
-Uma onda contém somente nós sem dependência pendente entre si. Também valide:
-
-- write sets não se sobrepõem ou há um único dono deliberado;
-- contratos compartilhados já estão fechados;
-- agentes não exigem o mesmo ambiente/credencial exclusiva;
-- a configuração de modelo e esforço cabe no risco da unidade;
-- capacidade disponível deixa um slot para coordenação.
-
-Se qualquer condição falhar, coloque a unidade em onda posterior ou torne-a
-`blocked`. Nunca inicie uma frente por suposição.
+Declare `A -> B` somente se B não pode produzir sua evidência sem A; registre a
+razão (contrato, esquema/dados, autorização, write set, ambiente ou decisão).
+Uma onda contém unidades sem dependência pendente entre si. Confira contratos,
+propriedade dos arquivos, ambiente exclusivo e capacidade. Preserve as ondas
+de planos existentes e delegue implementação a `nimbou-skills:executing-plans`;
+seu `prose-execution.md` continua normativo. Não reescreva tarefas para coordená-las.
 
 ## Registro de tarefas e PRs
 
-Antes de qualquer criação, reconcilie por entrega, repositório, branch, PR, estado e
-última evidência. Uma correspondência existente vira o registro canônico; não crie
-outra tarefa para “garantir”.
+Antes de criar, reconcilie tarefas e PRs existentes por entrega, repositório,
+branch, PR, estado e última evidência. Correspondência existente é canônica.
+Nunca crie uma task sem autorização explícita que cubra criação e execução;
+uma autorização vigente do plano pode cobrir seus chats e continuidade.
 
-| Entrega | Atividade | Task/PR existente | Estado efetivo | Evidência | Próxima ação | Autorizada? |
+| Entrega | Atividade | Chat/PR existente | Estado efetivo | Evidência | Próxima ação | Autorizada? |
 | --- | --- | --- | --- | --- | --- | --- |
-| roles-api | implementation | Task `abc` | running | commit `123` | aguardar conclusão | sim |
+| roles-api | implementation | Chat `abc` | running | commit `123` | aguardar conclusão | sim |
 | admin-ui | implementation | — | blocked | depende de roles-api | nenhuma | não |
 
-Para PRs, estado efetivo significa dados remotos atuais: número/título, base/head,
-draft, checks, conflitos, aprovações, mergeability e resumo do diff. “Passou CI” não
-substitui esse snapshot. **Never merge a PR without explicit confirmation after
-showing that state.** `nimbou-skills:merge-pr` é o único encaminhamento de merge.
+Para PRs, consulte o estado remoto atual: número/título, base/head, draft, checks,
+conflitos, aprovações, mergeability e resumo do diff. **Never merge a PR without
+explicit confirmation after showing that state.** Encaminhe a `nimbou-skills:merge-pr`.
+A autorização de chats/monitoramento não habilita merge nem auto-merge.
 
-## Autorizações, execução e retomada
+## Retomada e encerramento
 
-Use verbos separados no registro: `recommend`, `create-task`, `start-task`,
-`send-message`, `open-pr`, `monitor`, `enable-auto-merge`, `merge`, `pause-automation`.
-Registre quem autorizou, em que escopo e a data/turno. Nunca crie uma task without
-explicit authorization, mesmo quando o roadmap a marca `ready`.
+Releia a autorização vigente, reconcilie identidades e atualize estados com evidência.
+Continue unidades cobertas pela autorização do plano; não exija nova permissão só
+porque uma automação despertou ou uma filha terminou. Fora desse escopo, registre
+a decisão pendente. Preserve pedidos de pausa/revogação.
 
-Ao retomar:
-
-1. leia o último roadmap e sua autorização ainda válida;
-2. reconcilie tarefas/PRs existentes e automações pelo identificador, sem duplicá-los;
-3. atualize estados com evidência observável;
-4. publique apenas mudanças, bloqueios e ações que requerem decisão;
-5. espere autorização antes de iniciar entregas, enviar mensagens, abrir PRs ou
-   reativar automação.
-
-Se a execução já tem plano por ondas aprovado, encaminhe a implementação para
-`nimbou-skills:executing-plans`; esta skill mantém o registro e a fronteira de
-autorização, não reescreve as tarefas desse plano.
-
-## Modelos, esforço, monitoramento e encerramento
-
-O usuário pode definir `planning.model/effort` e `execution.model/effort`
-independentemente. O maior modelo permitido é `gpt-6-sol`, com esforço até
-`medium`. Use
-`gpt-6-sol`/`medium` para ambiguidade de domínio, contratos, segurança,
-dependências, implementação comportamental e revisão substantiva. Use
-`gpt-6-luna`/`high` para inventário, reconciliação e formatação
-com fonte e critério de aceite fechados. Não recomende `gpt-6-astra` nem esforço
-abaixo de `high` para Luna ou acima de `medium` para Sol. Preserve uma escolha
-explícita que respeite esses limites;
-se ela for insuficiente, reduza o escopo ou exponha a limitação, sem elevar o
-modelo silenciosamente. Ao criar tarefas, registre o modelo e o esforço efetivos
-e confira que ambos respeitam o teto.
-
-Crie monitoramento recorrente somente com autorização explícita. Uma automação já
-ativa pode continuar somente durante o escopo e a duração registrados; nunca a reative
-por inferência. Sua política é silenciosa enquanto não houver mudança acionável, e
-notifica apenas bloqueio, mudança de estado, conclusão, falha ou decisão necessária.
-Quando todas as entregas estiverem `integrated` ou `deferred`, reporte o escopo final e
-pause automation (ou delete it, se esse era o acordo). Não deixe uma automação ativa
-apenas porque a coordenação terminou.
-
-## Exemplo compacto
-
-Inventário: papéis, UI administrativa, webhook de assinatura, entitlement e cards de
-dashboard. O roadmap necessário fica:
-
-| Onda | Entregas independentes | Depende de | Saída |
-| --- | --- | --- | --- |
-| planejamento | contratos de papéis, webhook e métricas | decisões externas | contratos fechados |
-| 1 | roles API; webhook; metrics API | planejamento | testes/contratos aceitos |
-| 2 | admin UI; entitlement; dashboard cards | roles; webhook; metrics, respectivamente | smoke ou revisão prevista |
-| 3 | revisão, smoke, PR | implementações concluídas | PRs com estado efetivo |
-| 4 | merge | confirmação explícita por PR | integração observável |
-
-Onda 1 é paralela somente se os três write sets e contratos forem independentes; a
-onda 4 não é automática mesmo com todos os checks verdes.
+Encerramento segue os critérios globais do núcleo comum; não use a simples soma
+`integrated`/`deferred` como prova de sucesso. Ao terminar ou parar, pause a automação
+(pause automation), ou delete it somente se autorizado, e confira o estado efetivo.

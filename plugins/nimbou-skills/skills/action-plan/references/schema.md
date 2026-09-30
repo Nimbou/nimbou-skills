@@ -2,8 +2,17 @@
 
 Campos ausentes são omitidos do PDF (nada quebra), mas `titulo`, `objetivo`, `ciclo` e `marcos` são o mínimo útil. `escopo` e `fases_futuras` só entram em plano grande/programa.
 
+IDs operacionais são opcionais para geração do PDF: `id` do plano, de cada marco
+e de cada ação. Quando presentes, são únicos/estáveis e continuam iguais entre
+ciclos e reordenações. Para executar um plano legado sem IDs, registre o mapeamento
+no `execucao.json`, separado do conteúdo de gestão. Chats, automação, tarefas FAEPEN,
+autorizações e evidências seguem o
+[registro compartilhado](../../roadmap-orchestration/references/execution-record.md).
+O gerador de PDF e `plan-summary` continuam consumindo os campos existentes.
+
 ```jsonc
 {
+  "id": "cadastro-fornecedores",      // opcional; identidade estável do plano
   "titulo": "string — nome do plano",
   "versao": 1,                        // inteiro; v2+ ativa a seção Check/Act
   "data": "13/07/2026",               // data de emissão; default = hoje
@@ -34,6 +43,7 @@ Campos ausentes são omitidos do PDF (nada quebra), mas `titulo`, `objetivo`, `c
   // Marcos da FASE ATIVA — só estes recebem 5W2H completo e ação de 48h.
   "marcos": [
     {
+      "id": "diagnostico",             // opcional; identidade estável do marco
       "nome": "string — estado do mundo, não esforço",
       "resultado_verificavel": "string — como se sabe que aconteceu",
       "indicador": "string (opcional)",
@@ -41,6 +51,7 @@ Campos ausentes são omitidos do PDF (nada quebra), mas `titulo`, `objetivo`, `c
       "acao_48h": "string — menor ação física que quebra a inércia",
       "acoes": [
         {
+          "id": "conferir-registros",  // opcional; identidade estável da ação
           "o_que": "verbo físico + objeto verificável",
           "por_que": "a qual marco/indicador serve",
           "quem": "Um Nome Próprio (ou 'DONO A DEFINIR')",

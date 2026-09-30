@@ -1,72 +1,62 @@
 ---
 name: roadmap-orchestration
-description: Coordene entregas, tarefas Codex e PRs autorizados em um roadmap com dependências reais.
+description: Coordene entregas, tarefas Codex e PRs autorizados em um roadmap com dependências reais, incluindo execução autônoma e participação humana.
 ---
 
 # Roadmap Orchestration
 
 Transforme o material em entregas necessárias. Uma entrega só entra no roadmap se
 contribuir para o resultado autorizado, resolver uma dependência real ou tornar uma
-entrega verificável.
+entrega verificável. Planejamento e execução compartilham IDs, critérios e evidências
+com `nimbou-skills:action-plan`.
 
 **Anuncie no início:** “Estou usando a skill `roadmap-orchestration` para montar ou
 retomar este roadmap.”
 
-## Quando usar e rotear
+## Modos e roteamento
+
+**Planejar/reconciliar:** inventarie fontes, objetivo, exclusões, entregas,
+dependências reais e incertezas. Pergunte somente o que altera entrega, ordem ou
+permissão. Leia [references/operating-model.md](references/operating-model.md).
+Organizar ou aprovar um roadmap não inicia trabalho externo.
+
+**Executar/acompanhar:** diante de autorização explícita para execução com chats
+persistentes, acompanhamento e encaminhamento humano, leia obrigatoriamente o
+[núcleo compartilhado de execução](references/execution-core.md) e o registro de
+dados que ele referencia. O pai delega marcos, confere retorno das filhas, encaminha
+ações humanas ao MCP FAEPEN e continua o plano com heartbeat de 30 minutos. Retome
+as ações já autorizadas sem exigir confirmação a cada onda ou despertar.
 
 | Situação | Ação |
 | --- | --- |
-| Ideia ainda ambígua ou escopo grande novo | Feche o desenho com `nimbou-skills:idea` ou `nimbou-skills:feat-spec` antes de prometer execução. |
-| Mudança fullstack pequena | Use `nimbou-skills:change-plan`; não replique seu plano. |
-| Plano por ondas já aprovado | Entregue a execução para `nimbou-skills:executing-plans`. |
-| Uma entrega Nuxt acabou de ser construída | Use `nimbou-skills:browser-smoke` no ponto de smoke definido no roadmap. |
+| Ideia ainda ambígua ou escopo grande novo | Feche o desenho com `nimbou-skills:idea` ou `nimbou-skills:feat-spec`. |
+| Mudança fullstack pequena | Use `nimbou-skills:change-plan`; preserve seu plano. |
+| Plano de ação administrativo aprovado | Execute os marcos pelo núcleo comum; não exija ondas de código. |
+| Marco técnico com plano por ondas aprovado | Entregue sua implementação a `nimbou-skills:executing-plans`; preserve `prose-execution.md`. |
+| Entrega Nuxt construída | Use `nimbou-skills:browser-smoke` no ponto de smoke definido. |
 | Usuário quer mesclar um PR | Use `nimbou-skills:merge-pr`; esta skill nunca mescla. |
-| Trabalho independente sem roadmap | Use `nimbou-skills:dispatching-parallel-agents`, apenas se houver autorização para delegar. |
+| Trabalho independente sem roadmap | Use `nimbou-skills:dispatching-parallel-agents`, se autorizado. |
 
-Leia [references/operating-model.md](references/operating-model.md) antes de criar ou
-alterar um roadmap. Leia [references/evaluations.md](references/evaluations.md) quando
-for validar, ensinar ou auditar a aplicação desta skill.
+## Coordenação
 
-## Gate de autorização
+Reconcilie chats, tarefas humanas, PRs e automações antes de criar ou despachar.
+Registre identidades reais, autorização vigente, checkout, critérios e evidências.
+Não force paralelismo: contrato, write sets, ambiente exclusivo ou decisão aberta
+mantêm a ordem. Não trate chat finalizado, tarefa humana concluída ou CI verde como
+prova automática de que o marco ou o objetivo foi atingido.
 
-Planejar, analisar dependências e recomendar próximos passos são leitura/organização.
-Criar tarefa Codex, iniciar ou enviar mensagem a uma tarefa, abrir PR, criar ou reativar
-automação, habilitar auto-merge e mesclar são mutações distintas. Mostre as unidades
-afetadas e obtenha autorização explícita para a ação específica; uma autorização de
-criação não inicia tarefa, uma de acompanhamento não mescla, e uma de PR não habilita
-auto-merge.
+Criação de chat já inicia a tarefa. Preserve o limite de modelos:
+`gpt-6-sol`/`medium` para decisões abertas, comportamento e revisão;
+`gpt-6-luna`/`high` para trabalho mecânico delimitado. A configuração excepcional
+Luna/max do controller técnico segue o handoff existente, sem alterar seus workers.
 
-## Execução
+Planejamento só grava artefato quando solicitado. Execução exige registro canônico
+em `docs/plans/<slug>/execucao.json`, ou no destino escolhido. Publique mudanças,
+bloqueios e próxima ação, permanecendo silencioso no monitoramento sem mudança
+acionável. Encerre o acompanhamento somente com critérios globais comprovados ou
+com pausa/encerramento explícito registrado, conforme o núcleo comum.
 
-1. Inventarie objetivo, entregas verificáveis, exclusões, fonte, evidência e
-   incertezas. Pergunte somente o que altera entrega, ordem ou permissão.
-2. Modele dependências reais e frentes realmente independentes. Dependência incerta é
-   `blocked`, não uma aresta inventada.
-3. Publique o registro de ondas, estados, bloqueios e modelos/esforços do modelo
-   operacional. Mantenha planejamento, implementação, revisão, smoke, PR e merge
-   separados.
-4. Antes de criar algo, reconcilie tarefas e PRs existentes. Recomende as candidatas;
-   crie/dispare somente as unidades autorizadas.
-5. Na retomada, reconcilie e relate primeiro. Não inicie ondas, envie mensagens ou
-   reative automações sem nova autorização. Ao concluir o escopo, pause/remova a
-   automação autorizada de acompanhamento.
-
-Nunca force paralelismo por contagem; contrato, write set, ambiente exclusivo ou
-decisão aberta mantêm a ordem. Nunca mescle silenciosamente: exiba o estado efetivo do
-PR e peça confirmação explícita via `merge-pr`.
-
-## Economia de contexto
-
-Guarde identificadores e evidências curtas, não históricos completos. Faça snapshots
-compactos e só acompanhe novamente diante de mudança acionável. Registre modelos e
-esforços diferentes para planejamento e execução conforme
-[references/operating-model.md](references/operating-model.md). O teto é
-`gpt-6-sol`/`medium`; uma decisão de arquitetura, dependência ou merge que não caiba
-nesse teto precisa de escopo menor ou mais evidência, sem escalada de modelo.
-
-## Saída mínima
-
-Objetivo/exclusões, entregas necessárias, ondas, bloqueios/evidências, configuração de
-planejamento e execução, registro de tarefas/PRs, ações aguardando autorização e a
-próxima decisão humana. Grave o roadmap no local de planejamento do projeto apenas
-quando o usuário pedir um artefato persistente.
+Leia [references/evaluations.md](references/evaluations.md) para validar, ensinar ou
+auditar o comportamento. Saída mínima: objetivo/exclusões, entregas, dependências,
+estados/evidências, registro de chats/tarefas/PRs, autorização, acompanhamento e
+próxima ação ou decisão humana.

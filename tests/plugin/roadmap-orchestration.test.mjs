@@ -32,7 +32,7 @@ test('roadmap orchestration ships an executable, authorization-safe skill', () =
 
   assert.match(operatingModel, /proposed.*ready.*blocked.*running.*review.*smoke.*pr-open.*integrated/is)
   assert.match(operatingModel, /planning.*implementation.*review.*smoke.*PR.*merge/is)
-  assert.match(operatingModel, /Nunca crie uma task.*explicit authorization/is)
+  assert.match(operatingModel, /Nunca crie uma task.*autorização explícita/is)
   assert.match(operatingModel, /Never merge.*explicit confirmation/is)
   assert.match(operatingModel, /reconcilie.*tarefas.*PRs existentes/is)
   assert.match(operatingModel, /planning.*model.*effort.*execution.*model.*effort/is)

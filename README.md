@@ -24,6 +24,7 @@
 - `nestjs-refactor`
 - `fullstack-plan`
 - `roadmap-orchestration`
+- `action-plan` plans, reviews, or executes administrative, technical, and human milestones
 - `executing-plans`
 - `dispatching-parallel-agents`
 - `test-driven-development`
@@ -123,7 +124,8 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `nestjs-debug` handles NestJS, Prisma, and boundary failures across controller, use-case, repository, and transaction layers.
 - `nuxt-debug` is the Codex browser-debugging flow; `nuxt-test` turns the result into bounded coverage; `browser-smoke` is neither — it verifies once, right after building, that what a change promised actually happens on screen, and writes no tests.
 - `nuxt-audit` is the single frontend review pass; `executing-plans` runs wave-structured plans by fanning each wave's tasks out to parallel implementer subagents, committing once per wave, and collecting non-blocking spec-compliance findings into an end-of-plan follow-ups artifact. It runs **no code review**: `/code-review` over the branch covers that axis better in one pass than N per-wave passes. The spec reviewer stays because it holds the plan — it is the only thing that can tell a requirement never implemented from one never requested.
-- `roadmap-orchestration` turns an idea, specification, or feature inventory into an authorization-safe delivery roadmap. It reconciles existing Codex tasks and PRs before proposing work, keeps planning/implementation/review/smoke/PR/merge distinct, and routes implementation and merge to their dedicated skills. It never creates external work, starts a task, or merges a PR without the corresponding explicit authorization.
+- `action-plan` and `roadmap-orchestration` share a persistent execution contract. With explicit authorization for execution using persistent chats, monitoring, and human handoffs, the parent delegates automatic milestones to separate Codex chats, verifies their evidence, creates FAEPEN tasks for the exact designated teams, and advances the plan through a 30-minute heartbeat. Resume preserves that authorization, reconciles existing work before dispatch, and does not duplicate uncertain creations. Human task status alone cannot release a dependency. The objective and all active-scope criteria must be proved before the plan is complete and monitoring is paused.
+- `action-plan` retains its management PDF, 5W2H, phased planning and PDCA review; `plan-summary` retains its input. Operational data lives in `docs/plans/<slug>/execucao.json`. Technical milestones still use stack-specific plans and `executing-plans`; PR merge remains with `merge-pr` and its explicit confirmation. Editing or generating a plan does not start execution or schedule monitoring.
 - `e2e-test-quality` covers broader end-to-end reliability beyond one Nuxt module slice.
 - This fork intentionally removed upstream bootstrap hooks and unsupported harness integrations.
 

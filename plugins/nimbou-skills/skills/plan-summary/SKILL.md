@@ -9,6 +9,11 @@ description: Gere um resumo executivo em PDF de um plano de ação já existente
 
 Destila o `plano.json` do action-plan num **PDF de uma página** com cabeçalho, contexto, uma **linha do tempo** e blocos ilustrativos. A página tem **altura dinâmica**: cresce para caber o conteúdo (um PDF, uma página, de qualquer tamanho), então nunca transborda nem sobra branco.
 
+IDs opcionais do plano/marcos/ações não mudam essa entrada. O `execucao.json` é o
+registro operacional separado; use somente resultados conferidos pela coordenação
+para atualizar o conteúdo de gestão antes de resumir. Gerar o resumo não inicia
+execução, chats, automações ou tarefas FAEPEN.
+
 **Princípio central:** o plano de execução e o resumo executivo **não são o mesmo documento em dois tamanhos — são documentos para pessoas diferentes.** O plano tem 5W2H, gatilhos e critérios porque quem o lê *executa*. O resumo é para quem só precisa entender rápido, sem dúvidas: o que é, o que vem, o que pode mudar. Encolher o plano produz um resumo ruim; **destilar** produz um bom.
 
 **Meta:** ilustrativo e **suficiente** — o stakeholder não fica com dúvida nem perde tempo. Pode ter mais que o mínimo (detalhe das etapas, riscos-chave), desde que cada bloco ganhe o espaço que ocupa. O que NÃO entra: 5W2H, critérios de conclusão, jargão técnico, e a alocação de equipe.

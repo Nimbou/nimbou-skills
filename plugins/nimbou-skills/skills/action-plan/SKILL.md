@@ -1,13 +1,17 @@
 ---
 name: action-plan
-description: Crie ou revise um plano de ação em PDF para um objetivo de trabalho ainda sem execução clara.
+description: Use quando precisar criar, revisar ou executar um plano de ação com marcos administrativos, técnicos ou humanos.
 ---
 
 # Plano de Ação
 
 ## O que esta skill faz
 
-Conduz uma entrevista curta e produz um **plano de ação em PDF**, versionado por ciclo (v1, v2, v3…). Escala do plano pequeno de uma frente ao **programa multi-fase** de meses.
+Conduz uma entrevista curta e produz um **plano de ação em PDF**, versionado por ciclo (v1, v2, v3…). Escala do plano pequeno de uma frente ao **programa multi-fase** de meses. Também executa um plano aprovado, com chats persistentes por marco, acompanhamento a cada 30 minutos e tarefas humanas pelo MCP FAEPEN.
+
+O planejamento define o conteúdo de gestão. A execução usa o mesmo contrato de
+coordenação de `nimbou-skills:roadmap-orchestration`, sem exigir que o usuário
+transforme o plano administrativo em um roadmap técnico.
 
 O ponto não é "gerar um plano" — qualquer modelo faz isso. É gerar um plano que **sobrevive ao contato com a realidade**. Planos de trabalho quase sempre morrem das mesmas quatro formas, e o método existe inteiro para bloquear cada uma:
 
@@ -20,13 +24,37 @@ O ponto não é "gerar um plano" — qualquer modelo faz isso. É gerar um plano
 
 Um plano bonito que viole qualquer um desses é uma falha da skill — mesmo que o usuário goste na hora.
 
-## Os dois modos
+## Modos
 
 **Modo NOVO PLANO** (padrão): o usuário traz um objetivo, cru ou detalhado. Rode as fases, confirme os marcos, gere o PDF v1.
 
 **Modo REVISÃO**: o usuário traz um plano existente (PDF de um ciclo anterior) e quer fechar/atualizar o ciclo. Extraia o conteúdo do PDF (`pdftotext -layout arquivo.pdf -`, ou pypdf), rode as fases 5 → 3 → 4 (Ciclar → re-Estruturar → Destravar) e gere a versão seguinte com a seção **Check / Act** preenchida. Não recomece do zero: o valor da revisão está em comparar planejado com realizado. Em programa multi-fase, a revisão fecha a **fase ativa** e promove a próxima fase do roadmap a ativa — detalhando-a agora até a ação.
 
-Na dúvida sobre o modo, pergunte antes de trabalhar.
+**Modo EXECUÇÃO / ACOMPANHAMENTO**: o usuário pede para executar ou retomar um
+plano aprovado. Leia obrigatoriamente o
+[núcleo compartilhado de execução](../roadmap-orchestration/references/execution-core.md)
+e seu registro de dados; siga esse caminho em vez de refazer a entrevista ou gerar
+outro PDF antes de agir. Anuncie: “Estou usando `action-plan` para executar este plano.”
+
+Carregue `plano.json` e o `execucao.json` existente. Se houver apenas PDF, extraia
+e reconcilie objetivo, marcos e critérios antes do despacho; não invente lacunas.
+O pedido de execução com chats persistentes, heartbeat e tarefas humanas autoriza
+a continuidade dessas ações no escopo registrado. Gerar/aprovar o PDF por si só
+não inicia chats, acompanhamento nem tarefas externas.
+
+O pai cria chats para os marcos automáticos, confere resultados, encaminha ações
+humanas ao setor definido e continua as frentes liberadas. A automação de 30 minutos
+retoma essa coordenação. Conclusão exige evidência por marco e pelo objetivo; status
+de sessão/tarefa isolado não basta. Marcos técnicos usam as skills da stack e
+`nimbou-skills:executing-plans` quando houver plano por ondas aprovado.
+
+Ao encerrar o ciclo, incorpore resultados em Check/Act e gere a versão de gestão
+seguinte quando solicitada; preserve IDs/mapeamentos. Não promova fases futuras
+fora do escopo autorizado. Reporte marcos comprovados, pendências, tarefas humanas
+e o estado efetivo do acompanhamento.
+
+Infira o modo do pedido e do contexto. Pergunte somente se a distinção entre
+planejar e iniciar execução estiver ambígua.
 
 ## Porte do plano — dimensione antes de estruturar
 
@@ -178,6 +206,7 @@ Vale para todo campo que o gestor lê: `objetivo`, `marcos` (nome e resultado ve
 
 ## Gerando o PDF
 
+Grave fontes e PDFs em `docs/plans/<slug>/`, salvo destino indicado pelo usuário.
 Monte o plano num `plano.json` e rode o script — ele já produz layout, tabelas 5W2H, roadmap de fases e paginação, e evita que cada execução reinvente a formatação:
 
 ```bash
