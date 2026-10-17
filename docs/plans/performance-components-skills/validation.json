@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-17",
+  "skills": [
+    "nuxt-performance",
+    "nuxt-components-redesign"
+  ],
+  "scope": "Criação local das skills no plugin existente, referências e comparador; sem instalação global ou publicação do plugin.",
+  "baseline": {
+    "packaging": {
+      "tests": 26,
+      "passed": 26,
+      "failed": 0
+    },
+    "performance": {
+      "outcome": "O avaliador sem skill já identificou o gargalo da camada decorativa e rejeitou comparações entre localhost vazio, desktop e produção mobile; isso não foi contabilizado como falha do avaliador.",
+      "observedSessionFailure": "Na implementação que motivou a skill, eager/high isoladamente manteve a nota mobile em 85, com LCP de aproximadamente 4,2 s para 4,1 s. O diagnóstico de dimensão e camada de fundo foi necessário."
+    },
+    "components": {
+      "finding": "O avaliador sem skill propôs levar favoritos em memória e diálogo demonstrativo ao produto sem requisito funcional aprovado.",
+      "quote": "Manteria favoritos apenas em memória e diálogo de prévia como na demo, sem inventar persistência."
+    },
+    "comparator": {
+      "red": "O teste inicial falhou com ERR_MODULE_NOT_FOUND antes de existir o comparador."
+    }
+  },
+  "forwardTesting": {
+    "method": "Avaliadores independentes, sem histórico, leram cada skill e receberam cenários de aplicação; sem ações externas ou edição de produção.",
+    "performance": {
+      "passed": true,
+      "checked": [
+        "Mesma URL/perfil/conteúdo nas comparações",
+        "Identificação da cópia decorativa como LCP",
+        "258 px de área pintada e derivada adequada para DPR",
+        "Preservação de foto, overlay, conteúdo e WhatsApp",
+        "Meta abaixo de 90 permanece pendente; sem confundir 98 do fixture vazio com resultado real",
+        "Nenhuma migração de framework ou importação de banco para melhorar nota"
+      ]
+    },
+    "components": {
+      "passed": true,
+      "checked": [
+        "Preservação de área excluída mesmo com wrapper e CSS compartilhados",
+        "Controles apenas demonstrativos não viram requisitos do produto",
+        "Reuso de mídia/dados existentes",
+        "331 px de conteúdo não cabe em botão de 284 px",
+        "Navegação coleção/detalhe/volta além de screenshot de acesso direto",
+        "Comparação PHP/Vue e matriz responsiva",
+        "Sem exigir Vitest para edição visual direta",
+        "Publicação já autorizada segue procedimento do projeto"
+      ]
+    }
+  },
+  "validation": {
+    "frontmatter": {
+      "validator": "skill-creator/scripts/quick_validate.py",
+      "validSkills": 2
+    },
+    "comparator": {
+      "command": "node --test tests/plugin/lighthouse-comparison.test.mjs",
+      "tests": 7,
+      "passed": 7
+    },
+    "supportedChecks": {
+      "command": "node --test tests/plugin/plugin-manifest.test.mjs tests/plugin/skill-tree.test.mjs tests/plugin/lighthouse-comparison.test.mjs tests/plugin/roadmap-orchestration.test.mjs",
+      "tests": 34,
+      "passed": 34
+    },
+    "fullSuite": {
+      "command": "pnpm test",
+      "tests": 41,
+      "passed": 34,
+      "failed": 7,
+      "limitations": [
+        {
+          "file": "tests/catalog/generate-catalog.test.mjs",
+          "failures": 6,
+          "reason": "spawnSync('npm', ...) retorna ENOENT neste Windows; arquivo existente sem alterações nesta tarefa."
+        },
+        {
+          "file": "tests/plugin/chrome-devtools-wrapper.test.mjs",
+          "failures": 1,
+          "reason": "Chamada de bash tenta executar /bin/bash via WSL, indisponível no host; arquivo existente sem alterações nesta tarefa."
+        }
+      ]
+    },
+    "formatting": "Arquivos autorais normalizados para LF; git diff --check aprovado.",
+    "scopeReview": "README indexa as duas skills; manifesto usa descoberta automática em ./skills/. Sem alteração de versão, instaladores ou outras skills."
+  }
+}

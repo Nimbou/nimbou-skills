@@ -38,6 +38,8 @@ test('skills tree ships the unified skill set directly', () => {
   assert.ok(shippedSkills.includes('nuxt-plan'))
   assert.ok(shippedSkills.includes('nuxt-catalog'))
   assert.ok(shippedSkills.includes('nuxt-audit'))
+  assert.ok(shippedSkills.includes('nuxt-performance'))
+  assert.ok(shippedSkills.includes('nuxt-components-redesign'))
   assert.ok(shippedSkills.includes('nuxt-test'))
   assert.ok(shippedSkills.includes('nestjs-debug'))
   assert.ok(shippedSkills.includes('nuxt-debug'))

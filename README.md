@@ -56,6 +56,8 @@
 - `nuxt-audit`
 - `nuxt-test`
 - `nuxt-debug`
+- `nuxt-performance` — Lighthouse/PageSpeed, LCP diagnosis and comparable before/after results
+- `nuxt-components-redesign` — branded component demos and application of approved visual/UX changes
 
 ### Project-specific skills
 
@@ -126,6 +128,8 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `nuxt-audit` is the single frontend review pass; `executing-plans` runs wave-structured plans by fanning each wave's tasks out to parallel implementer subagents, committing once per wave, and collecting non-blocking spec-compliance findings into an end-of-plan follow-ups artifact. It runs **no code review**: `/code-review` over the branch covers that axis better in one pass than N per-wave passes. The spec reviewer stays because it holds the plan — it is the only thing that can tell a requirement never implemented from one never requested.
 - `action-plan` and `roadmap-orchestration` share a persistent execution contract. With explicit authorization for execution using persistent chats, monitoring, and human handoffs, the parent delegates automatic milestones to separate Codex chats, verifies their evidence, creates FAEPEN tasks for the exact designated teams, and advances the plan through a 30-minute heartbeat. Resume preserves that authorization, reconciles existing work before dispatch, and does not duplicate uncertain creations. Human task status alone cannot release a dependency. The objective and all active-scope criteria must be proved before the plan is complete and monitoring is paused.
 - `action-plan` retains its management PDF, 5W2H, phased planning and PDCA review; `plan-summary` retains its input. Operational data lives in `docs/plans/<slug>/execucao.json`. Technical milestones still use stack-specific plans and `executing-plans`; PR merge remains with `merge-pr` and its explicit confirmation. Editing or generating a plan does not start execution or schedule monitoring.
+- `nuxt-performance` handles measured loading improvements and performance reports, including responsive image layers, HTML-to-SPA first paint and Lighthouse comparison. Its bundled comparator accepts Lighthouse JSON or a PageSpeed API envelope and flags incompatible configurations; it does not certify equivalent content or attainment of a score target.
+- `nuxt-components-redesign` handles existing component families, local branded demos and application of approved designs. It preserves excluded consumers and real product actions, and verifies desktop/mobile rendering and navigation without requiring an isolated Vitest harness for direct visual edits.
 - `e2e-test-quality` covers broader end-to-end reliability beyond one Nuxt module slice.
 - This fork intentionally removed upstream bootstrap hooks and unsupported harness integrations.
 
