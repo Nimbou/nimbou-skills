@@ -1,6 +1,6 @@
 # nimbou-skills
 
-`nimbou-skills` is a Codex skill library for NestJS/Prisma, Laravel/Eloquent, and Nuxt/Vuetify workflows.
+`nimbou-skills` is a Codex skill library for NestJS/Prisma, Laravel/Eloquent, Nuxt/Vuetify workflows, and Google Ads campaign refinement.
 
 ## Skill Model
 
@@ -58,6 +58,10 @@
 - `nuxt-debug`
 - `nuxt-performance` — Lighthouse/PageSpeed, LCP diagnosis and comparable before/after results
 - `nuxt-components-redesign` — branded component demos and application of approved visual/UX changes
+
+### Marketing and campaign analysis
+
+- `refinar-google-ads` — campaign refinement reports with CTR, CPC, conversion types, comparable investment periods and a visual one-page summary. Client-specific account context stays in the task or local references.
 
 ### Project-specific skills
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refinar Google Ads"
+  short_description: "Análise semanal e refinamentos de campanhas Google Ads"
+  default_prompt: "Use $refinar-google-ads para analisar a campanha e preparar um relatório visual de uma página com até três oportunidades de refinamento."
