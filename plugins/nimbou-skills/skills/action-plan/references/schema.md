@@ -24,12 +24,12 @@ o PDF **não** cria tarefas externas.
     "prazo": "30/10/2026",
     "tarefas": [{
       "id": "verificar-ambiente",
-      "titulo": "Verificar o ambiente de teste",
+      "titulo": "Verifique o ambiente de teste.",
       "responsavel": "DONO A DEFINIR (TI)",
       "prazo": "27/10/2026",
       "depende_de": [],              // IDs de tarefas anteriores; omita se não houver
       "concluida_quando": "Ambiente e acessos conferidos.",
-      "subtarefas": ["Conferir banco de teste", "Conferir acesso do RH"]
+      "subtarefas": ["Confira os dados de teste.", "Teste o acesso do RH."]
     }]
   }],
   "fases_futuras": [{
@@ -58,6 +58,9 @@ No PDF de tarefas, não aparecem `escopo`, 5W2H, primeira ação, PDCA,
 `riscos` ou `backlog`. `fases_futuras` vira sequência visual e `limites`
 vira conjunto de cartões; o prazo final fica no objetivo. O JSON pode manter
 notas internas, mas não as apresente como obrigação do leitor.
+Cada tarefa aparece em um cartão: título imperativo, metadados na mesma linha,
+critério de conclusão curto e subtarefas somente se necessárias. Não há legenda
+genérica antes do primeiro marco.
 
 ## Formato legado de ações
 

@@ -46,6 +46,12 @@ S = {
                              leading=11, textColor=INK),
     "flag": ParagraphStyle("flag", fontName="Helvetica-Bold", fontSize=8.3,
                            leading=11, textColor=WARN),
+    "task_title": ParagraphStyle("task_title", fontName="Helvetica-Bold", fontSize=9,
+                                  leading=12, textColor=INK, spaceAfter=3),
+    "task_meta": ParagraphStyle("task_meta", fontName="Helvetica", fontSize=8,
+                                 leading=10.5, textColor=MUTED, spaceAfter=3),
+    "task_detail": ParagraphStyle("task_detail", fontName="Helvetica", fontSize=8.3,
+                                   leading=11, textColor=INK, spaceAfter=2),
 }
 
 
@@ -187,32 +193,48 @@ def build_task_plan(plan, out_path):
         F.append(t)
 
     F.append(Paragraph("Marcos e tarefas", S["h2"]))
-    F.append(Paragraph(
-        "As referências T1, T2… identificam tarefas para futura criação no sistema. "
-        "“Após T…” indica a tarefa que precisa terminar antes.", S["sub"]))
     for i, marco in enumerate(marcos, 1):
         F.append(Paragraph(f"Marco {i} — {esc(marco.get('nome'))}", S["h3"]))
         if marco.get("resultado_verificavel"):
             F.append(Paragraph(esc(marco["resultado_verificavel"]), S["p"]))
         if marco.get("prazo"):
             F.append(Paragraph(f"Previsão: {esc(marco['prazo'])}", S["sub"]))
-        data = [[cell(h, True) for h in ("Tarefa e entrega", "Responsável", "Previsão", "Após")]]
         for tarefa in marco.get("tarefas", []):
             tid = numeros.get(tarefa.get("id"), "")
-            detalhe = f"<b>{esc(tid)} · {esc(tarefa.get('titulo'))}</b>"
+            conteudo = [
+                Paragraph(f"{esc(tid)} · {esc(tarefa.get('titulo'))}", S["task_title"])
+            ]
+            meta = []
+            if tarefa.get("responsavel"):
+                responsavel = esc(tarefa["responsavel"])
+                if "DONO A DEFINIR" in responsavel.upper():
+                    responsavel = f"<font color='#b45309'>{responsavel}</font>"
+                meta.append(f"Responsável: {responsavel}")
+            if tarefa.get("prazo"):
+                meta.append(f"Previsão: {esc(tarefa['prazo'])}")
+            deps = ", ".join(numeros[d] for d in tarefa.get("depende_de") or [])
+            if deps:
+                meta.append(f"Após {esc(deps)}")
+            if meta:
+                conteudo.append(Paragraph(" · ".join(meta), S["task_meta"]))
             if tarefa.get("concluida_quando"):
-                detalhe += f"<br/>Concluída quando: {esc(tarefa['concluida_quando'])}"
+                conteudo.append(Paragraph(
+                    f"<b>Pronto quando:</b> {esc(tarefa['concluida_quando'])}",
+                    S["task_detail"]))
             for sub in tarefa.get("subtarefas") or []:
-                detalhe += f"<br/>• {esc(sub)}"
-            deps = ", ".join(numeros.get(d, d) for d in tarefa.get("depende_de") or [])
-            data.append([
-                Paragraph(detalhe, S["small"]),
-                cell(tarefa.get("responsavel")),
-                cell(tarefa.get("prazo")),
-                cell(deps or "—"),
-            ])
-        if len(data) > 1:
-            F.append(grid_table(data, [0.55 * CW, 0.17 * CW, 0.13 * CW, 0.15 * CW]))
+                conteudo.append(Paragraph(f"• {esc(sub)}", S["task_detail"]))
+            cartao = Table([[conteudo]], colWidths=[CW], hAlign="LEFT")
+            cartao.setStyle(TableStyle([
+                ("BOX", (0, 0), (-1, -1), 0.5, LINE),
+                ("LINEBEFORE", (0, 0), (0, -1), 2, ACCENT),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]))
+            F.append(cartao)
+            F.append(Spacer(1, 2 * mm))
         F.append(Spacer(1, 4 * mm))
 
     if fases:

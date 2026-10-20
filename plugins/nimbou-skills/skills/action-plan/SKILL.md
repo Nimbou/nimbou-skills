@@ -22,6 +22,12 @@ o formato legado de ações. Não tente disfarçar uma tabela 5W2H trocando seu 
   `DONO A DEFINIR (setor)`, previsão e critério de conclusão. Use `depende_de`
   com IDs de tarefas anteriores; não invente uma dependência só porque tarefas
   aparecem em sequência. Dependências entre setores ficam explícitas.
+- No PDF, redija o título como **uma instrução curta no imperativo**
+  ("Verifique o ambiente de teste."). Mostre cada tarefa em um cartão compacto:
+  título; responsável, previsão e dependência na mesma linha; critério de
+  conclusão curto; subtarefas apenas para detalhes indispensáveis. Não repita
+  no critério aquilo que o título já diz nem abra uma legenda genérica antes
+  dos marcos. Evite tabela de várias colunas para tarefas com texto longo.
 - A versão para gestores usa palavras que qualquer setor entende. Siglas,
   códigos de aprovação, nomes de permissões e detalhes de banco ficam em
   documentação técnica, não nos títulos ou critérios do PDF.
