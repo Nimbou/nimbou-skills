@@ -1,5 +1,11 @@
 # O método, em detalhe
 
+Este arquivo detalha o formato legado de ações 5W2H. Quando o usuário pede
+tarefas e subtarefas para setores, dependências ou um PDF simples para futura
+criação de tarefas no sistema, prevalece a seção **Formato de tarefas para uso
+entre setores** do `SKILL.md`. Preserve a confirmação do objetivo e dos marcos,
+mas não imponha primeira ação, 5W2H ou terminologia PDCA ao documento.
+
 Quatro fontes, cada uma resolvendo um problema diferente. Nenhuma delas basta sozinha:
 
 - **O Poder da Ação** (Paulo Vieira) — confronto do objetivo, autorresponsabilidade, foco. Aqui entram as Perguntas Poderosas e a regra do dono nominal. Descartamos a camada motivacional: num plano de trabalho ela não paga o próprio espaço.

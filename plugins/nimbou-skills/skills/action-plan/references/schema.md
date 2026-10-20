@@ -1,5 +1,66 @@
 # Schema do `plano.json`
 
+## Formato de tarefas
+
+Use este formato quando o plano será desdobrado em tarefas no sistema ou precisa
+ser lido por setores não técnicos. O gerador o detecta quando algum marco tem
+`tarefas[]`; os campos legados `acoes[]`/5W2H continuam funcionando para
+planos anteriores. IDs são estáveis para permitir mapeamento futuro, mas gerar
+o PDF **não** cria tarefas externas.
+
+```jsonc
+{
+  "id": "piloto-rh",
+  "titulo": "Piloto do Portal RH",
+  "versao": 1,
+  "data": "20/10/2026",
+  "objetivo": {"frase": "Testar em paralelo e avaliar até 31/01/2027.", "prazo": "31/01/2027"},
+  "ciclo": {"proxima_revisao": "27/10/2026"},
+  "fase_atual_nome": "Preparar o sistema", // opcional; padrão visual: "Fase atual"
+  "marcos": [{
+    "id": "ambiente-pronto",
+    "nome": "Ambiente pronto para o teste",
+    "resultado_verificavel": "Fluxos essenciais funcionam sem alterar produção.",
+    "prazo": "30/10/2026",
+    "tarefas": [{
+      "id": "verificar-ambiente",
+      "titulo": "Verificar o ambiente de teste",
+      "responsavel": "DONO A DEFINIR (TI)",
+      "prazo": "27/10/2026",
+      "depende_de": [],              // IDs de tarefas anteriores; omita se não houver
+      "concluida_quando": "Ambiente e acessos conferidos.",
+      "subtarefas": ["Conferir banco de teste", "Conferir acesso do RH"]
+    }]
+  }],
+  "fases_futuras": [{
+    "nome": "Uso paralelo",
+    "periodo": "Depois da preparação",
+    "marcos_previstos": [{
+      "nome": "Grupo testa os dois sistemas",
+      "prazo": "31/01/2027",
+      "depende_de": ["verificar-ambiente"] // opcional: IDs de tarefas da fase ativa
+    }]
+  }],
+  "limites": ["O sistema atual continua oficial.", "O piloto não alimenta a folha."],
+  "gatilhos_ajuste": ["Se o ambiente falhar, adiar a entrada do grupo."]
+}
+```
+
+Cada ID em `depende_de` deve existir em uma tarefa do mesmo plano e apontar
+para trabalho que precisa terminar antes; não crie ciclos. A ordem visual não
+substitui essa relação. Subtarefas não têm responsável separado: se precisarem
+de outro setor ou conclusão independente, promova-as a tarefas.
+Em `fases_futuras[].marcos_previstos[]`, `depende_de` pode apontar para uma
+tarefa da fase ativa para mostrar o pré-requisito sem detalhar antecipadamente
+as tarefas da fase futura.
+
+No PDF de tarefas, não aparecem `escopo`, 5W2H, primeira ação, PDCA,
+`riscos` ou `backlog`. `fases_futuras` vira sequência visual e `limites`
+vira conjunto de cartões; o prazo final fica no objetivo. O JSON pode manter
+notas internas, mas não as apresente como obrigação do leitor.
+
+## Formato legado de ações
+
 Campos ausentes são omitidos do PDF (nada quebra), mas `titulo`, `objetivo`, `ciclo` e `marcos` são o mínimo útil. `escopo` e `fases_futuras` só entram em plano grande/programa.
 
 IDs operacionais são opcionais para geração do PDF: `id` do plano, de cada marco

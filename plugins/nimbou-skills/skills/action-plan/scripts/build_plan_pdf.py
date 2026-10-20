@@ -3,9 +3,10 @@
 
 Uso:  python3 build_plan_pdf.py plano.json plano_v1.pdf
 
-O schema está em references/schema.md. Campos ausentes são simplesmente
-omitidos — o script nunca quebra por falta de chave opcional. Planos grandes /
-programas usam `escopo` (porte + fase ativa) e `fases_futuras` (roadmap sem 5W2H).
+O schema está em references/schema.md. Planos com `marcos[].tarefas[]` usam
+o formato de tarefas; planos legados com `acoes[]` preservam o 5W2H.
+Campos opcionais ausentes são omitidos. IDs/dependências inválidos no formato
+de tarefas geram erro explícito antes da criação do PDF.
 """
 import json
 import sys
@@ -102,7 +103,165 @@ class Sec:
         return Paragraph(f"{self.n}. {esc(title)}", S["h2"])
 
 
+def build_task_plan(plan, out_path):
+    """Formato legível para planos que serão desdobrados em tarefas de sistema."""
+    W, H = A4
+    ML = MR = 18 * mm
+    CW = W - ML - MR
+    titulo = plan.get("titulo", "Plano de ação")
+    versao = plan.get("versao", 1)
+    doc = BaseDocTemplate(out_path, pagesize=A4, leftMargin=ML, rightMargin=MR,
+                          topMargin=16 * mm, bottomMargin=16 * mm, title=titulo)
+    frame = Frame(ML, 16 * mm, CW, H - 32 * mm, id="f")
+
+    def deco(canvas, _doc):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 7.5)
+        canvas.setFillColor(MUTED)
+        canvas.drawString(ML, H - 11 * mm, f"{titulo} — v{versao}")
+        canvas.drawRightString(W - MR, 10 * mm, f"pág. {canvas.getPageNumber()}")
+        canvas.setStrokeColor(LINE)
+        canvas.line(ML, H - 13 * mm, W - MR, H - 13 * mm)
+        canvas.restoreState()
+
+    doc.addPageTemplates([PageTemplate(id="main", frames=[frame], onPage=deco)])
+    marcos = plan.get("marcos") or []
+    tarefas = [t for m in marcos for t in m.get("tarefas", [])]
+    vistos = set()
+    for tarefa in tarefas:
+        tid = tarefa.get("id")
+        if not tid or tid in vistos:
+            raise ValueError(f"ID de tarefa ausente ou repetido: {tid!r}")
+        for dep in tarefa.get("depende_de") or []:
+            if dep not in vistos:
+                raise ValueError(
+                    f"Tarefa {tid!r} depende de {dep!r}, que não é tarefa anterior"
+                )
+        vistos.add(tid)
+    for fase in plan.get("fases_futuras") or []:
+        for marco in fase.get("marcos_previstos") or []:
+            if isinstance(marco, dict):
+                for dep in marco.get("depende_de") or []:
+                    if dep not in vistos:
+                        raise ValueError(
+                            f"Marco futuro {marco.get('nome')!r} depende de tarefa desconhecida {dep!r}"
+                        )
+    numeros = {t["id"]: f"T{i}" for i, t in enumerate(tarefas, 1) if t.get("id")}
+    F = [Paragraph(esc(titulo), S["h1"])]
+    F.append(Paragraph(
+        f"Plano de ação · versão {versao} · {esc(plan.get('data') or date.today().strftime('%d/%m/%Y'))}"
+        + (f" · próxima revisão: {esc(plan['ciclo']['proxima_revisao'])}"
+           if (plan.get("ciclo") or {}).get("proxima_revisao") else ""),
+        S["sub"]))
+    obj = plan.get("objetivo") or {}
+    F.append(Paragraph("Objetivo", S["h2"]))
+    F.append(Paragraph(esc(obj.get("frase")), S["p"]))
+
+    # A sequência fica visível sem expor a terminologia interna do método.
+    fases = plan.get("fases_futuras") or []
+    if fases:
+        F.append(Paragraph("Etapas do piloto", S["h2"]))
+        etapas = [(plan.get("fase_atual_nome", "Fase atual"), "Agora")]
+        etapas += [(f.get("nome", f"Etapa {i + 2}"), f.get("periodo", ""))
+                   for i, f in enumerate(fases)]
+        etapas = etapas[:3]
+        cards = []
+        widths = []
+        for i, (nome, periodo) in enumerate(etapas):
+            cards.append(Paragraph(
+                f"<b>{esc(nome)}</b><br/><font color='#6b7280'>{esc(periodo)}</font>",
+                S["small"]))
+            widths.append((CW - (len(etapas) - 1) * 8 * mm) / len(etapas))
+            if i < len(etapas) - 1:
+                cards.append(Paragraph("→", S["h3"]))
+                widths.append(8 * mm)
+        t = Table([cards], colWidths=widths, hAlign="LEFT")
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), BAND),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 7),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        F.append(t)
+
+    F.append(Paragraph("Marcos e tarefas", S["h2"]))
+    F.append(Paragraph(
+        "As referências T1, T2… identificam tarefas para futura criação no sistema. "
+        "“Após T…” indica a tarefa que precisa terminar antes.", S["sub"]))
+    for i, marco in enumerate(marcos, 1):
+        F.append(Paragraph(f"Marco {i} — {esc(marco.get('nome'))}", S["h3"]))
+        if marco.get("resultado_verificavel"):
+            F.append(Paragraph(esc(marco["resultado_verificavel"]), S["p"]))
+        if marco.get("prazo"):
+            F.append(Paragraph(f"Previsão: {esc(marco['prazo'])}", S["sub"]))
+        data = [[cell(h, True) for h in ("Tarefa e entrega", "Responsável", "Previsão", "Após")]]
+        for tarefa in marco.get("tarefas", []):
+            tid = numeros.get(tarefa.get("id"), "")
+            detalhe = f"<b>{esc(tid)} · {esc(tarefa.get('titulo'))}</b>"
+            if tarefa.get("concluida_quando"):
+                detalhe += f"<br/>Concluída quando: {esc(tarefa['concluida_quando'])}"
+            for sub in tarefa.get("subtarefas") or []:
+                detalhe += f"<br/>• {esc(sub)}"
+            deps = ", ".join(numeros.get(d, d) for d in tarefa.get("depende_de") or [])
+            data.append([
+                Paragraph(detalhe, S["small"]),
+                cell(tarefa.get("responsavel")),
+                cell(tarefa.get("prazo")),
+                cell(deps or "—"),
+            ])
+        if len(data) > 1:
+            F.append(grid_table(data, [0.55 * CW, 0.17 * CW, 0.13 * CW, 0.15 * CW]))
+        F.append(Spacer(1, 4 * mm))
+
+    if fases:
+        F.append(Paragraph("Próximas fases", S["h2"]))
+        for fase in fases:
+            F.append(Paragraph(esc(fase.get("nome")), S["h3"]))
+            for marco in fase.get("marcos_previstos") or []:
+                if isinstance(marco, str):
+                    F.append(Paragraph("• " + esc(marco), S["p"]))
+                else:
+                    resumo = marco.get("nome", "")
+                    deps = ", ".join(
+                        numeros[d] for d in marco.get("depende_de") or []
+                    )
+                    if deps:
+                        resumo += f" (após {deps})"
+                    if marco.get("prazo"):
+                        resumo += f" — até {marco['prazo']}"
+                    F.append(Paragraph("• " + esc(resumo), S["p"]))
+
+    if plan.get("limites"):
+        F.append(Paragraph("O que este piloto não muda", S["h2"]))
+        cards = [Paragraph(esc(limite), S["small"]) for limite in plan["limites"][:3]]
+        t = Table([cards], colWidths=[CW / len(cards)] * len(cards), hAlign="LEFT")
+        t.setStyle(TableStyle([
+            ("BOX", (0, 0), (-1, -1), 0.6, LINE),
+            ("INNERGRID", (0, 0), (-1, -1), 0.6, LINE),
+            ("BACKGROUND", (0, 0), (-1, -1), BAND),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        F.append(t)
+        for limite in plan["limites"][3:]:
+            F.append(Paragraph("• " + esc(limite), S["p"]))
+
+    if plan.get("gatilhos_ajuste"):
+        F.append(Paragraph("Quando ajustar o plano", S["h2"]))
+        for gatilho in plan["gatilhos_ajuste"]:
+            F.append(Paragraph("• " + esc(gatilho), S["p"]))
+    doc.build(F)
+    return out_path
+
+
 def build(plan, out_path):
+    if any(m.get("tarefas") for m in plan.get("marcos") or []):
+        return build_task_plan(plan, out_path)
     W, H = A4
     ML = MR = 18 * mm
     doc = BaseDocTemplate(out_path, pagesize=A4, leftMargin=ML, rightMargin=MR,
