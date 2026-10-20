@@ -7,51 +7,50 @@ description: Use quando precisar criar, revisar ou executar um plano de ação c
 
 ## Formato de tarefas para uso entre setores
 
-Quando o usuário pretende criar tarefas posteriormente em um sistema, distribuir
-trabalho entre setores ou pede um PDF simples para público não técnico, use o
-**formato de tarefas**. Esta seção prevalece sobre as instruções de 5W2H,
-ação de 48h e apresentação PDCA abaixo; estas continuam válidas apenas para
-o formato legado de ações. Não tente disfarçar uma tabela 5W2H trocando seu título.
+Use este formato quando o plano será distribuído entre setores, desdobrado em
+tarefas ou lido por público não técnico. Esta seção prevalece sobre 5W2H, ação
+de 48h, PDCA e a regra de detalhar só a fase ativa do formato legado.
 
-- Objetivo: uma frase de resultado e prazo. Porte, escopo, método e justificativas
-  extensas podem ficar no JSON ou na análise, mas não entram no PDF desse formato.
-- Marco: resultado intermediário verificável. Sob cada marco, inclua **tarefas**
-  criáveis separadamente no sistema; acrescente **subtarefas** somente quando
-  ajudarem a executar uma tarefa sem abrir outra responsabilidade independente.
-- Cada tarefa tem ID estável, título com verbo, responsável nominal ou
-  `DONO A DEFINIR (setor)`, previsão e critério de conclusão. Use `depende_de`
-  com IDs de tarefas anteriores; não invente uma dependência só porque tarefas
-  aparecem em sequência. Dependências entre setores ficam explícitas.
-- No PDF, redija o título como **uma instrução curta no imperativo**
-  ("Verifique o ambiente de teste."). Mostre cada tarefa em um cartão compacto:
-  **duas colunas alinhadas pelo topo**, com título, critério de conclusão curto
-  e subtarefas necessárias à esquerda; responsável, previsão e dependências
-  em **chips arredondados à direita**. O texto começa junto dos chips, não
-  abaixo deles. Não repita
-  no critério aquilo que o título já diz nem abra uma legenda genérica antes
-  dos marcos. Evite tabela de várias colunas para tarefas com texto longo.
-- A versão para gestores usa palavras que qualquer setor entende. Siglas,
-  códigos de aprovação, nomes de permissões e detalhes de banco ficam em
-  documentação técnica, não nos títulos ou critérios do PDF.
-- Mostre as próximas fases como sequência visual simples. Limites do piloto ou
-  condições importantes podem aparecer em pequenos cartões/diagrama, sem
-  esconder o que continua oficial. Mostre gatilhos de ajuste quando úteis.
-- Não exiba seções de primeira ação, 5W2H, PDCA, riscos ou backlog só porque
-  existem no template. Campos internos podem permanecer no JSON sem ir ao PDF.
-  Datas intermediárias são previsões ajustáveis; destaque o prazo final quando
-  este for o compromisso principal.
-- Para esse formato, grave `marcos[].tarefas[]` conforme
-  [schema](references/schema.md). O mesmo `build_plan_pdf.py` detecta tarefas
-  e gera o PDF adequado; planos antigos com `acoes[]` preservam o layout anterior.
-  Não publique tarefas externas nem contate setores só por constarem no plano.
+- Objetivo: uma frase de resultado e prazo.
+- Detalhe **todas as fases acordadas até o objetivo final**, na hierarquia
+  fase → marco → tarefa → subtarefa. Não substitua as fases posteriores por um
+  esboço. Use `fases[]`, `fases[].marcos[]` e `marcos[].fase_id` do schema.
+  Trate lacunas como previsões ou pontos a definir, sem inventar compromissos.
+- Cada marco descreve um resultado verificável. Cada tarefa tem ID estável,
+  título imperativo curto, objeto da ação, entrega e critério de conclusão.
+  Detalhe os passos necessários em subtarefas, sem repetir o título na descrição.
+  Se uma parte exigir outro responsável ou conclusão independente, crie outra tarefa.
+- Separe `responsavel` humano de `executor` (por exemplo, `Codex ou Dot` ou
+  `Participação humana`). Quando houver uso de IA, planeje a ferramenta nas
+  atividades que pode realizar; decisões, confirmações e uso real permanecem
+  com as pessoas correspondentes. Não invente capacidades ou autorizações.
+- Use `depende_de` com IDs de tarefas anteriores e relações necessárias, inclusive
+  entre fases e setores. Não transforme a ordem visual em dependência fictícia.
+  Use `recorrencia` para atividades repetidas e, quando úteis, `insumos` e
+  `entregaveis` para orientar a execução.
+- O PDF apresenta cada tarefa em um card de **duas colunas alinhadas pelo topo**:
+  título, critério e subtarefas à esquerda; responsável, executor, previsão e
+  dependências em **chips arredondados à direita**. A descrição começa junto dos
+  chips, não abaixo deles. A recorrência aparece no corpo da tarefa.
+- Mostre a sequência visual das fases na abertura e agrupe seus marcos sob o
+  cabeçalho de cada fase. Use palavras compreensíveis por qualquer setor.
+  Limites e gatilhos de ajuste podem aparecer em blocos pequenos.
+- Não exiba primeira ação, porte, 5W2H, PDCA, riscos ou backlog só por existirem
+  no template. Datas intermediárias são previsões ajustáveis; destaque o prazo final.
+- Gere **PDF e Markdown detalhado da mesma versão**, com o conteúdo em
+  `plano.json`. O gerador valida IDs e dependências. Planos antigos de tarefas
+  sem `fases[]` e planos legados com `acoes[]` continuam funcionando.
+  Detalhar ou gerar o plano não inicia execução, não cria tarefas externas e
+  não contata setores.
 
-O padrão visual desse formato usa a identidade Nimbou: cabeçalho azul-marinho,
-logo, azul institucional, Archivo nos títulos e Source Sans 3 no texto. Cores,
-fontes e logo acompanham o gerador; leia [apresentação](references/visual.md)
-ao ajustar a composição ou aplicar outra identidade solicitada pelo usuário.
-Mantenha a orientação aprovada; o padrão é A4 vertical. A paginação acompanha
-o conteúdo, sem fixar quantidade de marcos ou páginas. Confira os renders,
-incluindo nomes longos nos chips e tarefas que continuam na página seguinte.
+O padrão visual é Nimbou: logo sobre cabeçalho azul-marinho, azul institucional,
+Archivo nos títulos e Source Sans 3 no texto. Os recursos acompanham o gerador;
+leia [apresentação](references/visual.md) ao ajustar a composição ou atender
+outra identidade solicitada pelo usuário. Mantenha a orientação aprovada;
+o padrão é A4 vertical. Cartões comuns ficam inteiros na página; somente
+tarefas maiores que uma página continuam na seguinte. Confira os renders e
+os chips com nomes longos. Não fixe quantidade de fases, marcos, tarefas ou
+páginas com base no exemplo.
 
 ## O que esta skill faz
 
@@ -67,7 +66,7 @@ O ponto não é "gerar um plano" — qualquer modelo faz isso. É gerar um plano
 |---|---|---|
 | Ação vaga | "Melhorar o processo de onboarding" | Verbo físico observável + critério de conclusão |
 | Sem dono / sem data | Responsável = "a equipe"; prazo = "Q3" | Um nome próprio, uma data exata |
-| Plano inflado | 40 ações detalhadas de uma vez, zero execução | Só a **fase ativa** é detalhada; o resto vira roadmap/backlog |
+| Plano inflado | tarefas sem função ou fora do objetivo | Detalhar só o escopo acordado, com entregas e dependências |
 | Ninguém revisa | Vira PDF morto na primeira semana | Cadência, indicadores e gatilhos de ajuste dentro do doc |
 
 Um plano bonito que viole qualquer um desses é uma falha da skill — mesmo que o usuário goste na hora. No formato de tarefas, use previsão honesta em vez de impor uma data exata fictícia a cada ação.
@@ -76,7 +75,11 @@ Um plano bonito que viole qualquer um desses é uma falha da skill — mesmo que
 
 **Modo NOVO PLANO** (padrão): o usuário traz um objetivo, cru ou detalhado. Rode as fases, confirme os marcos, gere o PDF v1.
 
-**Modo REVISÃO**: o usuário traz um plano existente (PDF de um ciclo anterior) e quer fechar/atualizar o ciclo. Extraia o conteúdo do PDF (`pdftotext -layout arquivo.pdf -`, ou pypdf), rode as fases 5 → 3 → 4 (Ciclar → re-Estruturar → Destravar) e gere a versão seguinte com a seção **Check / Act** preenchida. Não recomece do zero: o valor da revisão está em comparar planejado com realizado. Em programa multi-fase, a revisão fecha a **fase ativa** e promove a próxima fase do roadmap a ativa — detalhando-a agora até a ação.
+**Modo REVISÃO**: use o JSON existente ou extraia o PDF; preserve IDs e compare
+o planejado com o realizado. No formato de tarefas, atualize todas as fases
+acordadas e gere PDF + Markdown, sem impor uma seção PDCA. No legado, rode as
+fases 5 → 3 → 4 e preencha Check / Act; a revisão pode fechar a fase ativa e
+promover a próxima fase do roadmap.
 
 **Modo EXECUÇÃO / ACOMPANHAMENTO**: o usuário pede para executar ou retomar um
 plano aprovado. Leia obrigatoriamente o
@@ -115,9 +118,13 @@ Nem todo objetivo cabe em um ciclo. O porte define quantas fases e quantas pergu
 | Grande | múltiplas frentes/dependências | 5-8 marcos, uma ou duas fases | 3-6 meses |
 | Programa | iniciativa que não termina em um ciclo | várias **fases**, cada uma um ciclo executável | 6-18 meses |
 
-**Regra que não muda com o porte: só a fase ativa é detalhada.** No formato legado, você preenche 5W2H + ação de 48h; no formato de tarefas, detalha tarefas, subtarefas necessárias e dependências apenas nos marcos da **fase ativa** (a que começa agora). As fases seguintes entram como esboço. Detalhar seis meses à frente envelhece em duas semanas.
+No formato de tarefas, detalhe todas as fases acordadas com marcos, tarefas,
+subtarefas necessárias e dependências reais. Trate datas distantes como previsões.
+No legado, só a fase ativa recebe 5W2H e ação de 48h; as demais ficam no roadmap.
 
-Não pergunte "seu plano é grande?". Infira o porte de quantas frentes e quantos donos apareceram na captura. No formato legado, confirme o porte junto com os marcos; no formato de tarefas, confirme apenas a sequência e o corte entre fase atual e próximas fases.
+Não pergunte "seu plano é grande?". Infira o porte. No legado, confirme o porte
+e o corte da fase ativa. No formato de tarefas, confirme apenas o escopo e a
+sequência das fases e dos marcos ainda não acordados.
 
 ## As 5 fases + o portão
 
@@ -151,16 +158,19 @@ Estruture em três (ou quatro) níveis:
 
 ```
 Objetivo (1 frase + indicador + prazo)
-└── Fase ativa (só em plano grande/programa)
+└── Cada fase acordada
     └── Marco 1 (resultado verificável, não tarefa)
-        ├── Tarefa 1.1 (ou ação 5W2H no formato legado)
+        ├── Tarefa 1.1 (responsável humano + executor + entrega)
         └── Tarefa 1.2, com subtarefas e dependências quando necessário
-└── Fases futuras → roadmap (nome, resultado, período, marcos previstos — sem 5W2H)
+└── Outras fases acordadas → mesmo detalhamento, com dependências entre fases
 ```
 
 Um marco é um **estado do mundo**, não um esforço: "Fluxo de cobrança automatizado rodando em produção" é marco; "Trabalhar na automação" não é.
 
-No formato legado, cada ação **da fase ativa** carrega o 5W2H completo — *o quê, por quê, quem, quando, onde, como, quanto* — mais um critério de conclusão. No formato de tarefas, use título, responsável, previsão, critério, subtarefas necessárias e dependências reais.
+No legado, cada ação da fase ativa carrega 5W2H e critério de conclusão;
+as fases futuras ficam no roadmap. No formato de tarefas, todas as fases
+acordadas usam título, responsável, executor, previsão, critério, subtarefas
+e dependências.
 
 ### Portão — Confirmar os marcos (obrigatório antes da fase 4)
 
@@ -171,7 +181,8 @@ Volte ao usuário com os marcos propostos e confirme com opções claras, usando
 **Camada 1 — o conjunto (uma rodada):**
 
 1. **O conjunto está certo?** Apresente os marcos como lista curta (estado do mundo, não tarefa). Falta algum? Sobra algum? Deixe o usuário adicionar/remover.
-2. **A sequência e o corte de fase.** Qual marco vem primeiro? Onde termina a fase que começa agora e onde começa a próxima? (é o que separa **fase ativa** de **roadmap**). Confirme o porte inferido apenas no formato legado.
+2. **A sequência das fases e dos marcos.** Confirme o escopo e as dependências
+   entre fases. O corte da fase ativa e o porte são necessários apenas no legado.
 
 **Camada 2 — item a item de cada marco, com opções, só onde necessário.** Para cada marco confirmado, confirme os campos que você **inferiu** (não os que o usuário ditou), oferecendo opções — uma pergunta por marco quando necessário (agrupe os marcos leves):
 
@@ -196,7 +207,8 @@ O plano precisa conter as condições da própria revisão:
 - **Gatilhos de ajuste**: o que precisa acontecer para replanejar, cortar ou abortar um marco — ou para **promover a próxima fase** do roadmap
 - **Premissas e riscos**: examine o que estamos assumindo sem prova e o que fazer se cair; no formato de tarefas, leve ao PDF apenas limites e gatilhos relevantes, sem seção obrigatória de riscos
 
-Na v2+, esta fase produz a seção **Check / Act**: o que foi entregue, o que não foi e por quê, o que aprendemos, o que muda no próximo ciclo. Em programa, o Act fecha a fase ativa e promove a próxima.
+No legado v2+, esta fase produz Check / Act. No formato de tarefas, incorpore
+resultados e ajustes nas tarefas e fases, sem exibir uma seção de método.
 
 ## Guardrails — aplique antes de gerar o PDF
 
@@ -216,7 +228,10 @@ Verbos suspeitos: melhorar, otimizar, alinhar, acompanhar, revisar, estruturar, 
 
 **3. Cadência de revisão → obrigatória.** O plano só está pronto quando tem data da próxima revisão. Sem isso é um documento, não um ciclo.
 
-**4. Inflação → contenha a fase ativa, não o plano inteiro.** A disciplina não é "poucos marcos", é "poucos marcos *detalhados de uma vez*". A **fase ativa** cabe em 3 a 5 marcos e tarefas executáveis. O que ainda depende dessa fase vira **fase futura**; itens apenas possíveis podem permanecer em notas internas. No formato legado, o backlog continua disponível. Avise o corte em uma frase e siga — o usuário pode puxar de volta se quiser.
+**4. Inflação → corte tarefas sem função, não fases acordadas.** No formato de
+tarefas, mantenha todas as fases do objetivo com o detalhe necessário para
+execução. Evite duplicidade, passos sem entrega e datas fictícias; dependências
+mostram o que ainda não pode começar. No legado, contenha o detalhe da fase ativa.
 
 ## Como conduzir a entrevista
 
@@ -257,7 +272,8 @@ Vale para todo campo que o gestor lê: objetivo, marcos, tarefas, limites e pró
 Grave fontes e PDFs em `docs/plans/<slug>/`, salvo destino indicado pelo usuário.
 Monte o plano num `plano.json` e rode o script. Ele escolhe o layout de
 tarefas quando encontra `marcos[].tarefas[]` e preserva o layout 5W2H dos
-planos legados. Antes de gerar, confira que cada dependência aponta para uma
+planos legados. No formato de tarefas, o mesmo comando gera um Markdown com o
+mesmo nome-base do PDF. Use `fases[]` para a visão completa das fases e seus marcos. Antes de gerar, confira que cada dependência aponta para uma
 tarefa anterior; o script também rejeita IDs ausentes, repetidos e dependências
 desconhecidas ou circulares:
 
@@ -285,7 +301,9 @@ do formato legado (os campos `escopo` e `fases_futuras` são opcionais):
 
 Nomeie o arquivo `plano_<slug-do-objetivo>_v<N>.pdf` — a versão no nome é o que torna o ciclo PDCA rastreável quando existirem v1, v2 e v3 na mesma pasta.
 
-Entregue o PDF ao usuário e feche com **uma frase**: objetivo, número de marcos ativos e próxima revisão; mencione porte apenas no formato legado. Não narre o método de volta ao usuário — ele acabou de participar dele.
+Entregue PDF e Markdown no formato de tarefas. Resuma fases, marcos e tarefas;
+quando houver IA, indique a divisão entre execução assistida e participação humana.
+No legado, entregue o PDF com objetivo, marcos ativos e próxima revisão.
 
 ## Bundled
 

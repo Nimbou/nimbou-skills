@@ -1,69 +1,104 @@
 # Schema do `plano.json`
 
-## Formato de tarefas
+## Formato de tarefas: fases completas
 
-Use este formato quando o plano será desdobrado em tarefas no sistema ou precisa
-ser lido por setores não técnicos. O gerador o detecta quando algum marco tem
-`tarefas[]`; os campos legados `acoes[]`/5W2H continuam funcionando para
-planos anteriores. IDs são estáveis para permitir mapeamento futuro, mas gerar
-o PDF **não** cria tarefas externas.
+Novos planos de tarefas descrevem todas as fases acordadas. A hierarquia é
+`fases[]` → marcos por ID → `marcos[].tarefas[]` → `subtarefas[]`. Os IDs
+continuam estáveis para futura criação de tarefas; gerar os documentos não cria
+tarefas externas nem inicia a execução.
 
 ```jsonc
 {
-  "id": "piloto-rh",
-  "titulo": "Piloto do Portal RH",
+  "id": "piloto-atendimento",
+  "titulo": "Piloto de atendimento",
   "versao": 1,
   "data": "20/10/2026",
-  "objetivo": {"frase": "Testar em paralelo e avaliar até 31/01/2027.", "prazo": "31/01/2027"},
+  "objetivo": {"frase": "Testar e avaliar o atendimento até 31/01/2027.", "prazo": "31/01/2027"},
   "ciclo": {"proxima_revisao": "27/10/2026"},
-  "fase_atual_nome": "Preparar o sistema", // opcional; padrão visual: "Fase atual"
-  "marcos": [{
-    "id": "ambiente-pronto",
-    "nome": "Ambiente pronto para o teste",
-    "resultado_verificavel": "Fluxos essenciais funcionam sem alterar produção.",
-    "prazo": "30/10/2026",
-    "tarefas": [{
-      "id": "verificar-ambiente",
-      "titulo": "Verifique o ambiente de teste.",
-      "responsavel": "DONO A DEFINIR (TI)",
-      "prazo": "27/10/2026",
-      "depende_de": [],              // IDs de tarefas anteriores; omita se não houver
-      "concluida_quando": "Ambiente e acessos conferidos.",
-      "subtarefas": ["Confira os dados de teste.", "Teste o acesso do RH."]
-    }]
-  }],
-  "fases_futuras": [{
-    "nome": "Uso paralelo",
-    "periodo": "Depois da preparação",
-    "marcos_previstos": [{
-      "nome": "Grupo testa os dois sistemas",
-      "prazo": "31/01/2027",
-      "depende_de": ["verificar-ambiente"] // opcional: IDs de tarefas da fase ativa
-    }]
-  }],
-  "limites": ["O sistema atual continua oficial.", "O piloto não alimenta a folha."],
-  "gatilhos_ajuste": ["Se o ambiente falhar, adiar a entrada do grupo."]
+  "orientacao_execucao": "Use Codex ou Dot na preparação técnica; mantenha decisões com as pessoas responsáveis.",
+  "observacao_prazos": "As datas intermediárias são previsões ajustáveis.",
+  "fases": [
+    {"id": "preparar", "nome": "Prepare o atendimento", "periodo": "Até novembro", "marcos": ["ambiente-pronto"]},
+    {"id": "avaliar", "nome": "Avalie o uso real", "periodo": "Após a preparação", "marcos": ["avaliacao-pronta"]}
+  ],
+  "marcos": [
+    {
+      "id": "ambiente-pronto",
+      "fase_id": "preparar",
+      "nome": "Ambiente pronto para o teste",
+      "resultado_verificavel": "Acesso e dados conferidos.",
+      "prazo": "30/10/2026",
+      "tarefas": [{
+        "id": "verificar-ambiente",
+        "titulo": "Verifique o ambiente de teste.",
+        "responsavel": "DONO A DEFINIR (TI)",
+        "executor": "Codex ou Dot",
+        "prazo": "30/10/2026",
+        "depende_de": [],
+        "concluida_quando": "Acesso e dados conferidos com evidências.",
+        "subtarefas": ["Prepare dados fictícios.", "Teste os acessos previstos.", "Registre os impedimentos."],
+        "insumos": ["Registro da implementação"],
+        "entregaveis": ["Relatório de prontidão"]
+      }]
+    },
+    {
+      "id": "avaliacao-pronta",
+      "fase_id": "avaliar",
+      "nome": "Avaliação registrada",
+      "resultado_verificavel": "As pessoas responsáveis avaliaram o uso.",
+      "tarefas": [{
+        "id": "avaliar-uso",
+        "titulo": "Registre a avaliação do uso.",
+        "responsavel": "DONO A DEFINIR (coordenação)",
+        "executor": "Participação humana",
+        "prazo": "Até 31/01/2027",
+        "depende_de": ["verificar-ambiente"],
+        "concluida_quando": "A avaliação contém os problemas e o encaminhamento.",
+        "subtarefas": ["Confira os resultados reais.", "Registre a decisão e os próximos ajustes."],
+        "recorrencia": "Repita ao final de cada período combinado."
+      }]
+    }
+  ],
+  "limites": ["O sistema atual continua oficial durante o teste."],
+  "gatilhos_ajuste": ["Se um erro impedir o uso, registre e corrija antes da retomada."]
 }
 ```
 
-Cada ID em `depende_de` deve existir em uma tarefa do mesmo plano e apontar
-para trabalho que precisa terminar antes; não crie ciclos. A ordem visual não
-substitui essa relação. Subtarefas não têm responsável separado: se precisarem
-de outro setor ou conclusão independente, promova-as a tarefas.
-Em `fases_futuras[].marcos_previstos[]`, `depende_de` pode apontar para uma
-tarefa da fase ativa para mostrar o pré-requisito sem detalhar antecipadamente
-as tarefas da fase futura.
+`fases[].id` e `marcos[].id` são únicos. Cada marco pertence a exatamente uma
+fase: `marcos[].fase_id` corresponde à fase que o relaciona em `marcos[]`.
+As listas de fases/marcos determinam a ordem; a lista plana `marcos[]` segue
+essa mesma ordem. O gerador rejeita marcos ausentes, repetidos, fora da fase ou
+fora da sequência declarada.
 
-No PDF de tarefas, não aparecem `escopo`, 5W2H, primeira ação, PDCA,
-`riscos` ou `backlog`. `fases_futuras` vira sequência visual e `limites`
-vira conjunto de cartões; o prazo final fica no objetivo. O JSON pode manter
-notas internas, mas não as apresente como obrigação do leitor.
-Cada tarefa aparece em um cartão de duas colunas alinhadas pelo topo. À esquerda
-ficam título imperativo, critério de conclusão curto e subtarefas necessárias;
-à direita, responsável, previsão e dependências em chips arredondados.
-O texto da tarefa não começa abaixo dos metadados. Não há legenda genérica antes
-do primeiro marco. A identidade Nimbou e a paginação são responsabilidade do
-gerador, não exigem novos campos no JSON e não fixam o número de marcos ou páginas.
+`depende_de` referencia IDs de tarefas anteriores do mesmo plano, inclusive
+entre fases. Não crie ciclos ou dependências só porque tarefas aparecem em
+sequência. Subtarefas não têm responsável separado: se isso for necessário,
+promova-as a tarefas independentes.
+
+`responsavel` é a pessoa que responde pela tarefa; `executor` identifica quem
+ou qual ferramenta executa. Não confunda a ferramenta com o dono humano.
+`recorrencia` descreve uma repetição real, não cria agendamentos.
+`insumos` e `entregaveis` são listas opcionais e aparecem no Markdown.
+`orientacao_execucao` e `observacao_prazos` são notas opcionais curtas.
+Datas e nomes do exemplo não viram padrão para outros planos.
+
+O comando de geração produz PDF e Markdown com o mesmo nome-base. O PDF
+mostra fases, marcos, tarefas, subtarefas, critérios, recorrências e chips de
+responsável/executor/previsão/dependências. O Markdown mantém também IDs,
+insumos e entregas, para orientar a execução futura.
+
+## Compatibilidade com planos de tarefas anteriores
+
+Planos sem `fases[]` continuam sendo gerados a partir de `marcos[].tarefas[]`.
+Nos antigos planos com `fase_atual_nome` e `fases_futuras[]`, estas últimas
+preservam o resumo de `nome`, `periodo` e `marcos_previstos[]`; dependências
+desses marcos apontam para tarefas conhecidas. Novos planos não usam esse resumo
+para substituir o detalhamento de uma fase já acordada.
+
+No PDF de tarefas, `escopo`, 5W2H, primeira ação, PDCA, riscos e backlog não
+aparecem só por existirem. Limites e gatilhos úteis permanecem visíveis.
+Não há legenda genérica antes dos marcos. Cards comuns ficam inteiros; somente
+tarefas maiores que uma página permitem continuação.
 
 ## Formato legado de ações
 

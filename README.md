@@ -24,7 +24,7 @@
 - `nestjs-refactor`
 - `fullstack-plan`
 - `roadmap-orchestration`
-- `action-plan` plans, reviews, or executes administrative, technical, and human milestones
+- `action-plan` plans, reviews, or executes administrative, technical, and human milestones; task plans include every agreed phase, explicit tasks/dependencies, human owners and executors, with matching PDF and Markdown output
 - `executing-plans`
 - `dispatching-parallel-agents`
 - `test-driven-development`

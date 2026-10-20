@@ -111,6 +111,9 @@ class Sec:
 
 def build_task_plan(plan, out_path):
     """Valida IDs e delega a apresentação de tarefas ao layout Nimbou."""
+    from task_plan_markdown import validate_phases, write_markdown
+
+    validate_phases(plan)
     marcos = plan.get("marcos") or []
     tarefas = [t for m in marcos for t in m.get("tarefas", [])]
     vistos = set()
@@ -135,7 +138,9 @@ def build_task_plan(plan, out_path):
     numeros = {t["id"]: f"T{i}" for i, t in enumerate(tarefas, 1) if t.get("id")}
     from task_plan_pdf import build_task_plan as render_task_plan
 
-    return render_task_plan(plan, out_path, numeros)
+    result = render_task_plan(plan, out_path, numeros)
+    write_markdown(plan, numeros, out_path)
+    return result
 
 
 def build(plan, out_path):

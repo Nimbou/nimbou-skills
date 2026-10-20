@@ -1,5 +1,7 @@
 """Functional PDF checks. Requires reportlab and pypdf in the test environment."""
 import json
+import copy
+import re
 import subprocess
 import sys
 import tempfile
@@ -42,7 +44,66 @@ class PlanPdfTest(unittest.TestCase):
             capture_output=True, text=True,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+        self.destination = destination
         return PdfReader(destination)
+
+    def test_all_phases_executor_and_recurrence_are_present_in_pdf_and_markdown(self):
+        data = plan()
+        data["orientacao_execucao"] = "Coordene a execução técnica com as pessoas responsáveis."
+        data["fases"] = [
+            {"id": "preparar", "nome": "Prepare o atendimento", "marcos": ["m1"]},
+            {"id": "avaliar", "nome": "Avalie o atendimento", "marcos": ["m2"]},
+        ]
+        first = data["marcos"][0]
+        first.update(id="m1", fase_id="preparar")
+        first["tarefas"][0]["executor"] = "Codex ou Dot"
+        second = copy.deepcopy(first)
+        second.update(id="m2", fase_id="avaliar", nome="Avaliação concluída")
+        second["tarefas"][0].update(id="avaliacao", titulo="Registre a avaliação.",
+                                      depende_de=["teste"], recorrencia="Repita por período.")
+        data["marcos"].append(second)
+        pdf = self.generate(data)
+        text = " ".join(page.extract_text() for page in pdf.pages)
+        for expected in ["FASE 01", "FASE 02", "Codex ou Dot", "Repita por período."]:
+            self.assertIn(expected, text)
+        self.assertTrue(self.destination.with_suffix(".md").exists(), "Markdown must accompany PDF")
+        markdown = self.destination.with_suffix(".md").read_text()
+        for expected in ["Prepare o atendimento", "Avalie o atendimento", "Codex ou Dot",
+                         "Registre a avaliação.", "Repita por período."]:
+            self.assertIn(expected, markdown)
+
+    def test_regular_task_cards_are_not_split_between_pages(self):
+        data = plan()
+        tasks = []
+        for index in range(15):
+            task = copy.deepcopy(data["marcos"][0]["tarefas"][0])
+            task.update(id=f"task-{index}", titulo=f"Execute a conferência {index}.",
+                        concluida_quando=f"CONCLUSAO_{index} registrada.", executor="Codex ou Dot",
+                        subtarefas=["Confira o primeiro registro.", "Confira o segundo registro.",
+                                    "Registre a evidência da conferência.", f"Conclua o encaminhamento {index}."])
+            tasks.append(task)
+        data["marcos"][0]["tarefas"] = tasks
+        pdf = self.generate(data)
+        for page in pdf.pages:
+            text = re.sub(r"\s+", " ", page.extract_text())
+            for task in tasks:
+                if task["titulo"] in text:
+                    self.assertIn(task["concluida_quando"], text,
+                                  "A regular task title and description must stay on the same page")
+                    self.assertIn(task["subtarefas"][-1], text,
+                                  "A regular task must keep all its subtasks together")
+
+    def test_invalid_phase_membership_is_rejected(self):
+        data = plan()
+        data["fases"] = [{"id": "p1", "nome": "Preparação", "marcos": ["missing"]}]
+        data["marcos"][0].update(id="m1", fase_id="p1")
+        with tempfile.TemporaryDirectory(prefix="action-plan-invalid-") as directory:
+            source = Path(directory) / "plano.json"
+            source.write_text(json.dumps(data))
+            result = subprocess.run([sys.executable, str(SCRIPT), str(source),
+                                     str(Path(directory) / "plano.pdf")], capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0,
+                                "A phase must not refer to a milestone that does not exist")
 
     def test_task_text_and_metadata_share_the_top_in_separate_columns(self):
         pdf = self.generate(plan())

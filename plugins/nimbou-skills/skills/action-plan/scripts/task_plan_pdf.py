@@ -1,4 +1,4 @@
-"""Nimbou presentation for task plans; runtime dependency: ReportLab only."""
+"""Nimbou layout for complete task plans; runtime dependency: ReportLab only."""
 from datetime import date
 from html import escape
 from pathlib import Path
@@ -134,9 +134,13 @@ def task_card(task, number, numbers, s):
         left.append(Paragraph("<b>Pronto quando:</b> " + escape(task["concluida_quando"]),
                               s["detail"]))
     left.extend(p("• " + sub, s["bullet"]) for sub in task.get("subtarefas") or [])
+    if task.get("recorrencia"):
+        left += [Spacer(1, 4), p(task["recorrencia"], s["small"])]
     values = []
     if task.get("responsavel"):
         values.append((task["responsavel"], True))
+    if task.get("executor"):
+        values.append((task["executor"], False))
     if task.get("prazo"):
         values.append(("Previsão: " + task["prazo"], False))
     deps = ", ".join(numbers[d] for d in task.get("depende_de") or [])
@@ -154,16 +158,19 @@ def task_card(task, number, numbers, s):
     style.add("LEFTPADDING", (2, 0), (2, -1), 0)
     style.add("ALIGN", (2, 0), (2, -1), "RIGHT")
     card.setStyle(style)
+    # Ordinary cards move whole to the next page; only genuinely oversized
+    # tasks need to continue across pages.
+    card.splitInRow = int(card.wrap(CONTENT, HEIGHT)[1] > HEIGHT - 85 - 46)
     return card
 
 
 def phase_sequence(plan, s):
-    phases = [(plan.get("fase_atual_nome", "Fase atual"), "Agora")]
-    future = plan.get("fases_futuras") or []
-    phases += [(f.get("nome", "Próxima etapa"), "Próxima etapa") for f in future]
-    deadline = (plan.get("objetivo") or {}).get("prazo")
-    if deadline and future:
-        phases[-1] = (phases[-1][0], "Até " + deadline)
+    if plan.get("fases"):
+        phases = [(phase["nome"], phase.get("periodo", "")) for phase in plan["fases"]]
+    else:
+        phases = [(plan.get("fase_atual_nome", "Fase atual"), "Agora")]
+        phases += [(phase.get("nome", "Próxima etapa"), "Próxima etapa")
+                   for phase in plan.get("fases_futuras") or []]
     result = []
     for start in range(0, len(phases), 3):
         group = phases[start:start + 3]
@@ -246,9 +253,15 @@ def build_task_plan(plan, out_path, numbers):
     ])
     story = [p("OBJETIVO", s["label"]),
              p((plan.get("objetivo") or {}).get("frase"), s["objective"])]
+    if plan.get("orientacao_execucao"):
+        story += [Spacer(1, 7), p(plan["orientacao_execucao"], s["small"])]
+    if plan.get("observacao_prazos"):
+        story += [Spacer(1, 4), p(plan["observacao_prazos"], s["small"])]
     phases = plan.get("fases_futuras") or []
-    if phases:
-        story += [p("ETAPAS DO PLANO", s["label"]), *phase_sequence(plan, s)]
+    if plan.get("fases") or phases:
+        story += [p("FASES DO PLANO", s["label"]), *phase_sequence(plan, s)]
+    phase_map = {phase["id"]: (index, phase) for index, phase in enumerate(plan.get("fases") or [], 1)}
+    previous_phase = None
     for i, milestone in enumerate(plan.get("marcos") or [], 1):
         top = Table([[p(f"MARCO {i:02}", s["label"]),
                       p("Previsão: " + milestone["prazo"] if milestone.get("prazo") else "",
@@ -257,6 +270,18 @@ def build_task_plan(plan, out_path, numbers):
         heading = [top, Spacer(1, 5), p(milestone.get("nome"), s["milestone"])]
         if milestone.get("resultado_verificavel"):
             heading.append(p(milestone["resultado_verificavel"], s["result"]))
+        phase_id = milestone.get("fase_id")
+        if phase_id and phase_id != previous_phase:
+            phase_number, phase = phase_map[phase_id]
+            phase_title = p(f"FASE {phase_number:02}  /  {phase['nome']}",
+                            ParagraphStyle("phase-title", parent=s["milestone"],
+                                           fontSize=14, leading=18, textColor=ACTION))
+            phase_box = Table([[[phase_title, Spacer(1, 3),
+                                 p(phase.get("periodo", ""), s["small"])]]],
+                              colWidths=[CONTENT], cornerRadii=[10] * 4)
+            phase_box.setStyle(table_style(PALE, padding=10, border=False))
+            heading = [phase_box, Spacer(1, 9), *heading]
+            previous_phase = phase_id
         cards = [task_card(task, numbers[task["id"]], numbers, s)
                  for task in milestone.get("tarefas") or []]
         # Keep the heading with the start of a task, not with its entire potentially

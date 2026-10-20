@@ -13,21 +13,27 @@ do logo e dos arquivos de fonte publicados pelo site em 20/10/2026. O gerador
 incorpora as fontes no PDF e funciona sem rede, somente com ReportLab instalado.
 
 Cada card tem duas colunas independentes, alinhadas pelo topo. Título, critério
-de conclusão e subtarefas ficam inteiramente na coluna esquerda; responsável,
-previsão e dependências ocupam chips na coluna direita. Um chip pode crescer
+de conclusão e subtarefas ficam inteiramente na coluna esquerda; responsável
+humano, executor, previsão e dependências ocupam chips na coluna direita. Um chip pode crescer
 verticalmente para acomodar nome longo. A altura do card acompanha a maior
 coluna. Não reserve a altura dos chips acima da descrição da tarefa.
 
 Use superfícies planas claras, contornos suaves e cantos arredondados. Evite
 tabelas com grade aparente e colunas vazias para cada metadado. A sequência de
 fases e os limites são blocos visuais pequenos; os marcos começam diretamente,
-sem legenda explicativa. As fases futuras continuam sem tarefas detalhadas.
+sem legenda explicativa. Todas as fases acordadas têm cabeçalho, marcos e tarefas
+detalhadas; não deixe etapas posteriores apenas como esboço. Isso não inclui
+fases hipotéticas que o usuário não colocou no objetivo.
 
 A4 vertical é o padrão; mantenha a orientação já aprovada. Nunca force duas
 páginas ou três marcos apenas para reproduzir um exemplo. O layout permite
-continuação de cards longos e envolve texto extenso nos chips. Renderize e
+continuação de cards maiores que uma página e envolve texto extenso nos chips;
+cards comuns são movidos inteiros para a próxima página. Renderize e
 confira o PDF antes de entregar: alinhamento pelo topo, contraste, quebras,
 acentos, conteúdo completo, cabeçalhos e rodapés.
 
 O ponto de entrada é `scripts/build_plan_pdf.py`; o layout de tarefas vive em
 `scripts/task_plan_pdf.py`. Planos legados com `acoes[]` mantêm sua apresentação.
+O mesmo comando gera o Markdown detalhado, incluindo executor, recorrência,
+dependências, insumos e entregas presentes no JSON. O número de tarefas e os
+nomes, datas e pessoas de um plano específico não fazem parte do template.
