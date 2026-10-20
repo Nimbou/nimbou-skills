@@ -24,8 +24,10 @@ o formato legado de ações. Não tente disfarçar uma tabela 5W2H trocando seu 
   aparecem em sequência. Dependências entre setores ficam explícitas.
 - No PDF, redija o título como **uma instrução curta no imperativo**
   ("Verifique o ambiente de teste."). Mostre cada tarefa em um cartão compacto:
-  título; responsável, previsão e dependência na mesma linha; critério de
-  conclusão curto; subtarefas apenas para detalhes indispensáveis. Não repita
+  **duas colunas alinhadas pelo topo**, com título, critério de conclusão curto
+  e subtarefas necessárias à esquerda; responsável, previsão e dependências
+  em **chips arredondados à direita**. O texto começa junto dos chips, não
+  abaixo deles. Não repita
   no critério aquilo que o título já diz nem abra uma legenda genérica antes
   dos marcos. Evite tabela de várias colunas para tarefas com texto longo.
 - A versão para gestores usa palavras que qualquer setor entende. Siglas,
@@ -42,6 +44,14 @@ o formato legado de ações. Não tente disfarçar uma tabela 5W2H trocando seu 
   [schema](references/schema.md). O mesmo `build_plan_pdf.py` detecta tarefas
   e gera o PDF adequado; planos antigos com `acoes[]` preservam o layout anterior.
   Não publique tarefas externas nem contate setores só por constarem no plano.
+
+O padrão visual desse formato usa a identidade Nimbou: cabeçalho azul-marinho,
+logo, azul institucional, Archivo nos títulos e Source Sans 3 no texto. Cores,
+fontes e logo acompanham o gerador; leia [apresentação](references/visual.md)
+ao ajustar a composição ou aplicar outra identidade solicitada pelo usuário.
+Mantenha a orientação aprovada; o padrão é A4 vertical. A paginação acompanha
+o conteúdo, sem fixar quantidade de marcos ou páginas. Confira os renders,
+incluindo nomes longos nos chips e tarefas que continuam na página seguinte.
 
 ## O que esta skill faz
 

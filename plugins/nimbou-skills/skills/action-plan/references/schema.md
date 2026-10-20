@@ -58,9 +58,12 @@ No PDF de tarefas, não aparecem `escopo`, 5W2H, primeira ação, PDCA,
 `riscos` ou `backlog`. `fases_futuras` vira sequência visual e `limites`
 vira conjunto de cartões; o prazo final fica no objetivo. O JSON pode manter
 notas internas, mas não as apresente como obrigação do leitor.
-Cada tarefa aparece em um cartão: título imperativo, metadados na mesma linha,
-critério de conclusão curto e subtarefas somente se necessárias. Não há legenda
-genérica antes do primeiro marco.
+Cada tarefa aparece em um cartão de duas colunas alinhadas pelo topo. À esquerda
+ficam título imperativo, critério de conclusão curto e subtarefas necessárias;
+à direita, responsável, previsão e dependências em chips arredondados.
+O texto da tarefa não começa abaixo dos metadados. Não há legenda genérica antes
+do primeiro marco. A identidade Nimbou e a paginação são responsabilidade do
+gerador, não exigem novos campos no JSON e não fixam o número de marcos ou páginas.
 
 ## Formato legado de ações
 

@@ -110,27 +110,7 @@ class Sec:
 
 
 def build_task_plan(plan, out_path):
-    """Formato legível para planos que serão desdobrados em tarefas de sistema."""
-    W, H = A4
-    ML = MR = 18 * mm
-    CW = W - ML - MR
-    titulo = plan.get("titulo", "Plano de ação")
-    versao = plan.get("versao", 1)
-    doc = BaseDocTemplate(out_path, pagesize=A4, leftMargin=ML, rightMargin=MR,
-                          topMargin=16 * mm, bottomMargin=16 * mm, title=titulo)
-    frame = Frame(ML, 16 * mm, CW, H - 32 * mm, id="f")
-
-    def deco(canvas, _doc):
-        canvas.saveState()
-        canvas.setFont("Helvetica", 7.5)
-        canvas.setFillColor(MUTED)
-        canvas.drawString(ML, H - 11 * mm, f"{titulo} — v{versao}")
-        canvas.drawRightString(W - MR, 10 * mm, f"pág. {canvas.getPageNumber()}")
-        canvas.setStrokeColor(LINE)
-        canvas.line(ML, H - 13 * mm, W - MR, H - 13 * mm)
-        canvas.restoreState()
-
-    doc.addPageTemplates([PageTemplate(id="main", frames=[frame], onPage=deco)])
+    """Valida IDs e delega a apresentação de tarefas ao layout Nimbou."""
     marcos = plan.get("marcos") or []
     tarefas = [t for m in marcos for t in m.get("tarefas", [])]
     vistos = set()
@@ -153,132 +133,9 @@ def build_task_plan(plan, out_path):
                             f"Marco futuro {marco.get('nome')!r} depende de tarefa desconhecida {dep!r}"
                         )
     numeros = {t["id"]: f"T{i}" for i, t in enumerate(tarefas, 1) if t.get("id")}
-    F = [Paragraph(esc(titulo), S["h1"])]
-    F.append(Paragraph(
-        f"Plano de ação · versão {versao} · {esc(plan.get('data') or date.today().strftime('%d/%m/%Y'))}"
-        + (f" · próxima revisão: {esc(plan['ciclo']['proxima_revisao'])}"
-           if (plan.get("ciclo") or {}).get("proxima_revisao") else ""),
-        S["sub"]))
-    obj = plan.get("objetivo") or {}
-    F.append(Paragraph("Objetivo", S["h2"]))
-    F.append(Paragraph(esc(obj.get("frase")), S["p"]))
+    from task_plan_pdf import build_task_plan as render_task_plan
 
-    # A sequência fica visível sem expor a terminologia interna do método.
-    fases = plan.get("fases_futuras") or []
-    if fases:
-        F.append(Paragraph("Etapas do piloto", S["h2"]))
-        etapas = [(plan.get("fase_atual_nome", "Fase atual"), "Agora")]
-        etapas += [(f.get("nome", f"Etapa {i + 2}"), f.get("periodo", ""))
-                   for i, f in enumerate(fases)]
-        etapas = etapas[:3]
-        cards = []
-        widths = []
-        for i, (nome, periodo) in enumerate(etapas):
-            cards.append(Paragraph(
-                f"<b>{esc(nome)}</b><br/><font color='#6b7280'>{esc(periodo)}</font>",
-                S["small"]))
-            widths.append((CW - (len(etapas) - 1) * 8 * mm) / len(etapas))
-            if i < len(etapas) - 1:
-                cards.append(Paragraph("→", S["h3"]))
-                widths.append(8 * mm)
-        t = Table([cards], colWidths=widths, hAlign="LEFT")
-        t.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), BAND),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 7),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-            ("TOPPADDING", (0, 0), (-1, -1), 8),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ]))
-        F.append(t)
-
-    F.append(Paragraph("Marcos e tarefas", S["h2"]))
-    for i, marco in enumerate(marcos, 1):
-        F.append(Paragraph(f"Marco {i} — {esc(marco.get('nome'))}", S["h3"]))
-        if marco.get("resultado_verificavel"):
-            F.append(Paragraph(esc(marco["resultado_verificavel"]), S["p"]))
-        if marco.get("prazo"):
-            F.append(Paragraph(f"Previsão: {esc(marco['prazo'])}", S["sub"]))
-        for tarefa in marco.get("tarefas", []):
-            tid = numeros.get(tarefa.get("id"), "")
-            conteudo = [
-                Paragraph(f"{esc(tid)} · {esc(tarefa.get('titulo'))}", S["task_title"])
-            ]
-            meta = []
-            if tarefa.get("responsavel"):
-                responsavel = esc(tarefa["responsavel"])
-                if "DONO A DEFINIR" in responsavel.upper():
-                    responsavel = f"<font color='#b45309'>{responsavel}</font>"
-                meta.append(f"Responsável: {responsavel}")
-            if tarefa.get("prazo"):
-                meta.append(f"Previsão: {esc(tarefa['prazo'])}")
-            deps = ", ".join(numeros[d] for d in tarefa.get("depende_de") or [])
-            if deps:
-                meta.append(f"Após {esc(deps)}")
-            if meta:
-                conteudo.append(Paragraph(" · ".join(meta), S["task_meta"]))
-            if tarefa.get("concluida_quando"):
-                conteudo.append(Paragraph(
-                    f"<b>Pronto quando:</b> {esc(tarefa['concluida_quando'])}",
-                    S["task_detail"]))
-            for sub in tarefa.get("subtarefas") or []:
-                conteudo.append(Paragraph(f"• {esc(sub)}", S["task_detail"]))
-            cartao = Table([[conteudo]], colWidths=[CW], hAlign="LEFT")
-            cartao.setStyle(TableStyle([
-                ("BOX", (0, 0), (-1, -1), 0.5, LINE),
-                ("LINEBEFORE", (0, 0), (0, -1), 2, ACCENT),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 6),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-            ]))
-            F.append(cartao)
-            F.append(Spacer(1, 2 * mm))
-        F.append(Spacer(1, 4 * mm))
-
-    if fases:
-        F.append(Paragraph("Próximas fases", S["h2"]))
-        for fase in fases:
-            F.append(Paragraph(esc(fase.get("nome")), S["h3"]))
-            for marco in fase.get("marcos_previstos") or []:
-                if isinstance(marco, str):
-                    F.append(Paragraph("• " + esc(marco), S["p"]))
-                else:
-                    resumo = marco.get("nome", "")
-                    deps = ", ".join(
-                        numeros[d] for d in marco.get("depende_de") or []
-                    )
-                    if deps:
-                        resumo += f" (após {deps})"
-                    if marco.get("prazo"):
-                        resumo += f" — até {marco['prazo']}"
-                    F.append(Paragraph("• " + esc(resumo), S["p"]))
-
-    if plan.get("limites"):
-        F.append(Paragraph("O que este piloto não muda", S["h2"]))
-        cards = [Paragraph(esc(limite), S["small"]) for limite in plan["limites"][:3]]
-        t = Table([cards], colWidths=[CW / len(cards)] * len(cards), hAlign="LEFT")
-        t.setStyle(TableStyle([
-            ("BOX", (0, 0), (-1, -1), 0.6, LINE),
-            ("INNERGRID", (0, 0), (-1, -1), 0.6, LINE),
-            ("BACKGROUND", (0, 0), (-1, -1), BAND),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ("TOPPADDING", (0, 0), (-1, -1), 8),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ]))
-        F.append(t)
-        for limite in plan["limites"][3:]:
-            F.append(Paragraph("• " + esc(limite), S["p"]))
-
-    if plan.get("gatilhos_ajuste"):
-        F.append(Paragraph("Quando ajustar o plano", S["h2"]))
-        for gatilho in plan["gatilhos_ajuste"]:
-            F.append(Paragraph("• " + esc(gatilho), S["p"]))
-    doc.build(F)
-    return out_path
+    return render_task_plan(plan, out_path, numeros)
 
 
 def build(plan, out_path):
