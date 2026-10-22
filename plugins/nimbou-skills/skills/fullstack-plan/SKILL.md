@@ -5,6 +5,8 @@ description: Use when a feature spans a NestJS or Laravel backend and a Nuxt fro
 
 # Fullstack Plan
 
+**Required:** Read and apply [Required scope and delivery summary](scope-summary.md) before writing tasks and during self-review. Include its complete delivery summary in the saved plan and final chat response.
+
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
 ## Overview

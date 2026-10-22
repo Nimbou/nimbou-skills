@@ -5,6 +5,8 @@ description: Planeje a implementação de um backend Laravel após aprovação d
 
 # Laravel Plan
 
+**Required:** Read and apply [Required scope and delivery summary](../fullstack-plan/scope-summary.md) before writing tasks and during self-review. Include its complete delivery summary in the saved plan and final chat response.
+
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
 Write a backend implementation plan that an engineer with no prior context can execute. Use the approved `laravel-think` design and, for HTTP work, the approved `docs/domain/<domain>/openapi.yaml`. Use `nimbou-cms-plan` instead for CMS modules.

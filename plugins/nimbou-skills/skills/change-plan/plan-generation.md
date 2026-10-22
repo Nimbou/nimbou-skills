@@ -1,5 +1,7 @@
 # Change Plan — Plan Generation
 
+**Required:** Read and apply [Required scope and delivery summary](../fullstack-plan/scope-summary.md) before writing tasks and during self-review. Include its complete delivery summary in the saved plan and final chat response.
+
 You are here because `change-plan`'s Routing Gate classified the work as **small**. Produce one wave-structured plan and stop.
 
 ## Reuse, do not restate

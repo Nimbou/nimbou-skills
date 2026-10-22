@@ -5,6 +5,8 @@ description: Use after design approval to write a backend implementation plan fo
 
 # NestJS Plan
 
+**Required:** Read and apply [Required scope and delivery summary](../fullstack-plan/scope-summary.md) before writing tasks and during self-review. Include its complete delivery summary in the saved plan and final chat response.
+
 ## Overview
 
 Write implementation plans for backend work assuming the engineer has zero context for the codebase. The plan must force good boundaries, make the NestJS and Prisma structure explicit, and leave little room for architecture drift.

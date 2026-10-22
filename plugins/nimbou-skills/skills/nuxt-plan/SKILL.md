@@ -5,6 +5,8 @@ description: Planeje arquivos, dependências e ondas de uma interface Nuxt após
 
 # Nuxt Plan
 
+**Required:** Read and apply [Required scope and delivery summary](../fullstack-plan/scope-summary.md) before writing tasks and during self-review. Include its complete delivery summary in the saved plan and final chat response.
+
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
 ## Overview
