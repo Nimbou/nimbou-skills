@@ -58,6 +58,7 @@
 - `nuxt-debug`
 - `nuxt-performance` — Lighthouse/PageSpeed, LCP diagnosis and comparable before/after results
 - `nuxt-components-redesign` — branded component demos and application of approved visual/UX changes
+- `nuxt-compact-review` — browser screenshots before/after, compact spacing, aligned layouts and responsive UX fixes on existing pages and components
 
 ### Marketing and campaign analysis
 
