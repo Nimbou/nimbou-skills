@@ -75,6 +75,22 @@ Considere superfície, mídia, categoria/metadados, título, resumo e ações co
 - PDF/repositório mantém destino real e contexto acessível. Vídeo usa preview e reprodução voluntária; imagem de play decorativa não substitui o nome da ação.
 - Mudança de rótulo visual não exige mudar rota histórica: preserve slugs e SEO quando o usuário só pediu “Publicações” em vez de “Artigos”.
 
+## Composição compacta e agrupamento
+
+Antes de ajustar números, desenhe a relação entre regiões. Um card de carrinho pode usar imagem à esquerda de todo o conteúdo, nome no eixo superior, quantidade e total no inferior e ações numa coluna à direita: lápis alinhado ao nome, lixeira alinhada à compra. É uma alternativa para comparar no navegador, não uma anatomia obrigatória para todos os cards. Duas ações lado a lado podem estreitar desnecessariamente o título; separá-las em linhas pode recuperar espaço sem aumentar a altura.
+
+Agrupe por significado. Se o preço exibido é o total da linha, mantê-lo próximo da quantidade ajuda a perceber a consequência de alterá-la. Não o rotule como preço unitário por conveniência visual. Nome, observações e escolhas continuam completos, mesmo quando exigem mais linhas. Em telas largas, não distribua informações relacionadas pelas extremidades apenas para preencher espaço.
+
+Imagem pequena e aparentemente solta não se resolve só aumentando seu elemento. Observe a área efetivamente pintada, transparência do asset, proporção e distância até o texto. Para miniaturas isoladas sobre fundo uniforme, experimente contorno fino, raio coerente e fundo discreto; compare com a versão sem moldura. Preserve `contain` quando o produto deve aparecer inteiro e não consuma a foto com padding excessivo. A moldura ancora a miniatura, não obriga acrescentar superfície, borda ou sombra ao card inteiro.
+
+Título e preço podem precisar de mais destaque mesmo com CSS válido e espaço bem distribuído. Como ponto de comparação em cards compactos, avalie texto de 16 px, símbolos de cerca de 20 px e alvos de 44–48 px, adaptando-os à tipografia e aos tokens do projeto. Não transforme esses exemplos em tamanhos universais. Confirme que um título em duas linhas ainda respira, que o total é legível e que o valor continua próximo do controle correspondente. Altura menor não compensa perda de leitura ou toque.
+
+Teste a largura disponível **dentro** da página e do painel, descontando padding, scrollbar, imagem, gaps e coluna de ações. Uma viewport de 360 px não oferece 360 px ao conteúdo. Use grid/flex com colunas que possam encolher e breakpoints do contêiner quando necessários; mantenha fallback para mídia ausente. Valores monetários maiores, quantidades com mais dígitos, títulos longos e observações devem quebrar ou reorganizar o layout sem truncamento ou colisão. Não altere o nome cadastrado para corrigir uma quebra tipográfica.
+
+Edição pode usar lápis e remoção lixeira, com linguagem visual e tamanho de símbolo coerentes. Se só o ícone ficar visível, mantenha nome acessível específico, dica visual quando disponível e foco evidente. Compactar o rótulo não autoriza reduzir o alvo. Preserve os eventos existentes; mover uma edição para diálogo depende do pedido e exige conferir abrir, cancelar, salvar e restaurar o foco. Não confunda redesenho visual com autorização para inventar interações.
+
+No ciclo de revisão, registre: problema observado → decisão de composição → captura posterior → interação conferida. Compare com a mesma largura e conteúdo; não atribua à mudança diferenças causadas por novos itens, loading ou transição. Se o usuário continuar percebendo falta de equilíbrio após microajustes, reavalie a grade e os agrupamentos. Conclua quando os problemas identificados estiverem resolvidos, distinguindo preferência estética, evidência visual e funcionamento comprovado.
+
 ## Ícones e controles pequenos
 
 Meça o glifo efetivo, a caixa do ícone e o alvo de toque. Fontes de ícones podem herdar tamanho menor do botão; confira `font-size`, pseudo-elemento e alinhamento, não só width/height do controle.
