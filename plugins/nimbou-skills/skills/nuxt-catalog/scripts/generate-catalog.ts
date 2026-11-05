@@ -1,9 +1,9 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import fg from 'fast-glob'
-import { parse } from '@vue/compiler-sfc'
-import ts from 'typescript'
-import { createChecker } from 'vue-component-meta'
+import { parse, parseCache } from '@vue/compiler-sfc'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
 type CatalogCategory =
   | 'app'
@@ -64,22 +64,51 @@ const compatibilityOutputFile = join(
 const componentFiles = fg.sync('components/**/*.vue', { cwd: projectRoot, absolute: true })
 const rawArgs = process.argv.slice(2)
 const validateOnly = rawArgs.includes('--validate')
-const domainFilter = rawArgs.find((arg) => !arg.startsWith('--')) ?? null
+const fullMetadata = rawArgs.includes('--full')
+const positionalArgs = rawArgs.filter((arg) => !arg.startsWith('--'))
+const domainFilter = positionalArgs[0] ?? null
+const batchSizeArg = rawArgs.find((arg) => arg.startsWith('--batch-size='))
+const batchSize = batchSizeArg ? Number(batchSizeArg.split('=')[1]) : 50
+const unknownOption = rawArgs.find((arg) =>
+  arg.startsWith('--') && !['--full', '--validate'].includes(arg) && !arg.startsWith('--batch-size='),
+)
+if (unknownOption || positionalArgs.length > 1 || !Number.isSafeInteger(batchSize) || batchSize < 1) {
+  console.error('Expected [domain] [--full] [--batch-size=<positive integer>] or --validate')
+  process.exit(1)
+}
 
-// Lazy: only initialized during generate, never during validate-only runs.
-// Avoids a baseline TypeError from vue-component-meta when tsconfig or the
-// TypeScript version is incompatible with the checker.
-let _checker: ReturnType<typeof createChecker> | null = null
-function getChecker(): ReturnType<typeof createChecker> {
-  if (!_checker) {
-    _checker = createChecker(join(projectRoot, 'tsconfig.json'), { forceUseTs: true })
+function emptyMeta(): OutputComponent['meta'] {
+  return { props: [], emits: [], slots: [], exposed: [] }
+}
+
+// Workers own the TypeScript graph. Their exit releases it between batches.
+function collectTechnicalMetadata(components: OutputComponent[]): void {
+  const worker = fileURLToPath(new URL('./extract-metadata.ts', import.meta.url))
+  for (let offset = 0; offset < components.length; offset += batchSize) {
+    const batch = components.slice(offset, offset + batchSize)
+    const result = spawnSync(process.execPath, [...process.execArgv, worker], {
+      input: JSON.stringify({ projectRoot, files: batch.map((comp) => resolve(projectRoot, comp.file)) }),
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
+      env: process.env,
+    })
+    if (result.error || result.status !== 0) {
+      throw new Error(`Metadata batch ${Math.floor(offset / batchSize) + 1} failed. ${result.error?.message ?? result.stderr}
+Try a smaller --batch-size or semantic generation without --full.`)
+    }
+    if (result.stderr) process.stderr.write(result.stderr)
+    const metadata = JSON.parse(result.stdout) as OutputComponent['meta'][]
+    if (metadata.length !== batch.length) throw new Error('Incomplete metadata batch')
+    batch.forEach((comp, index) => { comp.meta = metadata[index] })
+    console.log(`Extracted technical metadata: ${Math.min(offset + batchSize, components.length)}/${components.length}`)
   }
-  return _checker
 }
 
 function readCatalog(filePath: string): CatalogEntry {
   const source = readFileSync(filePath, 'utf8')
-  const { descriptor } = parse(source, { filename: filePath })
+  const { descriptor } = parse(source, { filename: filePath, sourceMap: false })
+  // This is a one-shot scan; retaining hundreds of template ASTs is wasteful.
+  parseCache.clear()
   const catalogBlocks = descriptor.customBlocks.filter(
     (candidate) => candidate.type === 'catalog',
   )
@@ -102,68 +131,6 @@ function readCatalog(filePath: string): CatalogEntry {
   }
 }
 
-function readScriptSetupProps(filePath: string): OutputComponent['meta']['props'] {
-  const source = readFileSync(filePath, 'utf8')
-  const { descriptor } = parse(source, { filename: filePath })
-  const scriptSetup = descriptor.scriptSetup?.content
-
-  if (!scriptSetup) {
-    return []
-  }
-
-  const sourceFile = ts.createSourceFile(
-    `${filePath}.ts`,
-    scriptSetup,
-    ts.ScriptTarget.ES2022,
-    true,
-    ts.ScriptKind.TS,
-  )
-
-  const propsCall = findDefinePropsCall(sourceFile)
-  const typeNode = propsCall?.typeArguments?.[0]
-
-  if (!typeNode || !ts.isTypeLiteralNode(typeNode)) {
-    return []
-  }
-
-  return typeNode.members.flatMap((member) => {
-    if (!ts.isPropertySignature(member) || !member.type || !member.name) {
-      return []
-    }
-
-    const name = member.name.getText(sourceFile).replace(/^['"]|['"]$/g, '')
-
-    return [
-      {
-        name,
-        type: member.type.getText(sourceFile),
-        required: !member.questionToken,
-        default: null,
-      },
-    ]
-  })
-}
-
-function findDefinePropsCall(sourceFile: ts.SourceFile): ts.CallExpression | undefined {
-  let match: ts.CallExpression | undefined
-
-  function visit(node: ts.Node): void {
-    if (
-      ts.isCallExpression(node)
-      && ts.isIdentifier(node.expression)
-      && node.expression.text === 'defineProps'
-    ) {
-      match = node
-      return
-    }
-
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-  return match
-}
-
 function nuxtComponentName(filePath: string): string {
   const componentsDir = join(projectRoot, 'components')
   const relPath = relative(componentsDir, filePath).replace(/\.vue$/, '')
@@ -178,41 +145,11 @@ function collectComponent(filePath: string): OutputComponent {
   const catalog = readCatalog(filePath)
   const name = nuxtComponentName(filePath)
 
-  let meta: { props: OutputComponent['meta']['props']; emits: OutputComponent['meta']['emits']; slots: OutputComponent['meta']['slots']; exposed: OutputComponent['meta']['exposed'] }
-
-  if (validateOnly) {
-    meta = { props: [], emits: [], slots: [], exposed: [] }
-  } else {
-    try {
-      const rawMeta = getChecker().getComponentMeta(filePath)
-      const props = rawMeta.props
-        .filter((p) => !p.global)
-        .map((prop) => ({
-          name: prop.name,
-          type: prop.type ?? 'unknown',
-          required: Boolean(prop.required),
-          default: prop.default ?? null,
-        }))
-
-      meta = {
-        props: props.length > 0 ? props : readScriptSetupProps(filePath),
-        emits: rawMeta.events.map((event) => ({ name: event.name })),
-        slots: rawMeta.slots.map((slot) => ({
-          name: slot.name,
-          description: slot.description ?? '',
-        })),
-        exposed: rawMeta.exposed.map((item) => ({ name: item.name })),
-      }
-    } catch {
-      meta = { props: readScriptSetupProps(filePath), emits: [], slots: [], exposed: [] }
-    }
-  }
-
   return {
     name,
     file: relative(projectRoot, filePath).replaceAll('\\', '/'),
     catalog,
-    meta,
+    meta: emptyMeta(),
   }
 }
 
@@ -357,29 +294,28 @@ function deriveUsedBy(components: OutputComponent[], root: string): Map<string, 
   const pageFiles = fg.sync('pages/**/*.vue', { cwd: root, absolute: true })
   const allConsumers = [...componentFiles, ...pageFiles]
 
-  const contents = new Map<string, string>()
-  for (const file of allConsumers) {
-    contents.set(file, readFileSync(file, 'utf8'))
-  }
-
+  const aliases = new Map<string, OutputComponent>()
   const result = new Map<string, string[]>()
-
   for (const comp of components) {
-    const kebab = toKebabCase(comp.name)
-    const compAbsPath = resolve(root, comp.file)
-    const usedBy: string[] = []
-
-    for (const [file, content] of contents) {
-      if (file === compAbsPath) continue
-      const pascalRe = new RegExp(`<${comp.name}[^a-zA-Z0-9]`)
-      const kebabRe = new RegExp(`<${kebab}[^a-zA-Z0-9]`)
-      if (pascalRe.test(content) || kebabRe.test(content)) {
-        usedBy.push(relative(root, file))
-      }
-    }
-
-    result.set(comp.name, usedBy.sort())
+    aliases.set(comp.name, comp)
+    aliases.set(toKebabCase(comp.name), comp)
+    result.set(comp.name, [])
   }
+
+  // Invert tag -> consumers in one pass instead of retaining all file contents
+  // and rescanning them once per component. Match the complete opening tag.
+  for (const file of allConsumers) {
+    const content = readFileSync(file, 'utf8')
+    const consumer = relative(root, file).replaceAll('\\', '/')
+    const seen = new Set<string>()
+    for (const match of content.matchAll(/<([A-Za-z][A-Za-z0-9_-]*)(?=[\s/>])/g)) {
+      const component = aliases.get(match[1])
+      if (!component || component.file === consumer || seen.has(component.name)) continue
+      result.get(component.name)!.push(consumer)
+      seen.add(component.name)
+    }
+  }
+  for (const consumers of result.values()) consumers.sort()
 
   return result
 }
@@ -502,6 +438,15 @@ if (validateOnly) {
   process.exit(0)
 }
 
+if (fullMetadata) {
+  try {
+    collectTechnicalMetadata(components)
+  } catch (error) {
+    console.error((error as Error).message)
+    process.exit(1)
+  }
+}
+
 // Derive related and usedBy for all components
 const relatedMap = deriveRelated(components)
 const usedByMap = deriveUsedBy(components, projectRoot)
@@ -515,6 +460,7 @@ for (const comp of components) {
 const aggregate = {
   generated: new Date().toISOString(),
   version: '1.0.0',
+  metadataMode: fullMetadata ? 'full' : 'semantic',
   components,
 }
 const compatibilityComponents = components.map((component) => ({

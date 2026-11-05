@@ -21,8 +21,11 @@ const [command, ...rest] = process.argv.slice(2)
 if (!command || command === '--help' || command === '-h' || command === 'help') {
   console.log(`Usage:
   nb-catalog validate
-  nb-catalog generate [domain]
+  nb-catalog generate [domain] [--full] [--batch-size=50]
 
+Default generation reads semantic metadata without TypeScript.
+--full extracts props, emits, slots and exposed members in sequential processes.
+Domain generation replaces the output with only that domain.
 Runs the bundled nuxt-catalog generator against the current working directory.`)
   process.exit(0)
 }

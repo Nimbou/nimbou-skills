@@ -110,6 +110,14 @@ nb-catalog generate projects
 
 This workflow writes `components.meta.json` and `.generated/component-catalog/components.meta.json`.
 
+Generation is semantic by default and avoids loading the TypeScript graph.
+For technical metadata (props, emits, slots and exposed members), run
+`nb-catalog generate --full`. Full extraction uses sequential isolated batches
+of 50 components; use `--batch-size=10` to reduce a batch. Domain filtering is
+applied before technical extraction. A domain generation replaces the outputs
+with only that domain. See the [catalog schema](plugins/nimbou-skills/skills/nuxt-catalog/reference/catalog-schema.md)
+for mode markers, output semantics and fallback behavior.
+
 `nuxt-catalog` defaults to `validate -> generate` and runs the bundled generator from this repository via `CATALOG_ROOT`.
 
 If a project wants a copied local fallback instead of depending on `/var/www/nimbou-skills` at runtime, copy `skills/nuxt-catalog/` into `.agents/skills/nuxt-catalog/` and run `.agents/skills/nuxt-catalog/scripts/install.sh <project-root>`.
