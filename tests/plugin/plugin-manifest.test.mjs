@@ -24,6 +24,7 @@ test('skills tree ships the unified skill set directly', () => {
   assert.ok(shippedSkills.includes('executing-plans'))
   assert.ok(shippedSkills.includes('fullstack-plan'))
   assert.ok(shippedSkills.includes('e2e-test-quality'))
+  assert.ok(shippedSkills.includes('flow-audit'))
   assert.ok(shippedSkills.includes('change-plan'))
   assert.ok(shippedSkills.includes('laravel-think'))
   assert.ok(shippedSkills.includes('laravel-plan'))

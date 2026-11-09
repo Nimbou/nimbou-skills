@@ -1,0 +1,4 @@
+interface:
+  display_name: "Revisão visual compacta"
+  short_description: "Revise prints e compacte páginas e componentes"
+  default_prompt: "Use $nuxt-compact-review para revisar este módulo no navegador, comparar prints e melhorar espaçamento, alinhamento e UX no mobile e desktop."

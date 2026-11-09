@@ -1,0 +1,5 @@
+Apliquei a skill `flow-audit` a este caso.
+
+Ainda não posso concluir os reparos F01–F04. No c20 local, F01 deixou de criar pedidos duplicados e uma execução do caminho feliz passou. Porém, **F02 ainda perde opções após recarregar o carrinho**, **F03 ainda chama de pago um pedido pendente após edição da URL de retorno**, e o aviso de hidratação F04 continua sem causa ou impacto estabelecidos. A CI unitária está verde, mas não resolve essas falhas. O site publicado segue no b19; não há comprovante de publicação ou reteste nele.
+
+Vou manter os mesmos IDs e continuar a correção já aprovada. Em F02, duas tentativas na inicialização do componente falharam; o próximo passo é rastrear onde as opções são gravadas e lidas na recarga, antes de outro ajuste. Em F03, vou confrontar a tela com o estado autoritativo do pedido e retestar o retorno editado e o normal. Depois investigarei F04, repetirei os casos que falhavam, os estados adjacentes e a jornada principal no c20. O [registro](C-report.md) acompanha esses resultados. F05, geocodificação, permanece adiado conforme a decisão anterior.

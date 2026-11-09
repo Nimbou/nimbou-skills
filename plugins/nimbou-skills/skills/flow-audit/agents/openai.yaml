@@ -1,0 +1,4 @@
+interface:
+  display_name: "Auditar fluxo completo"
+  short_description: "Teste a jornada e consolide problemas com evidências"
+  default_prompt: "Use $flow-audit para percorrer o fluxo do começo ao fim e consolidar os achados, prioridades e lacunas de validação."

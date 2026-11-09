@@ -15,6 +15,16 @@ Liste famílias, consumidores, conteúdo, estados e áreas excluídas. Um wrappe
 
 Defina propósito, hierarquia da informação e ação principal em poucas frases. Material Design 3, quando pedido, orienta anatomia, estados e superfícies; a identidade da marca orienta cores, fontes e ritmo.
 
+Antes de editar, capture e examine o componente no navegador, inclusive no contêiner real mais estreito (por exemplo, painel lateral). Distinga achados da imagem de medidas obtidas no DOM/código. Se o pedido for apenas análise, entregue o diagnóstico; não implemente automaticamente.
+
+## Composição, equilíbrio e densidade
+
+Resolva primeiro as relações entre informações: identificação, valores que mudam juntos e ações correspondentes. Simetria útil é uma grade consistente de bordas, eixos e centros, não colunas iguais nem espaços iguais entre elementos sem relação. Em carrinhos, considere quantidade e total da linha juntos; confirme o significado do preço antes de posicioná-lo.
+
+Trate imagem, título, preço e controles como um conjunto. Confira a dimensão visível da foto (inclusive transparência interna), legibilidade do texto e peso do controle. Uma miniatura com contorno discreto pode ancorar mídia que parece solta; não imponha outlined, fonte ou tamanho desta referência a todas as famílias. Leia [padrões de composição compacta](reference/patterns.md#composição-compacta-e-agrupamento) para esses ajustes.
+
+Compactar significa retirar espaço sem função, não diminuir tudo. Preserve informação completa, foco e área de toque; não fixe altura para simular alinhamento. Se os elementos continuam desconectados, reveja a anatomia antes de acumular mudanças de padding ou aumentar a imagem isoladamente.
+
 ## Demo e aplicação
 
 Se o pedido for somente demo, mantenha-a local e isolada, com conteúdo público/sanitizado representativo, sem escrever no CMS ou substituir telas reais. Ofereça estados necessários para revisar a proposta; não invente persistência.
@@ -37,8 +47,12 @@ Use navegador real, preferindo o integrado quando disponível. Em famílias de c
 
 Confira conteúdo longo, proporções diferentes, alinhamento das ações, contraste, teclado/foco e overflow. Inspecione o tamanho do **símbolo**, além da área clicável. Garanta que ícone e rótulo caibam juntos.
 
+Após cada mudança relevante, capture novamente com os mesmos dados, largura e estado, aguarde o carregamento e a transição concluírem e compare a composição. Screenshot de loading, frame anterior ao resize, build aprovado e ausência de overflow não comprovam qualidade visual. Confira também os limites internos do card, título, mídia e controles.
+
+Quando o usuário pedir refinamento contínuo, prossiga dentro do recorte autorizado até resolver os achados visuais e funcionais; não espere novas cobranças para reavaliar. Feedback recorrente como “parece solto”, “está simétrico?” ou “é o melhor?” pede revisão da hierarquia/grade, não mais uma rodada cosmética. Pare quando os achados estiverem resolvidos ou houver impedimento concreto; não prometa perfeição nem invente melhorias para prolongar o trabalho.
+
 Clique nos cards e ações; teste detalhe, voltar, menu, filtros e PDF/vídeo afetados. Acesso direto não prova navegação SPA. Quando houver HTML inicial seguido de Vue, compare conteúdo, dimensões e foco nas duas fases.
 
 Faça build e verificações proporcionais; não imponha harness, E2E persistente ou typecheck a uma edição visual direta. Publique somente quando isso estiver no escopo autorizado, seguindo o procedimento do projeto; valide o build no site real.
 
-Entregue telas/URL, mudanças, larguras e interações efetivamente conferidas, screenshot salvo e limitações. Não declare “publicado” ou “validado no mobile” com base apenas na demo desktop.
+Entregue telas/URL, mudanças, larguras e interações efetivamente conferidas, screenshot salvo quando a ferramenta permitir exportar e limitações. Se só houver capturas na conversa, informe isso sem inventar caminhos. Não declare “publicado” ou “validado no mobile” com base apenas na demo desktop. Ao avaliar espaçamento ou proporção, explique o achado e a evidência visual; medidas e build apenas o complementam.
