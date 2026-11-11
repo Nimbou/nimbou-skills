@@ -1,65 +1,57 @@
 ---
 name: browser-smoke
-description: Use for real-browser verification after an approved nuxt-plan touched frontend files, when explicitly requested or invoked by executing-plans. Do not use for direct frontend edits outside nuxt-plan.
+description: Use when the user requests browser verification of a web page or flow, or when executing-plans calls for a frontend smoke.
 ---
 
 # Browser Smoke
 
-Every other lens in this repository reads code. Tests, spec review, and the boundary
-analyzer all pass on a change whose page renders blank. This skill is the one that
-opens the application and looks.
+This skill opens a real browser to check whether a requested page or user flow
+works on screen. It can verify a local change, an existing application, or a
+deployed version.
 
-It is a **smoke pass, not a test suite**: it verifies the behavior the change
-promised, on the screen, and writes nothing permanent. Persistent E2E coverage is
+It is a **smoke pass, not a test suite**: it checks a small set of visible
+behaviors and collects evidence. Persistent E2E coverage is
 `nimbou-skills:nuxt-test`; investigating a known bug is `nimbou-skills:nuxt-debug`.
 
-## Authorization
+## When to run
 
-Run this skill only when the current work is executing an approved
-`nimbou-skills:nuxt-plan`, and either case below applies:
+Run when the user directly asks for browser verification, invokes this skill, or
+`nimbou-skills:executing-plans` calls it after frontend work. No `nuxt-plan`,
+changed frontend file, or local checkout is required for a direct request.
+Follow the user's target URL, environment, browser preference, flows, and scope.
+Do not treat this skill as authorization for unrelated changes. In a live
+environment, perform state-changing actions only when they are part of the
+requested flow; avoid altering unrelated records.
 
-- the user explicitly requested browser verification (for example, asked to run a
-  browser smoke, validate the change in a browser, or check a flow on screen); or
-- `nimbou-skills:executing-plans` invokes it as its final `report`-mode step after
-  an approved Nuxt plan touched frontend files.
-
-Do not infer authorization merely because frontend files changed, a frontend task
-was implemented, a plan mentions browser verification, or browser tooling is
-available. A direct frontend request outside an approved `nuxt-plan` does not
-authorize this smoke, even if it changes behavior or appearance.
-
-**Announce at start:** "I'm using the browser-smoke skill to verify this in a browser."
+**Announce at start:** "Estou usando a skill browser-smoke para verificar o fluxo no navegador."
 
 ## Modes
 
 | Mode | Who calls it | What it does with findings |
 |---|---|---|
-| `report` | `nimbou-skills:executing-plans` (its Step 5) | Reports only. The caller owns the fix cycle and the commits. |
-| `fix` | you, invoking the skill directly | Fixes what it found, re-runs the failing flows once, commits. |
+| `report` | A direct smoke request or `nimbou-skills:executing-plans` | Reports evidence and findings without editing code. |
+| `fix` | A request that also asks to fix failures | Fixes failures in the owning code, re-runs affected flows once, and commits only when requested or required by the caller. |
 
-Default to `report` when a caller declared a mode. Default to `fix` when a human
-invoked the skill with no mode — a standalone run that only complains is useless.
+Use the caller's mode when supplied. Otherwise default to `report`; a request
+to fix or correct defects selects `fix`.
 
-## Step 1: Does this apply to the authorized run?
+## Step 1: Identify the target
 
-First confirm that the current work is executing an approved `nimbou-skills:nuxt-plan`.
-If it is a direct frontend request outside `nuxt-plan`, stop without opening a browser,
-creating tests, or running verification commands.
+For a direct request, use the URL, page, environment, and behavior the user
+named. If some detail is missing, infer it from the current task or application
+before asking. A request can target production, staging, a local server, or a
+flow with no code change.
 
-Then confirm the Authorization rule above. If neither allowed caller applies, do not
-run the smoke; say it was intentionally skipped because browser verification was not
-requested.
-
-For an authorized run, take the list of changed files (`git diff --name-only
-<base>..HEAD`, or the file list the caller handed you) and look for any of:
+When called by `executing-plans`, use the changed-file list (`git diff --name-only
+<base>..HEAD`, or the caller's list) to confirm a frontend surface changed:
 
 ```
 *.vue   pages/   components/   layouts/   composables/   middleware/
 app.vue   nuxt.config.*   assets/   *.css   *.scss
 ```
 
-No match means no frontend surface changed. Say so in one line and stop — do not
-smoke a backend-only change to be thorough.
+No match in an `executing-plans` run means no frontend surface changed. Say so
+in one line and stop. This file check does not apply to direct requests.
 
 A fullstack change matches on its frontend half. The backend half is still in scope
 for the flows, because a page that renders is not the same as a page whose API call
@@ -67,85 +59,89 @@ succeeded.
 
 ## Step 2: Pick a driver, or stop cleanly
 
-In order:
+Honor a browser or driver explicitly chosen by the user when it can perform the
+flow. Otherwise try these available drivers in order:
 
-1. **Codex integrated browser** — always the primary path when it is available in
-   the current session. Use its browser-control surface for navigation, interaction,
-   screenshots, console messages, network requests, and script evaluation. Session
-   availability is enough; it does not need to be configured by the project.
-2. **Chrome DevTools MCP** — the fallback. Same tools `nimbou-skills:nuxt-debug`
-   uses: snapshot, console messages, network requests, evaluate script. The server
-   name is project-configured; look for tools matching `mcp__chrome*devtools__*`.
-3. **Playwright MCP** — the final automatic fallback when the Codex integrated browser and Chrome DevTools MCP are not available or cannot execute the smoke. Use an already available driver; this smoke does not require a separate request for Playwright.
-4. **Nothing.** Then **skip the smoke and say so loudly**: record
+1. **agent-browser** — preferred for repeatable smoke flows. Before its first
+   use, read `agent-browser skills get core`. Create a task-specific named
+   session and pass `--session` on every command. Navigate, take a snapshot,
+   act on current refs, and snapshot again after page changes. Collect a
+   screenshot, console errors/warnings, and failed network requests for each
+   flow. Keep authentication in that session; never print, save, or report
+   passwords, tokens, cookies, or other secret values.
+2. **Codex integrated browser** — use its navigation, interaction, screenshot,
+   console, and network capabilities.
+3. **Chrome DevTools MCP** — use its snapshot, console, network, and script
+   evaluation tools.
+4. **Playwright MCP** — use an already available session as the final fallback.
+5. **Nothing.** Then **skip the smoke and say so loudly**: record
    `front alterado, validação em browser não executada: nenhum driver de browser disponível`
-   as a concern, surface it in the report, and exit. Do not install a browser
-   toolchain, do not write a throwaway Playwright script, and above all do not
-   report the change as verified.
+   (or equivalent wording for the requested target) as a concern and exit.
+   Do not install a browser toolchain solely for this smoke or report an
+   unexecuted flow as verified.
 
-If Chrome DevTools MCP fails but the integrated browser is available, this is not a no browser driver case.
-Continue the smoke with the integrated browser; a headful/display failure in the
-fallback does not make the primary driver disappear. Only report the driver gap
-after checking every option in this order, including the Playwright fallback.
+If a driver fails to launch or attach, try the next available driver and report
+the failure as a concern only if it prevents the requested verification. An
+agent-browser session may have a different login state from the user's Chrome;
+complete the requested login when possible or report the blocked flow.
 
 A session without an allowed driver gets an honest gap, not a fabricated pass. The
 gap is worth more than the pass would be: "not run" is actionable, "passed" would be
 a lie.
 
-## Step 3: Bring the application up
+## Step 3: Reach the application
 
-Discover how, per `./reference/environment-discovery.md`. Everything happens inside
-the checkout under verification — when a caller handed you a `WORKTREE_ROOT`, that is
-where the dev server runs, because a server started in another checkout serves code
-this change does not contain.
+For a local target that is not already running, discover how to start it using
+`./reference/environment-discovery.md`. Use the checkout under verification;
+when the caller supplies `WORKTREE_ROOT`, start from there. For an existing
+local, staging, or production URL, navigate to it directly. Do not start a
+local server for a remote target.
 
-Start it in the background, and give it a bounded wait. If it never answers, that is
-Step 4's problem, not a defect.
+If you started a local server, run it in the background with a bounded wait.
+If it never answers, report an environment concern.
 
 ## Step 4: Health check before any flow
 
-**Navigate to one route the change did NOT touch.** Confirm it renders and the
-console is free of fatal errors.
+For a changed local application, navigate to one route the change did not
+touch and confirm it renders without fatal console errors. For a direct
+request without a code diff, check that the target application responds and
+that a stable page or entry route renders before testing the requested flow.
 
-This single navigation is the difference between a useful smoke and a harmful one. A
-dev server that never started, a missing `.env`, an unmigrated database, or a port
-already in use all produce broken pages that look exactly like a broken feature. If
-that reaches the caller as a finding, the fix cycle spends a full round correcting
-code that was always correct.
+This separates an unusable environment from a failed flow. A dev server that
+never started, a missing `.env`, or an unavailable remote application cannot
+prove whether the requested behavior works.
 
 So:
 
 - **Health route fails** → the environment is not usable. Record
-  `ambiente não subiu: <what you observed>` as a concern, **skip every flow**, and
+  `ambiente indisponível: <what you observed>` as a concern, **skip every flow**, and
   report zero findings. Never a defect, never a fix cycle.
-- **Health route renders** → the environment is good. From here on, a broken page is
-  the change's fault, and you can say so with confidence.
+- **Health route renders** → proceed with the requested flows and report their
+  observed result without assuming the cause of a failure.
 
-Pick the health route from the project's existing pages — a login screen, a home
-route, any page whose files are absent from the change's file list. Say which route
-you picked and why in the report.
+Say which route you used for the health check. If authentication blocks access
+to the requested flow, report it as an environment concern and do not claim
+the flow passed.
 
 ## Step 5: Derive the flows from what was promised
 
-Read the plan (or, standalone, the change description and the diff) and extract the
-**user-visible behavior it claims to deliver**. Each flow is a sentence in the shape
-of an action and its observable result:
+Use the user's requested checks, or derive the **user-visible behavior**
+promised by the plan or change description. Each flow is an action and its
+observable result:
 
 > "Anexar um arquivo a uma proposta e ver o thumbnail no card."
 > "Filtrar projetos por status e ver a lista reduzir."
 
-Then execute each one in the browser: navigate, interact, observe.
+Execute each requested flow in the browser: navigate, interact, observe.
 
-Deriving flows from the plan's prose rather than from the file list is the whole
-point. Opening the route that imports a changed component proves the route still
-renders; it does not prove the feature works. The promise is what nobody verified
-yet — the tests asserted slices of it, in isolation, and the reviewers read the code
-that implements it.
+For a plan-driven smoke, derive flows from the plan's promise rather than
+merely opening changed files. For a direct request, verify the flows the user
+named without imposing a plan.
 
 Rules:
 
-- **Three to six flows.** More than that is a test suite, and this is not one. When
-  the change promises more, take the ones a user would hit first.
+- Keep a smoke small by default, usually three to six flows. If the user names
+  a different set, follow that scope and report any flows not reached.
 - **Authentication is part of the flow, not a prerequisite to skip.** When a flow
   needs a session and you cannot obtain one, that is an environment concern under
   Step 4's rule, not a finding.
@@ -165,14 +161,15 @@ A claim that a flow worked is not evidence that it ran. This is the same rule th
 `RED` run follows in `nimbou-skills:executing-plans`, for the same reason: a report
 is the only artifact that distinguishes a smoke that happened from one that did not.
 
-Reference screenshots **by path**. Do not describe what each image shows beyond one
-line — a paragraph per screenshot costs more than the smoke itself.
+Reference screenshots **by path**. For a live system, omit secret values and
+personal data from reports and screenshots when they are not needed to prove
+the result.
 
 ## Step 7: Report
 
 ```
-**Driver:** codex-integrated | chrome-devtools MCP | playwright MCP | none (skipped)
-**Ambiente:** how it was started, and the health route you checked
+**Driver:** agent-browser | codex-integrated | chrome-devtools MCP | playwright MCP | none (skipped)
+**Ambiente:** target URL or startup method, and the health route you checked
 **Fluxos verificados:** N
 
 Per flow:
@@ -187,9 +184,10 @@ Per flow:
 In `report` mode, stop here. Every `FAIL` is a finding the caller will route into its
 fix cycle; every concern is a concern. Do not edit files.
 
-In `fix` mode, continue: fix the failures at the owning layer, re-run **only the
-failing flows** once, and commit. Two consecutive failures on the same flow means the
-diagnosis is wrong — stop and report it rather than trying a third guess.
+In `fix` mode, continue: fix the failures at the owning layer and re-run **only
+the failing flows** once. Commit when the user or caller requested it. Two
+consecutive failures on the same flow mean the diagnosis needs revision;
+stop and report it instead of trying a third guess.
 
 ## When to Stop
 
@@ -204,7 +202,7 @@ Stop and report instead of pushing through when:
 
 | Skill | Use it when |
 |---|---|
-| `browser-smoke` | the user explicitly requests browser verification, or `executing-plans` reaches its final frontend smoke step |
+| `browser-smoke` | the user requests browser verification of any web flow, or `executing-plans` reaches its final frontend smoke step |
 | `nimbou-skills:nuxt-debug` | investigating a known browser bug, with live evidence before any fix |
 | `nimbou-skills:nuxt-test` | building or stabilizing persistent Playwright coverage |
 | `nimbou-skills:e2e-test-quality` | auditing an existing E2E suite for a bounded flow |
