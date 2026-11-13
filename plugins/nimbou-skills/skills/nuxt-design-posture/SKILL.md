@@ -33,6 +33,8 @@ Antes de qualquer decisão de token, o **Working Model** (visual thesis, content
 
 Leia esse arquivo antes de escrever qualquer token, nome de fonte ou regra CSS. As Red flags abaixo são o resumo verificável; elas não substituem a referência.
 
+Ao escolher técnicas CSS, cores, tipografia ou movimento com implicações de acessibilidade ou compatibilidade, consulte `nimbou-skills:modern-web-guidance`. Adapte os guias aos tokens e componentes existentes; preserve `DESIGN.md`, SSR, suporte de navegadores e preferência por movimento reduzido. Reutilize guias pertinentes já lidos nesta tarefa.
+
 ## Contrato com skills e artefatos
 
 - **`nuxt-design-composition`**: define a arquitetura visual (hierarquia, hero, sequência, landing vs product UI). Esta skill preenche-a com tokens, fontes, cores e técnicas.

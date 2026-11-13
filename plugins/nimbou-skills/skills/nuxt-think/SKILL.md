@@ -19,6 +19,8 @@ This skill owns discovery and design closure for frontend work. Resolve UI struc
 
 Before closing decisions, locate the nearest `DESIGN.md` and `GUIDELINES.md` in the target project for the feature area you are shaping. Start from the likely ownership directory for the route, page, or domain component, then walk upward. Prefer the closest file. In a monorepo, the relevant app-level files are the default baseline and a closer feature-level file can override them.
 
+When design choices involve HTML/CSS, browser APIs, accessibility, or browser support, consult `nimbou-skills:modern-web-guidance` before closing those choices. Record the applicable guide IDs and compatibility/fallback decisions for implementation; preserve local wrappers and this skill's design-only scope. Reuse guides already read for the same task instead of repeating searches.
+
 ## Domain Specification Gate
 
 Apply this gate during step 6 of `## Flow`, before considering the design step closed.

@@ -11,6 +11,8 @@ Transforme uma direção visual em componentes reais, reutilizáveis e coerentes
 
 Leia as instruções locais, `DESIGN.md`, `GUIDELINES.md`, componentes existentes e versões instaladas. Sem guias, extraia referências da interface, fontes e assets e explicite suposições; não bloqueie automaticamente. Não migre Nuxt/Vuetify para redesenhar cards.
 
+Antes de implementar técnicas de layout, movimento, HTML ou acessibilidade, consulte `nimbou-skills:modern-web-guidance` nos assuntos pertinentes, reutilizando guias já lidos na tarefa. Adapte-os aos wrappers Vuetify, tokens, SSR e política de navegadores existentes; não substitua componentes compartilhados por exemplos vanilla nem rode `legacy-scan` para um redesign delimitado.
+
 Liste famílias, consumidores, conteúdo, estados e áreas excluídas. Um wrapper/CSS compartilhado também pode alterar páginas fora do recorte: preserve consumidores excluídos com variantes ou escopo apropriado.
 
 Defina propósito, hierarquia da informação e ação principal em poucas frases. Material Design 3, quando pedido, orienta anatomia, estados e superfícies; a identidade da marca orienta cores, fontes e ritmo.

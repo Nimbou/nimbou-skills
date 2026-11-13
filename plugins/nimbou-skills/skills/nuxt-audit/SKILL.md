@@ -9,6 +9,8 @@ description: Audit Nuxt 4 + Vuetify 4 frontend work for architecture, reuse, har
 
 Read `reference/quality-rules.md` before auditing.
 
+For HTML/CSS, browser APIs, accessibility, performance techniques, or compatibility findings, consult `nimbou-skills:modern-web-guidance` for the relevant topics and reuse guides already read in this task. Verify each finding against local wrappers, SSR and browser policy; do not classify an older pattern as a defect merely because a newer API exists. Use `legacy-scan` only for a requested broad modernization scan, never as a mandatory step of a bounded audit. This consultation does not authorize code edits.
+
 This is the single frontend review pass for Nuxt/Vuetify work in this repository. Do not split the review into separate "harden", "extract", "optimize", or "polish" passes. Cover all of those dimensions here.
 
 ## Design File Resolution

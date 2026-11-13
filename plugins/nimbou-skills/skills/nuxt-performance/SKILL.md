@@ -20,6 +20,8 @@ Use build de produção com conteúdo representativo. Dados publicados são a fo
 3. Identifique o elemento LCP, `currentSrc`, bytes e cadeia de rede. Separe TTFB, descoberta, transferência e renderização antes de editar. Consulte [diagnóstico](reference/diagnostics.md) para imagens, fontes, bundle ou primeira renderização seguida de SPA.
 4. Altere o gargalo observado em incrementos verificáveis. `eager`/`fetchpriority` não substituem dimensionamento; imagem menor não resolve espera por JavaScript ou CSS.
 
+Antes de escolher a técnica para o gargalo observado, consulte `nimbou-skills:modern-web-guidance` sobre o assunto relevante, como descoberta/prioridade de imagens, fontes ou agendamento de tarefas. Se a tarefa ainda for apenas investigação, use os guias para orientar a coleta de evidência, sem antecipar uma correção. Reutilize consultas pertinentes já feitas e preserve wrappers, SSR e fallbacks; o guia não substitui baseline nem comparação medida.
+
 ## Corrigir e comparar
 
 Preserve imagens com texto completas, contatos, rastreamento consentido e ações reais. Use as abstrações de mídia/dados existentes; não remova conteúdo para alcançar a nota. Valide aparência e interações afetadas no navegador, em desktop e mobile.

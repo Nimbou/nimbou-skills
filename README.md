@@ -62,6 +62,19 @@
 - `nuxt-components-redesign` — branded component demos and application of approved visual/UX changes
 - `nuxt-compact-review` — browser screenshots before/after, compact spacing, aligned layouts and responsive UX fixes on existing pages and components
 
+### Web platform guidance
+
+- `modern-web-guidance` — shared official HTML/CSS/browser API guidance, adapted to Nuxt/Vuetify, SSR, accessibility and browser compatibility. Used by `nuxt-think`, `nuxt-design-posture`, `nuxt-performance`, `nuxt-audit` and `nuxt-components-redesign` when relevant.
+
+The Nimbou skill calls the official CLI on demand; application repositories need no dependency or second plugin installation. The regular installer distributes this skill alongside the others. Example request: "Use modern-web-guidance para revisar o layout responsivo dos cards, preservando os wrappers existentes."
+
+```sh
+pnpm dlx modern-web-guidance@latest search "responsive container layout"
+pnpm dlx modern-web-guidance@latest retrieve "responsive-design"
+```
+
+The initial package download and update checks require network access. Queries should be generic and omit private project data. See the [official project](https://github.com/GoogleChrome/modern-web-guidance) for CLI behavior, telemetry and updates. Guides remain upstream; this repository maintains the workflow adaptation. `legacy-scan` is reserved for requested broad modernization and covers only part of the guide catalog.
+
 ### Marketing and campaign analysis
 
 - `refinar-google-ads` — campaign refinement reports with CTR, CPC, conversion types, comparable investment periods and a visual one-page summary. Client-specific account context stays in the task or local references.
