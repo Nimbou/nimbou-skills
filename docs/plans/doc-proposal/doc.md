@@ -4,7 +4,7 @@ Data: 2026-11-14. Escopo aprovado na conversa: criar skill para propostas de ass
 
 ## Implementação
 
-- `plugins/nimbou-skills/skills/proposta-assessoria/SKILL.md`: investigação, oferta, proposta, revisão e entrega.
+- `plugins/nimbou-skills/skills/doc-proposal/SKILL.md`: investigação, oferta, proposta, revisão e entrega.
 - `reference/fundamentos.md`: conceitos documentados, fontes, edição consultada e adaptações locais.
 - `reference/simulacao.md`: persona, pacotes por papel, leitura progressiva, revisão e registro de alterações.
 - README: descoberta e exemplo de uso. A distribuição existente enumera automaticamente as pastas de skills; não foi necessário mudar o bootstrap.
@@ -37,7 +37,7 @@ Exemplo verificável: V0, “aumentar suas vendas em 40%”; V1, “O diagnósti
 
 ## Verificação técnica
 
-- `python3 /home/everton/.codex/skills/.system/skill-creator/scripts/quick_validate.py plugins/nimbou-skills/skills/proposta-assessoria`: aprovado.
+- `python3 /home/everton/.codex/skills/.system/skill-creator/scripts/quick_validate.py plugins/nimbou-skills/skills/doc-proposal`: aprovado.
 - Resolução dos links Markdown locais da nova skill: aprovada.
 - `git diff --check`: aprovado.
 - `node --test tests/plugin/plugin-manifest.test.mjs`: 6 aprovados, 0 falhas.

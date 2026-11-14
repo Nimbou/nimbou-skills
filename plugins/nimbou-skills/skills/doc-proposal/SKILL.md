@@ -1,5 +1,5 @@
 ---
-name: proposta-assessoria
+name: doc-proposal
 description: Use quando precisar criar ou revisar propostas comerciais de assessoria mensal com execução em marketing, processos, gestão, automação, IA ou desenvolvimento de software, incluindo dúvidas e objeções de um decisor.
 ---
 
