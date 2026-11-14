@@ -46,3 +46,13 @@ Exemplo verificável: V0, “aumentar suas vendas em 40%”; V1, “O diagnósti
 ## Limites da validação
 
 Os cenários são sintéticos; não demonstram impacto na conversão comercial. A primeira validação de negócio será aplicar a skill a materiais de uma oportunidade real e confrontar dúvidas simuladas com o retorno real do decisor. Não foram publicados arquivos nem criada PR.
+
+## Estilo do documento final
+
+O usuário definiu posteriormente o PDF `proposta-clausulados-amazonia-seguros-nimbou.pdf`, no projeto Amazônia, como referência de estilo. As páginas 1–3 foram renderizadas e inspecionadas; medidas, fontes e cores foram conferidas no gerador existente e na extração do PDF. O perfil autossuficiente está em `reference/estilo-documento.md`, com logo Nimbou vetorial em `assets/`. O PDF original e seus dados não são distribuídos na skill. O resultado final passa a ser PDF com fonte editável, salvo pedido diferente; rascunhos e revisões pontuais podem continuar na conversa.
+
+Teste anterior à mudança: agente `gpt-6-sol`/`medium`, contexto novo, leu apenas a skill e as referências. Constatou ausência de regras visuais e de PDF padrão. Propôs Arial 11, margens de 20 mm e cores próprias, explicitando que eram escolhas suas. Isso demonstrou que a versão anterior não determinava o estilo pedido.
+
+Teste com o novo perfil: outro agente `gpt-6-sol`/`medium`, contexto novo, gerou duas páginas sintéticas sem consultar o PDF original. Os artefatos estão em `style-reference/`: PDF, conteúdo JSON, código de geração e PNGs. Ambas as páginas foram inspecionadas visualmente: identidade, hierarquia, tabelas, margens e rodapé consistentes com a referência, sem cortes ou sobreposições. A extração com pdfplumber confirmou duas páginas, identificação do cliente, paginação, fontes Lato e limites laterais. O gerador verifica a altura do conteúdo e das tabelas contra a reserva de rodapé. A amostra mantém condições comerciais como “A definir com o prestador”.
+
+Após a mudança: validação estrutural da skill, links locais, SVG sem referências externas, `git diff --check` e seis testes de empacotamento aprovados. A validação da amostra é visual e estrutural; não cobre todos os volumes possíveis de texto. Toda proposta futura ainda exige renderização e conferência próprias.

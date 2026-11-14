@@ -49,6 +49,8 @@ Use agentes separados quando disponíveis e autorizados; caso contrário, faça 
 
 Entregue a proposta revisada separada da análise interna. Inclua feedback por seção, alterações relevantes e dúvidas pendentes para o prestador ou cliente. Em revisão pontual, restrinja o trabalho às seções afetadas.
 
+O documento final padrão é **PDF com fonte editável**, no estilo definido em [reference/estilo-documento.md](reference/estilo-documento.md). Leia essa referência antes de diagramar. Use a skill de PDF para gerar, renderizar e conferir todas as páginas. Em uma revisão pontual ou rascunho na conversa, não gere arquivos sem necessidade. Preserve um formato diferente pedido pelo usuário.
+
 Use **rascunho com pendências** quando faltarem condições materiais; **pronta para revisão do prestador** quando o documento estiver consistente. Não chame de pronta para envio se houver preço, capacidade ou compromissos materiais indefinidos. Não enviar ao cliente sem instrução explícita.
 
-Quando salvar arquivos, respeite o destino pedido; na ausência dele, use `docs/plans/proposta-<cliente>/`. Mantenha proposta, análise e persona em arquivos separados. PDF ou Word só quando solicitado, usando a skill de documento apropriada.
+Quando salvar arquivos, respeite o destino pedido; na ausência dele, use `docs/plans/proposta-<cliente>/`. Mantenha proposta, análise e persona em arquivos separados. Salve o PDF, o conteúdo editável e o código de geração no mesmo diretório da proposta; mantenha PNGs de conferência em subdiretório. Word exige pedido específico e a skill de documento apropriada.
