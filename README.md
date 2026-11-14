@@ -1,6 +1,6 @@
 # nimbou-skills
 
-`nimbou-skills` is a Codex skill library for NestJS/Prisma, Laravel/Eloquent, Nuxt/Vuetify workflows, and Google Ads campaign refinement.
+`nimbou-skills` is a Codex skill library for NestJS/Prisma, Laravel/Eloquent, Nuxt/Vuetify workflows, Google Ads campaign refinement, and advisory proposals.
 
 ## Skill Model
 
@@ -78,6 +78,10 @@ The initial package download and update checks require network access. Queries s
 ### Marketing and campaign analysis
 
 - `refinar-google-ads` — campaign refinement reports with CTR, CPC, conversion types, comparable investment periods and a visual one-page summary. Client-specific account context stays in the task or local references.
+
+### Commercial proposals
+
+- [`proposta-assessoria`](plugins/nimbou-skills/skills/proposta-assessoria/SKILL.md) — monthly advisory proposals with execution across marketing, processes and technology; documented NOSE, SPIN and persuasion concepts, buyer simulation and actionable feedback per section. Example: "Use proposta-assessoria para criar uma proposta com base nestas anotações e simular a leitura do decisor."
 
 ### Project-specific skills
 
