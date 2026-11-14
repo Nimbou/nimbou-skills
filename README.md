@@ -81,7 +81,7 @@ The initial package download and update checks require network access. Queries s
 
 ### Commercial proposals
 
-- [`doc-proposal`](plugins/nimbou-skills/skills/doc-proposal/SKILL.md) — monthly advisory proposals with execution across marketing, processes and technology; documented NOSE, SPIN and persuasion concepts, buyer simulation and actionable feedback per section. Final documents default to PDF plus editable source, following the packaged Nimbou visual profile. Example: "Use doc-proposal para criar uma proposta com base nestas anotações e simular a leitura do decisor."
+- [`doc-proposal`](plugins/nimbou-skills/skills/doc-proposal/SKILL.md) — concise, formal advisory proposals with execution across marketing, processes and technology; documented NOSE/SPIN concepts and buyer review. PDF plus editable source, modern branded cover, investment at the commercial close and product details in appendices. Includes the Nimbou vector symbol and cover helper; preserves approved designs and other providers' identities. Example: "Use doc-proposal para criar uma proposta com base nestas anotações e simular a leitura do decisor."
 
 ### Project-specific skills
 

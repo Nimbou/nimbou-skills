@@ -35,7 +35,9 @@ Não converter capacidade contínua em escopo ilimitado ou prometer quantidade f
 
 ## 3. Escrever ou revisar
 
-Use NOSE como lógica, adaptando a estrutura ao documento existente: contexto e necessidade; resultado pretendido; recomendação e primeira frente; evidências pertinentes. Acrescente funcionamento mensal, responsabilidades, acompanhamento, investimento, condições e próximo passo conforme o caso. Escreva para o conhecimento técnico do decisor.
+Leia [reference/redacao-organizacao.md](reference/redacao-organizacao.md). Escreva de forma concisa, formal e comercial, compreensível sem a conversa anterior. A apresentação identifica as partes, o propósito e as frentes relevantes da oferta; não omita marketing ou tráfego pago quando integrarem os serviços acordados. Evite introduções longas, qualificadores vazios e repetição do escopo.
+
+Use NOSE como lógica interna: necessidade, resultado pretendido, solução e evidências pertinentes. Organize o corpo para a decisão de contratação; deixe investimento, vigência e condições no fechamento e especificações do sistema em apêndice, quando necessárias. Preserve no corpo benefícios, escopo, responsabilidades e limites que mudem a decisão. Adapte essa ordem quando o usuário pedir diferente.
 
 Explique o benefício de cada intervenção antes do mecanismo. Use os critérios de persuasão da referência somente quando houver fundamento real. Não inventar cases, depoimentos, credenciais, perdas, retorno financeiro, escassez ou garantias. Sugestões comerciais e estimativas permanecem identificadas como sugestões até serem confirmadas.
 
@@ -49,7 +51,7 @@ Use agentes separados quando disponíveis e autorizados; caso contrário, faça 
 
 Entregue a proposta revisada separada da análise interna. Inclua feedback por seção, alterações relevantes e dúvidas pendentes para o prestador ou cliente. Em revisão pontual, restrinja o trabalho às seções afetadas.
 
-O documento final padrão é **PDF com fonte editável**, no estilo definido em [reference/estilo-documento.md](reference/estilo-documento.md). Leia essa referência antes de diagramar. Use a skill de PDF para gerar, renderizar e conferir todas as páginas. Em uma revisão pontual ou rascunho na conversa, não gere arquivos sem necessidade. Preserve um formato diferente pedido pelo usuário.
+O documento final padrão é **PDF com fonte editável**, seguindo [reference/estilo-documento.md](reference/estilo-documento.md): capa moderna com identidade da marca e miolo leve, com seções numeradas, listas e tabelas. Leia a referência antes de diagramar. Uma referência fornecida ou um visual aprovado pelo usuário prevalece sobre o padrão; não redesenhe a capa aprovada ao corrigir um parágrafo. Use a skill de PDF para renderizar e conferir o resultado; após uma alteração pontual, inspecione as páginas afetadas e confirme que as demais foram preservadas. Em rascunho na conversa, não gere arquivos sem necessidade. Preserve um formato diferente pedido pelo usuário.
 
 Use **rascunho com pendências** quando faltarem condições materiais; **pronta para revisão do prestador** quando o documento estiver consistente. Não chame de pronta para envio se houver preço, capacidade ou compromissos materiais indefinidos. Não enviar ao cliente sem instrução explícita.
 

@@ -1,48 +1,30 @@
 {
-  "tipo": "Amostra visual — conteúdo sintético",
+  "tipo": "Amostra visual com dados sintéticos",
   "cliente": "Cliente demonstrativo",
-  "prestador": "Nimbou Software",
-  "responsavel": "A definir",
-  "data": "14 nov 2026",
-  "versao": "Demonstração",
-  "assunto_rodape": "Assessoria mensal",
+  "subtitulo": "Plano de desenvolvimento e melhoria da operação",
+  "descricao_cliente": "Amostra visual · dados fictícios",
+  "data": "14 de novembro de 2026",
+  "ano": "2026",
   "paginas": [
-    {
-      "rotulo": "PROPOSTA DE ASSESSORIA",
-      "titulo": "Melhorar a operação com prioridades claras",
-      "secao": "1 Objetivo da assessoria",
-      "paragrafo": "Organizar oportunidades de melhoria, escolher a próxima prioridade em conjunto e transformar essa escolha em entregas acompanháveis ao longo do mês.",
-      "fluxo": ["Diagnóstico", "Prioridade", "Execução", "Revisão"],
-      "tabela": {
-        "cabecalho": ["Entrega", "Benefício"],
-        "linhas": [
-          ["Mapa inicial", "Torna visíveis os pontos que merecem atenção."],
-          ["Prioridade acordada", "Concentra a execução no objetivo escolhido."],
-          ["Revisão do avanço", "Permite ajustar os próximos passos com base no que foi realizado."]
-        ]
-      }
-    },
-    {
-      "rotulo": "FUNCIONAMENTO E CONDIÇÕES",
-      "titulo": "Execução, acompanhamento e contratação",
-      "secao": "2 Funcionamento mensal",
-      "paragrafo": "A assessoria mantém um objetivo de melhoria ativo por vez, dividido em entregas menores. A prioridade e o andamento são revistos em conjunto durante o acompanhamento.",
-      "tabela_responsabilidade": {
-        "cabecalho": ["Responsabilidade", "Participação"],
-        "linhas": [
-          ["Prestador", "Conduz o diagnóstico, organiza as entregas e apresenta os avanços."],
-          ["Cliente", "Contribui com contexto, acessos pertinentes e decisões de prioridade."]
-        ]
-      },
-      "secao_condicoes": "3 Condições para definir",
-      "tabela_condicoes": {
-        "cabecalho": ["Condição", "Estado"],
-        "linhas": [
-          ["Mensalidade", "A definir com o prestador"],
-          ["Capacidade", "A definir com o prestador"],
-          ["Encontros", "A definir com o prestador"]
-        ]
-      }
-    }
+    [
+      ["h", "1. Apresentação"],
+      ["p", "A <b>Nimbou Software</b> apresenta ao Cliente demonstrativo uma proposta de assessoria para aplicar inteligência artificial à operação, otimizar processos e desenvolver soluções para a equipe. O trabalho inclui também marketing e campanhas de tráfego pago."],
+      ["p", "As prioridades serão definidas em conjunto, com entregas demonstradas e orientação prática para a equipe."],
+      ["h", "2. Objetivos da assessoria"],
+      ["list", ["<b>Ganhar agilidade:</b> simplificar rotinas e reduzir tarefas manuais.", "<b>Organizar informações:</b> facilitar a consulta e a análise dos documentos.", "<b>Desenvolver autonomia:</b> capacitar a equipe no uso das soluções."]],
+      ["h", "3. Escopo dos serviços"],
+      ["table", {"cabecalho": ["Frente", "Aplicação"], "linhas": [["Inteligência artificial", "Aplicar ferramentas e criar instruções reutilizáveis para a equipe."], ["Processos e sistemas", "Revisar rotinas, automatizar tarefas e desenvolver soluções próprias."], ["Capacitação", "Treinamentos práticos e materiais de apoio."], ["Marketing e publicidade", "Planejar e executar as ações e campanhas acordadas."]]}]
+    ],
+    [
+      ["h", "4. Forma de trabalho"],
+      ["p", "Um objetivo de melhoria será trabalhado por vez, dividido em entregas menores. A prioridade e o andamento serão revistos com o cliente."],
+      ["list", ["<b>Prestador:</b> executa as entregas, demonstra os avanços e orienta a equipe.", "<b>Cliente:</b> fornece contexto e acessos, participa da conferência e aprova os investimentos."]],
+      ["h", "5. Investimento e condições"],
+      ["p", "Os campos abaixo são pendências da amostra. Nenhum valor ou condição de contratação foi assumido."],
+      ["table", {"cabecalho": ["Condição", "Definição necessária"], "linhas": [["Honorários e vigência", "A definir com o prestador."], ["Fornecedores", "Estimar IA, hospedagem e licenças conforme o uso."], ["Verba de anúncios", "Separada dos honorários; definir por campanha."], ["Atendimento", "Combinar canais, encontros e capacidade de execução."], ["Formalização", "Definir pagamento, início, revisão, encerramento e ativos."]]}],
+      ["h", "6. Próximos passos"],
+      ["p", "Conferir o escopo, preencher as condições pendentes e definir a primeira entrega."],
+      ["small", "Amostra de diagramação: dados fictícios, sem proposta enviada ou contratação presumida."]
+    ]
   ]
 }
