@@ -131,7 +131,7 @@ def verify_thread(client, record):
     return thread.get("status")
 
 
-def create_task(client, *, cwd, model, effort, name, prompt, receipt_path, authorized):
+def create_task(client, *, cwd, model="gpt-6.1-sol", effort="low", name, prompt, receipt_path, authorized):
     if not authorized:
         raise ValueError("Task creation requires existing user authorization (--authorized)")
     cwd = Path(cwd).resolve(strict=True)
@@ -154,26 +154,35 @@ def create_task(client, *, cwd, model, effort, name, prompt, receipt_path, autho
             if not record.get("threadId"):
                 raise ValueError("Creation outcome uncertain; reconcile native tasks before retrying")
             return {**record, "reused": True, "threadStatus": verify_thread(client, record),
-                    "needsReconciliation": record["phase"] != "started"}
+                    "needsReconciliation": (record["phase"] != "started"
+                                            or record.get("sandbox") != {"type": "dangerFullAccess"}
+                                            or record.get("approvalPolicy") != "never")}
 
         record = {"version": 1, "phase": "creating", "requestFingerprint": fingerprint,
-                  "cwd": str(cwd), "requestedModel": model, "requestedEffort": effort, "name": name}
+                  "cwd": str(cwd), "requestedModel": model, "requestedEffort": effort, "name": name,
+                  "requestedSandbox": "danger-full-access", "requestedApprovalPolicy": "never"}
         # Persist intent BEFORE mutation: a lost reply must not cause another creation.
         write_receipt(receipt_path, record)
         created = client.request("thread/start", {"cwd": str(cwd), "model": model,
+                                                   "sandbox": "danger-full-access", "approvalPolicy": "never",
                                                    "config": {"model_reasoning_effort": effort},
                                                    "ephemeral": False})
         record.update(phase="created", threadId=created["thread"]["id"],
-                      model=created["model"], reasoningEffort=created.get("reasoningEffort"))
+                      model=created["model"], reasoningEffort=created.get("reasoningEffort"),
+                      sandbox=created.get("sandbox"), approvalPolicy=created.get("approvalPolicy"))
         write_receipt(receipt_path, record)
         if (created["model"] != model or created.get("reasoningEffort") != effort
-                or Path(created["cwd"]).resolve() != cwd):
+                or Path(created["cwd"]).resolve() != cwd
+                or created.get("sandbox") != {"type": "dangerFullAccess"}
+                or created.get("approvalPolicy") != "never"):
             raise ValueError("Effective configuration differs from request; created task kept, turn not started")
         client.request("thread/name/set", {"threadId": record["threadId"], "name": name})
         record["phase"] = "starting"
         write_receipt(receipt_path, record)
         started = client.request("turn/start", {"threadId": record["threadId"], "cwd": str(cwd),
                                                 "model": model, "effort": effort,
+                                                "sandboxPolicy": {"type": "dangerFullAccess"},
+                                                "approvalPolicy": "never",
                                                 "input": [{"type": "text", "text": prompt}]})
         record.update(phase="started", turnId=started["turn"]["id"], turnStatus=started["turn"]["status"])
         write_receipt(receipt_path, record)
@@ -189,8 +198,10 @@ def main():
     diagnostic = commands.add_parser("inspect", help="Read-only native connection and optional bridge diagnosis")
     diagnostic.add_argument("--thread", default=os.environ.get("CODEX_THREAD_ID"))
     creation = commands.add_parser("create", help="Create/start one authorized native task with a durable receipt")
-    for option in ["cwd", "model", "effort", "name", "prompt-file", "receipt"]:
+    for option in ["cwd", "name", "prompt-file", "receipt"]:
         creation.add_argument("--" + option, required=True)
+    creation.add_argument("--model", default="gpt-6.1-sol", help="Task model (default: gpt-6.1-sol)")
+    creation.add_argument("--effort", default="low", help="Reasoning effort (default: low)")
     creation.add_argument("--authorized", action="store_true", help="Record authorization already given by the user")
     args = parser.parse_args()
     if args.command == "create" and not args.authorized:

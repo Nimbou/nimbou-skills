@@ -21,6 +21,8 @@ class FakeClient:
         self.model = "chosen-model"
         self.effort = "chosen-effort"
         self.fail_at = None
+        self.sandbox = {"type": "dangerFullAccess"}
+        self.approval_policy = "never"
 
     def request(self, method, params):
         self.calls.append((method, params))
@@ -28,7 +30,8 @@ class FakeClient:
             raise TimeoutError("Response lost after submission")
         if method == "thread/start":
             return {"thread": {"id": "thread-1"}, "cwd": self.cwd,
-                    "model": self.model, "reasoningEffort": self.effort}
+                    "model": self.model, "reasoningEffort": self.effort,
+                    "sandbox": self.sandbox, "approvalPolicy": self.approval_policy}
         if method == "turn/start":
             return {"turn": {"id": "turn-1", "status": "inProgress"}}
         if method == "thread/read":
@@ -72,6 +75,39 @@ class NativeCreationTests(unittest.TestCase):
         result = self.run_creation()
         self.assertTrue(result["reused"])
         self.assertEqual([method for method, _ in self.client.calls], ["thread/read"])
+
+    def test_always_requests_full_access_and_records_effective_permissions(self):
+        result = self.run_creation()
+        calls = dict(self.client.calls)
+        self.assertEqual(calls["thread/start"].get("sandbox"), "danger-full-access")
+        self.assertEqual(calls["thread/start"].get("approvalPolicy"), "never")
+        self.assertEqual(calls["turn/start"].get("sandboxPolicy"), {"type": "dangerFullAccess"})
+        self.assertEqual(calls["turn/start"].get("approvalPolicy"), "never")
+        self.assertEqual(result.get("sandbox"), {"type": "dangerFullAccess"})
+        self.assertEqual(result.get("approvalPolicy"), "never")
+
+    def test_restricted_or_unverified_permissions_keep_thread_without_starting_turn(self):
+        for sandbox, approval in [({"type": "workspaceWrite"}, "never"),
+                                  ({"type": "dangerFullAccess"}, "on-request"),
+                                  (None, "never"), ({"type": "dangerFullAccess"}, None)]:
+            with self.subTest(sandbox=sandbox, approval=approval):
+                self.options["receipt_path"].unlink(missing_ok=True)
+                self.client.calls.clear()
+                self.client.sandbox = sandbox
+                self.client.approval_policy = approval
+                with self.assertRaisesRegex(ValueError, "configuration"):
+                    self.run_creation()
+                record = json.loads(self.options["receipt_path"].read_text())
+                self.assertEqual(record["threadId"], "thread-1")
+                self.assertNotIn("turn/start", dict(self.client.calls))
+
+    def test_default_model_and_effort(self):
+        self.client.model = "gpt-6.1-sol"
+        self.client.effort = "low"
+        options = {k: v for k, v in self.options.items() if k not in {"model", "effort"}}
+        result = native_task.create_task(self.client, **options)
+        self.assertEqual(result["model"], "gpt-6.1-sol")
+        self.assertEqual(result["reasoningEffort"], "low")
 
     def test_does_not_mutate_without_existing_authorization(self):
         with self.assertRaisesRegex(ValueError, "authoriz"):

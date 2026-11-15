@@ -18,7 +18,7 @@ The helper locates the existing server using `codex app-server daemon version` a
 
 ## Create and start one task
 
-Resolve the exact existing `task_checkout`, `task_model`, `task_effort`, `task_title`, `task_prompt_file`, and `task_receipt` from the authorized request. Use a persistent receipt under the task's plan directory or another approved artifact directory. Keep the same inputs and receipt when reconciling a retry.
+Prepare a separate worktree first, as required by `SKILL.md`; `task_checkout` is its verified path. The helper accepts an already prepared checkout and does not create worktrees. Only an explicit request to use the source checkout skips isolation. Resolve `task_model` and `task_effort` from the authorized request/handoff, defaulting to `gpt-6.1-sol` and `low`; the CLI also uses these defaults when the flags are omitted. Resolve `task_title`, `task_prompt_file`, and `task_receipt`. Use a persistent receipt under the task's plan directory or another approved artifact directory. Keep the same inputs and receipt when reconciling a retry.
 
 ```bash
 "$native_task_env/bin/python" "$native_task_skill/scripts/native_task.py" create \
@@ -30,7 +30,7 @@ Resolve the exact existing `task_checkout`, `task_model`, `task_effort`, `task_t
 
 The prompt file describes the task, authorized actions and restrictions. When executing a plan, also include the source checkout, plan path, target worktree and any pending decisions. The receipt contains a request fingerprint and IDs, not prompt text or credentials. A changed prompt is a different request: do not create another receipt to retry an uncertain original operation.
 
-Mutation sequence: persist intent → `thread/start` (`cwd`, `model`, `config.model_reasoning_effort`, `ephemeral: false`) → persist native ID and verify returned configuration → `thread/name/set` → persist turn intent → `turn/start` (`model`, `effort`, `cwd`, text input) → persist turn ID → `thread/read` to verify identity and status. It does not override permissions, sandbox policy or service tier.
+Mutation sequence: persist intent → `thread/start` (`cwd`, `model`, `config.model_reasoning_effort`, `sandbox: "danger-full-access"`, `approvalPolicy: "never"`, `ephemeral: false`) → persist native ID and effective configuration → verify model, effort, checkout, `sandbox: {"type": "dangerFullAccess"}` and `approvalPolicy: "never"` → `thread/name/set` → persist turn intent → `turn/start` (`model`, `effort`, `cwd`, `sandboxPolicy: {"type": "dangerFullAccess"}`, `approvalPolicy: "never"`, text input) → persist turn ID → `thread/read` to verify identity and status. A missing or mismatched permission response stops before the first turn while keeping the receipt and native ID. Full Access is mandatory; the helper never falls back to restricted permissions. It does not change global configuration or service tier.
 
 ## Reconcile an interrupted creation
 
@@ -41,7 +41,7 @@ Mutation sequence: persist intent → `thread/start` (`cwd`, `model`, `config.mo
 | `starting` | Turn submission may have succeeded. Inspect that thread's turns; do not resend the prompt blindly. |
 | `started` | A turn ID was returned. Read current status/messages to distinguish running, awaiting user input and finished. |
 
-A repeat invocation with an existing ID performs only `thread/read`. `needsReconciliation: true` means the helper deliberately did not resume a partial operation. After a lost `thread/start` response or process crash, use native `thread/list`/`thread/turns/list` (current schema) to identify the outcome and update the receipt only from verified evidence. An interrupted process can leave the `.lock` directory: confirm no creator is active and reconcile before removing it.
+A repeat invocation with an existing ID performs only `thread/read`. `needsReconciliation: true` means the helper deliberately did not resume a partial operation or the receipt lacks verified Full Access settings (including receipts created before this requirement). After a lost `thread/start` response or process crash, use native `thread/list`/`thread/turns/list` (current schema) to identify the outcome and update the receipt only from verified evidence. An interrupted process can leave the `.lock` directory: confirm no creator is active and reconcile before removing it.
 
 ## Optional connection diagnosis
 
