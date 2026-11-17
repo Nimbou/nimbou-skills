@@ -18,7 +18,7 @@ The helper locates the existing server using `codex app-server daemon version` a
 
 ## Create and start one task
 
-Prepare a separate worktree first, as required by `SKILL.md`; `task_checkout` is its verified path. The helper accepts an already prepared checkout and does not create worktrees. Only an explicit request to use the source checkout skips isolation. Resolve `task_model` and `task_effort` from the authorized request/handoff, defaulting to `gpt-6.1-sol` and `low`; the CLI also uses these defaults when the flags are omitted. Resolve `task_title`, `task_prompt_file`, and `task_receipt`. Use a persistent receipt under the task's plan directory or another approved artifact directory. Keep the same inputs and receipt when reconciling a retry.
+Follow the checkout preparation in `SKILL.md` before running `create`. Use `nimbou-skills:using-git-worktrees` for a new worktree and pass the verified checkout path as `task_checkout`. Resolve `task_model` and `task_effort` from the authorized request/handoff, defaulting to `gpt-6.1-sol` and `low`; the CLI also uses these defaults when the flags are omitted. Resolve `task_title`, `task_prompt_file`, and `task_receipt`. Use a persistent receipt under the task's plan directory or another approved artifact directory. Keep the same inputs and receipt when reconciling a retry.
 
 ```bash
 "$native_task_env/bin/python" "$native_task_skill/scripts/native_task.py" create \
