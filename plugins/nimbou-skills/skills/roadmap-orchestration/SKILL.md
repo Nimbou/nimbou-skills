@@ -46,7 +46,7 @@ mantêm a ordem. Não trate chat finalizado, tarefa humana concluída ou CI verd
 prova automática de que o marco ou o objetivo foi atingido.
 
 Criação de chat já inicia a tarefa. Preserve o limite de modelos:
-`gpt-6-sol`/`medium` para decisões abertas, comportamento e revisão;
+`gpt-6.2-sol`/`medium` para decisões abertas, comportamento e revisão;
 `gpt-6-luna`/`high` para trabalho mecânico delimitado. A configuração excepcional
 Luna/max do controller técnico segue o handoff existente, sem alterar seus workers.
 

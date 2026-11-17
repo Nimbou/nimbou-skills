@@ -47,7 +47,7 @@ test('persistent children report to the parent while the parent verifies outputs
   assert.match(core, /confira o pedido humano.*read_thread/is)
   assert.match(core, /follow-up.*pode disparar um turno/is)
   assert.match(core, /filha.*callback.*nunca escreve `operations`/is)
-  assert.match(core, /gpt-6-sol.*medium/is)
+  assert.match(core, /gpt-6\.2-sol.*medium/is)
   assert.match(core, /gpt-6-luna.*high/is)
 })
 

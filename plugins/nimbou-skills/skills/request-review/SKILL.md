@@ -10,7 +10,7 @@ general `spawn_agent` reviewer only when the user explicitly authorized a
 multi-agent review; otherwise perform the review in the current task. A dispatched
 reviewer gets precise context rather than the session history.
 
-Reviewers use at most `gpt-6-sol` with `medium` reasoning. Use that setting for
+Reviewers use at most `gpt-6.2-sol` with `medium` reasoning. Use that setting for
 behavioral, security, permission, migration, and concurrency review. A narrow
 mechanical diff may use `gpt-6-luna` at `high`, never below `high`. Preserve an
 explicit user choice that meets these bounds; narrow the review or report the

@@ -14,7 +14,7 @@ Monte a persona a partir de cargo, responsabilidade, objetivo declarado, conheci
 
 ## Execução com agentes Codex
 
-Quando houver autorização para agentes, despache comprador e revisor em contextos novos (`fork_turns: "none"`). Use `gpt-6-sol` com raciocínio `medium` para ambos, pois há julgamento aberto. O controlador pode assumir o autor. Não atribuir personalidade a um modelo como se ela fosse evidência sobre o cliente.
+Quando houver autorização para agentes, despache comprador e revisor em contextos novos (`fork_turns: "none"`). Use `gpt-6.2-sol` com raciocínio `medium` para ambos, pois há julgamento aberto. O controlador pode assumir o autor. Não atribuir personalidade a um modelo como se ela fosse evidência sobre o cliente.
 
 O comprador não deve ler o diretório da oportunidade: envie os fatos selecionados e as seções progressivamente pelo controlador. Restrinja-o a esses conteúdos, sem ferramentas, fontes externas ou acesso a arquivos. Não passar o caminho de notas privadas ou da proposta completa. A separação de pacotes reduz contaminação, mas não constitui garantia técnica de isolamento de dados.
 

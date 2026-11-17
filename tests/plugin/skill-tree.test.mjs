@@ -101,7 +101,7 @@ test('planning skills hand off a saved plan to a separate execution task', () =>
     assert.match(read(`plugins/nimbou-skills/skills/${planner}/SKILL.md`), /plan-session-handoff\.md/)
   }
   assert.match(handoff, /docs\/plans\/<slug>\/doc\.md/)
-  assert.match(handoff, /gpt-6-sol/)
+  assert.match(handoff, /gpt-6\.2-sol/)
   assert.match(handoff, /gpt-6-luna/)
   assert.match(handoff, /create_thread/)
   assert.match(handoff, /working-tree/)
@@ -500,7 +500,7 @@ test('executing-plans reports agent dispatches', () => {
   assert.match(read('plugins/nimbou-skills/skills/executing-plans/SKILL.md'), /total agent count/)
 })
 
-test('delegating skills respect the GPT-6 Sol medium ceiling', () => {
+test('delegating skills respect the GPT-6.2 Sol medium ceiling', () => {
   for (const skill of [
     'executing-plans/prose-execution.md',
     'dispatching-parallel-agents/SKILL.md',
@@ -508,7 +508,7 @@ test('delegating skills respect the GPT-6 Sol medium ceiling', () => {
     'nestjs-refactor/SKILL.md',
   ]) {
     const body = read(`plugins/nimbou-skills/skills/${skill}`)
-    assert.match(body, /gpt-6-sol/)
+    assert.match(body, /gpt-6\.2-sol/)
     assert.match(body, /medium/)
   }
   assert.match(read('plugins/nimbou-skills/skills/executing-plans/prose-execution.md'), /explicitly authorized\s+multi-agent execution/)

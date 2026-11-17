@@ -117,7 +117,7 @@ checkout efetivo, persistência ou resultado externo exigido, não apenas o rela
 Resultado ausente/incompatível fica `verifying` ou `blocked`; peça correção à filha
 dentro do escopo autorizado, sem criar outro chat automaticamente.
 
-Modelos: `gpt-6-sol`/`medium` para decisões abertas, implementação comportamental
+Modelos: `gpt-6.2-sol`/`medium` para decisões abertas, implementação comportamental
 e revisão substantiva; `gpt-6-luna`/`high` para trabalho mecânico com contrato fechado.
 O controller de execução técnica separado pode usar `gpt-6-luna`/`max` conforme
 [plan-session-handoff](../../executing-plans/plan-session-handoff.md); seus workers

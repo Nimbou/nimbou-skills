@@ -131,7 +131,7 @@ def verify_thread(client, record):
     return thread.get("status")
 
 
-def create_task(client, *, cwd, model="gpt-6.1-sol", effort="low", name, prompt, receipt_path, authorized):
+def create_task(client, *, cwd, model="gpt-6.2-sol", effort="low", name, prompt, receipt_path, authorized):
     if not authorized:
         raise ValueError("Task creation requires existing user authorization (--authorized)")
     cwd = Path(cwd).resolve(strict=True)
@@ -200,7 +200,7 @@ def main():
     creation = commands.add_parser("create", help="Create/start one authorized native task with a durable receipt")
     for option in ["cwd", "name", "prompt-file", "receipt"]:
         creation.add_argument("--" + option, required=True)
-    creation.add_argument("--model", default="gpt-6.1-sol", help="Task model (default: gpt-6.1-sol)")
+    creation.add_argument("--model", default="gpt-6.2-sol", help="Task model (default: gpt-6.2-sol)")
     creation.add_argument("--effort", default="low", help="Reasoning effort (default: low)")
     creation.add_argument("--authorized", action="store_true", help="Record authorization already given by the user")
     args = parser.parse_args()

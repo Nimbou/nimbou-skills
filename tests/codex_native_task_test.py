@@ -102,11 +102,11 @@ class NativeCreationTests(unittest.TestCase):
                 self.assertNotIn("turn/start", dict(self.client.calls))
 
     def test_default_model_and_effort(self):
-        self.client.model = "gpt-6.1-sol"
+        self.client.model = "gpt-6.2-sol"
         self.client.effort = "low"
         options = {k: v for k, v in self.options.items() if k not in {"model", "effort"}}
         result = native_task.create_task(self.client, **options)
-        self.assertEqual(result["model"], "gpt-6.1-sol")
+        self.assertEqual(result["model"], "gpt-6.2-sol")
         self.assertEqual(result["reasoningEffort"], "low")
 
     def test_does_not_mutate_without_existing_authorization(self):

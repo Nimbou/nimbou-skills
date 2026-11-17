@@ -36,7 +36,7 @@ test('roadmap orchestration ships an executable, authorization-safe skill', () =
   assert.match(operatingModel, /Never merge.*explicit confirmation/is)
   assert.match(operatingModel, /reconcilie.*tarefas.*PRs existentes/is)
   assert.match(operatingModel, /planning.*model.*effort.*execution.*model.*effort/is)
-  assert.match(operatingModel, /gpt-6-sol.*medium/is)
+  assert.match(operatingModel, /gpt-6\.2-sol.*medium/is)
   assert.match(operatingModel, /gpt-6-luna.*high/is)
   assert.match(operatingModel, /Não recomende `gpt-6-astra`/)
   assert.match(operatingModel, /pause automation|delete it/i)

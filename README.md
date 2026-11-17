@@ -5,7 +5,7 @@
 ## Skill Model
 
 - Supported environment: Codex
-- Model policy: `gpt-6-sol` at most `medium`; `gpt-6-luna` at least `high` (normally `high` for bounded mechanical work)
+- The [model policy](AGENTS.md#model-ceiling) caps general Sol use at `medium` and sets `high` for Luna on bounded mechanical work. Independent validation through `writing-skills` uses `gpt-6.2-sol` with `high` reasoning.
 - Backend architecture follows the detected stack and the target project's local conventions
 - Use `nestjs-*` for NestJS/Prisma, `laravel-*` for conventional Laravel/Eloquent, `nimbou-cms-*` for the Nimbou CMS shell, and `nuxt-*` for frontend work
 

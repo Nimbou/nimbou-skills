@@ -11,7 +11,7 @@ Create and start the requested persistent Codex task directly. This is the ordin
 
 Resolve the task's purpose, target checkout, requested model and reasoning effort from the conversation and applicable model policy. Carry forward scope, validation preferences, unresolved decisions and subagent restrictions. Ask only for information that cannot be inferred and materially affects creation.
 
-Default to `gpt-6.1-sol` with `low` reasoning unless the user or an explicitly authorized handoff specifies another model/effort. This native-task controller default is an explicit exception to the library's GPT-6 Sol ceiling in `AGENTS.md`; it does not change worker dispatch rules in other skills.
+Default to `gpt-6.2-sol` with `low` reasoning unless the user or an explicitly authorized handoff specifies another model/effort.
 
 Always create with **Full Access**: `sandbox: "danger-full-access"` and `approvalPolicy: "never"`. Verify both effective values before starting the first turn. If the environment rejects or changes them, preserve the receipt and native ID, report the mismatch and do not start the turn or silently fall back to restricted access. Do not change global configuration.
 

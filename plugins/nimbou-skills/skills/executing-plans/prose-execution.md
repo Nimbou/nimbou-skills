@@ -36,7 +36,7 @@ When authorized, use `spawn_agent` for every delegation in this file. A role is 
 an agent type: read the matching compact brief in `./codex-role-briefs.md` and include
 it in the worker message.
 
-The highest model tier is `gpt-6-sol`, at most `medium` reasoning. Use that setting for
+The highest model tier is `gpt-6.2-sol`, at most `medium` reasoning. Use that setting for
 behavioral implementation, spec review, boundary review, and fixes. A genuinely
 mechanical task with a closed contract may use `gpt-6-luna` at `high`, never below
 `high`. Never request `gpt-6-astra` or Sol reasoning above `medium`. Preserve an

@@ -117,7 +117,7 @@ Bad batches:
 When the user explicitly authorizes multi-agent work, these are the two execution
 ownership briefs. Otherwise, execute the bounded batches in the current task:
 
-When delegation is authorized, both roles use at most `gpt-6-sol` with `medium`
+When delegation is authorized, both roles use at most `gpt-6.2-sol` with `medium`
 reasoning. Keep a user's lower choice; split a slice that cannot be handled
 reliably within that ceiling. The role names below are ownership briefs, not
 separate model tiers.
