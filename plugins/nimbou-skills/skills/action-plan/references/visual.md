@@ -25,6 +25,17 @@ sem legenda explicativa. Todas as fases acordadas têm cabeçalho, marcos e tare
 detalhadas; não deixe etapas posteriores apenas como esboço. Isso não inclui
 fases hipotéticas que o usuário não colocou no objetivo.
 
+Na abertura, mostre o objetivo seguido somente da data final. Não inclua
+parágrafos genéricos sobre IA, autorizações, donos ou explicações de cronograma;
+responsável, executor e previsão permanecem nos cards de tarefas.
+
+A linha do tempo fica no final, depois dos limites, ajustes e próxima revisão.
+Mostre os dias de cada mês com pontos para entregas de tarefas e losangos para
+marcos; destaque o prazo final em dourado. As marcas representam datas de entrega,
+sem sugerir duração ou início. Preserve os meses e anos reais do plano; não fixe
+novembro, um prazo específico ou uma quantidade de marcos. Calendários extensos
+se dividem em blocos legíveis. O Markdown referencia SVGs gerados junto dele.
+
 A4 vertical é o padrão; mantenha a orientação já aprovada. Nunca force duas
 páginas ou três marcos apenas para reproduzir um exemplo. O layout permite
 continuação de cards maiores que uma página e envolve texto extenso nos chips;

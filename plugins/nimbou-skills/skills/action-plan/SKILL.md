@@ -12,6 +12,9 @@ tarefas ou lido por público não técnico. Esta seção prevalece sobre 5W2H, a
 de 48h, PDCA e a regra de detalhar só a fase ativa do formato legado.
 
 - Objetivo: uma frase de resultado e prazo.
+- Na abertura, apresente o objetivo e apenas a data de `objetivo.prazo`.
+  Não acrescente parágrafos sobre apoio de IA, responsáveis a definir, autorização
+  para executar ou explicações do prazo. Responsável e executor ficam nas tarefas.
 - Detalhe **todas as fases acordadas até o objetivo final**, na hierarquia
   fase → marco → tarefa → subtarefa. Não substitua as fases posteriores por um
   esboço. Use `fases[]`, `fases[].marcos[]` e `marcos[].fase_id` do schema.
@@ -35,6 +38,11 @@ de 48h, PDCA e a regra de detalhar só a fase ativa do formato legado.
 - Mostre a sequência visual das fases na abertura e agrupe seus marcos sob o
   cabeçalho de cada fase. Use palavras compreensíveis por qualquer setor.
   Limites e gatilhos de ajuste podem aparecer em blocos pequenos.
+- Encerre o PDF e o Markdown com uma linha do tempo mensal, mostrando os dias
+  das entregas de marcos e tarefas e destacando a data final. Use as datas do
+  plano, sem inventar duração, início ou datas ausentes. O gerador divide planos
+  de vários meses em calendários e produz os SVGs usados pelo Markdown.
+  `linha_do_tempo: false` permite omiti-la quando solicitado.
 - Não exiba primeira ação, porte, 5W2H, PDCA, riscos ou backlog só por existirem
   no template. Datas intermediárias são previsões ajustáveis; destaque o prazo final.
 - Gere **PDF e Markdown detalhado da mesma versão**, com o conteúdo em

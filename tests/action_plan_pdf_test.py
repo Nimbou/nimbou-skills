@@ -33,6 +33,60 @@ def plan():
 
 
 class PlanPdfTest(unittest.TestCase):
+    def test_opening_shows_only_deadline_and_omits_operational_notes(self):
+        data = plan()
+        data['objetivo']['prazo'] = '20/11/2026'
+        data['orientacao_execucao'] = 'Plano de entregas. Responsáveis nominais ainda a definir.'
+        data['observacao_prazos'] = 'Datas intermediárias são previsões propostas e ajustáveis.'
+        pdf = self.generate(data)
+        text = ' '.join(page.extract_text() for page in pdf.pages)
+        markdown = self.destination.with_suffix('.md').read_text(encoding='utf-8')
+        for output in (text, markdown):
+            self.assertIn('20/11/2026', output)
+            self.assertNotIn(data['orientacao_execucao'], output)
+            self.assertNotIn(data['observacao_prazos'], output)
+            self.assertIn('Pessoa responsável', output)
+
+    def test_monthly_timeline_is_last_and_covers_month_boundaries(self):
+        data = plan()
+        first = data['marcos'][0]
+        first['prazo'] = '30/11/2026'
+        first['tarefas'][0]['prazo'] = '29/11/2026'
+        second = copy.deepcopy(first)
+        second.update(nome='Entrega de dezembro', prazo='02/12/2026')
+        second['tarefas'][0].update(id='dezembro', prazo='2026-12-01', depende_de=['teste'])
+        data['marcos'].append(second)
+        data['objetivo']['prazo'] = '02/12/2026'
+        data['limites'] = ['LIMITE_FINAL_PRESERVADO']
+        pdf = self.generate(data)
+        text = ' '.join(page.extract_text() for page in pdf.pages)
+        markdown = self.destination.with_suffix('.md').read_text(encoding='utf-8')
+        for output in (text, markdown):
+            self.assertIn('Novembro 2026', output)
+            self.assertIn('Dezembro 2026', output)
+            self.assertGreater(output.index('LINHA DO TEMPO'), output.index('LIMITE_FINAL_PRESERVADO'))
+        svgs = list(self.destination.parent.glob('*cronograma*.svg'))
+        self.assertEqual(len(svgs), 2)
+        self.assertIn('29', svgs[0].read_text(encoding='utf-8'))
+
+    def test_timeline_does_not_invent_dates(self):
+        data = plan()
+        data['marcos'][0]['tarefas'][0]['prazo'] = 'A definir'
+        pdf = self.generate(data)
+        text = ' '.join(page.extract_text() for page in pdf.pages)
+        self.assertNotIn('LINHA DO TEMPO', text)
+        self.assertIn('A definir', text)
+
+    def test_limits_are_preserved_when_their_rows_cross_a_page_boundary(self):
+        data = plan()
+        data['limites'] = [f'LIMITE_{i}_INICIO ' + 'Conferir os dados de cada unidade. ' * 12
+                           + f'LIMITE_{i}_FIM' for i in range(9)]
+        pdf = self.generate(data)
+        text = ' '.join(page.extract_text() for page in pdf.pages)
+        for i in range(9):
+            self.assertIn(f'LIMITE_{i}_INICIO', text)
+            self.assertIn(f'LIMITE_{i}_FIM', text)
+
     def generate(self, data):
         directory = tempfile.TemporaryDirectory(prefix="action-plan-test-")
         self.addCleanup(directory.cleanup)
@@ -67,7 +121,7 @@ class PlanPdfTest(unittest.TestCase):
         for expected in ["FASE 01", "FASE 02", "Codex ou Dot", "Repita por período."]:
             self.assertIn(expected, text)
         self.assertTrue(self.destination.with_suffix(".md").exists(), "Markdown must accompany PDF")
-        markdown = self.destination.with_suffix(".md").read_text()
+        markdown = self.destination.with_suffix(".md").read_text(encoding="utf-8")
         for expected in ["Prepare o atendimento", "Avalie o atendimento", "Codex ou Dot",
                          "Registre a avaliação.", "Repita por período."]:
             self.assertIn(expected, markdown)

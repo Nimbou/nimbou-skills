@@ -2,6 +2,7 @@
 from datetime import date
 from html import escape
 from pathlib import Path
+from task_plan_timeline import timeline_charts
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
@@ -253,10 +254,8 @@ def build_task_plan(plan, out_path, numbers):
     ])
     story = [p("OBJETIVO", s["label"]),
              p((plan.get("objetivo") or {}).get("frase"), s["objective"])]
-    if plan.get("orientacao_execucao"):
-        story += [Spacer(1, 7), p(plan["orientacao_execucao"], s["small"])]
-    if plan.get("observacao_prazos"):
-        story += [Spacer(1, 4), p(plan["observacao_prazos"], s["small"])]
+    if (plan.get("objetivo") or {}).get("prazo"):
+        story += [Spacer(1, 4), p(plan["objetivo"]["prazo"], s["small"])]
     phases = plan.get("fases_futuras") or []
     if plan.get("fases") or phases:
         story += [p("FASES DO PLANO", s["label"]), *phase_sequence(plan, s)]
@@ -330,7 +329,7 @@ def build_task_plan(plan, out_path, numbers):
                 card.setStyle(table_style(SURFACE, padding=11, border=False))
                 cells.append(card)
                 widths.append(width)
-            row = Table([cells], colWidths=widths, hAlign="LEFT", splitInRow=1)
+            row = Table([cells], colWidths=widths, hAlign="LEFT", splitInRow=0)
             row.setStyle(table_style(PAPER, padding=0, border=False))
             story += [row, Spacer(1, 6)]
     if plan.get("gatilhos_ajuste"):
@@ -340,5 +339,11 @@ def build_task_plan(plan, out_path, numbers):
     review = (plan.get("ciclo") or {}).get("proxima_revisao")
     if review:
         story += [Spacer(1, 6), p("Próxima revisão: " + review, s["small"])]
+    charts = timeline_charts(plan, CONTENT)
+    if charts:
+        story += [Spacer(1, 12), KeepTogether([
+            p("LINHA DO TEMPO", s["label"]), charts[0][2]])]
+        for _, _, chart in charts[1:]:
+            story += [Spacer(1, 8), chart]
     doc.build(story)
     return out_path

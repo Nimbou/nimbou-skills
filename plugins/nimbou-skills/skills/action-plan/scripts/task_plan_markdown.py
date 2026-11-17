@@ -1,5 +1,6 @@
 """Markdown companion and phase integrity checks for the task-plan format."""
 from pathlib import Path
+from task_plan_timeline import markdown_timeline
 
 
 def validate_phases(plan):
@@ -30,9 +31,9 @@ def write_markdown(plan, numbers, pdf_path):
     lines = ["# " + plan.get("titulo", "Plano de ação"), "",
              f"Versão {plan.get('versao', 1)}", "",
              (plan.get("objetivo") or {}).get("frase", ""), ""]
-    for field in ("orientacao_execucao", "observacao_prazos"):
-        if plan.get(field):
-            lines += [plan[field], ""]
+    deadline = (plan.get("objetivo") or {}).get("prazo")
+    if deadline:
+        lines += [deadline, ""]
     phases = {phase["id"]: (index, phase)
               for index, phase in enumerate(plan.get("fases") or [], 1)}
     previous_phase = None
@@ -88,6 +89,7 @@ def write_markdown(plan, numbers, pdf_path):
     review = (plan.get("ciclo") or {}).get("proxima_revisao")
     if review:
         lines += ["Próxima revisão: " + review + ".", ""]
+    lines += markdown_timeline(plan, pdf_path)
     output = Path(pdf_path).with_suffix(".md")
     output.write_text("\n".join(lines), encoding="utf-8")
     return output

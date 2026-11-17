@@ -15,8 +15,6 @@ tarefas externas nem inicia a execução.
   "data": "20/10/2026",
   "objetivo": {"frase": "Testar e avaliar o atendimento até 31/01/2027.", "prazo": "31/01/2027"},
   "ciclo": {"proxima_revisao": "27/10/2026"},
-  "orientacao_execucao": "Use Codex ou Dot na preparação técnica; mantenha decisões com as pessoas responsáveis.",
-  "observacao_prazos": "As datas intermediárias são previsões ajustáveis.",
   "fases": [
     {"id": "preparar", "nome": "Prepare o atendimento", "periodo": "Até novembro", "marcos": ["ambiente-pronto"]},
     {"id": "avaliar", "nome": "Avalie o uso real", "periodo": "Após a preparação", "marcos": ["avaliacao-pronta"]}
@@ -79,8 +77,21 @@ promova-as a tarefas independentes.
 ou qual ferramenta executa. Não confunda a ferramenta com o dono humano.
 `recorrencia` descreve uma repetição real, não cria agendamentos.
 `insumos` e `entregaveis` são listas opcionais e aparecem no Markdown.
-`orientacao_execucao` e `observacao_prazos` são notas opcionais curtas.
+Na abertura, `objetivo.prazo` é apresentado somente como data. Os campos antigos
+`orientacao_execucao` e `observacao_prazos` podem continuar no JSON como referência,
+mas não são exibidos no PDF ou Markdown de tarefas. Orientações relevantes de
+responsável, executor e previsão ficam nas próprias tarefas.
 Datas e nomes do exemplo não viram padrão para outros planos.
+
+A linha do tempo mensal encerra os dois documentos. O gerador usa datas exatas
+de `marcos[].prazo` e `tarefas[].prazo`, em `DD/MM/AAAA` ou `AAAA-MM-DD`, com dias
+do mês, pontos para tarefas e losangos para marcos. Não infere datas a partir de
+expressões como "Até novembro" ou "A definir", nem desenha durações presumidas.
+Meses sem entregas datadas são omitidos; sem datas válidas, não há calendário.
+`objetivo.prazo` destaca o prazo final quando ele pertence ao mês exibido.
+O campo opcional `linha_do_tempo: false` desativa a seção. Omiti-lo mantém a seção
+automática; objetos antigos nesse campo não substituem as datas dos marcos e tarefas.
+Cada calendário gera um SVG `*_cronograma_AAAA-MM_N.svg` ao lado do Markdown.
 
 O comando de geração produz PDF e Markdown com o mesmo nome-base. O PDF
 mostra fases, marcos, tarefas, subtarefas, critérios, recorrências e chips de

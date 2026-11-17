@@ -1,0 +1,185 @@
+
+> nimbou-skills@0.1.0 test
+> node --test
+
+✖ catalog command generates aggregate and per-component metadata (27.2186ms)
+✖ catalog validate mode reports broken fixtures without writing output (20.8238ms)
+✖ nb-catalog validates the current project root via bundled tsx wrapper (12.6597ms)
+✖ catalog domain filter emits only the requested domain (20.8759ms)
+✖ catalog domain filter fails cleanly for an unknown domain (18.0266ms)
+✖ catalog removes stale generated metadata after a failed full generation run (17.9861ms)
+✖ Chrome DevTools setup preserves marketplace and plugin sections (4208.373ms)
+✔ action plans and roadmaps load the same packaged execution contract (11.4661ms)
+✔ execution authorization survives scheduled resumption without widening scope (1.0118ms)
+✔ persistent children report to the parent while the parent verifies outputs (1.1211ms)
+✔ heartbeat makes progress every 30 minutes and handles unknown creation outcomes (0.6929ms)
+✔ human work uses supported FAEPEN fields and requires checked evidence (1.3039ms)
+✔ operational identifiers stay optional in the management plan schema (1.7319ms)
+✔ execution reference links resolve inside the shipped skill tree (1.3257ms)
+✔ the mixed-plan example has stable identities and a valid dependency graph (1.3632ms)
+✔ skills tree ships the unified skill set directly (17.4586ms)
+✔ Codex skills and supporting templates are packaged (1.0713ms)
+✔ specification skills and think orchestrators document the domain-centered layout and gate (5.5618ms)
+✔ platform test skills consume approved Gherkin and route backend audits (1.8212ms)
+✔ README and installer document Codex distribution (0.9088ms)
+✔ Windows PowerShell installer mirrors the bootstrap flow (1.0944ms)
+✔ roadmap orchestration ships an executable, authorization-safe skill (3.5803ms)
+✔ nuxt catalog skill files exist and describe validate-then-generate mode (3.2712ms)
+✔ Codex distribution manifest exists (0.5415ms)
+✔ nuxt think and plan skills explain catalog-aware design and execution topology (1.6331ms)
+✔ planning skills hand off a saved plan to a separate execution task (1.4166ms)
+✔ shared specification skills are shipped with the tree (1.0611ms)
+✔ platform test skills are shipped with the tree (0.1752ms)
+✔ core and audit skills document their new guardrails (4.5248ms)
+✔ Codex design and merge skills are packaged (0.6671ms)
+✔ planners and executing-plans wire the Role: routing contract (1.2346ms)
+✔ browser-smoke ships as a standalone skill and is wired into executing-plans (2.2488ms)
+✔ planners require a task to declare every file it tells the implementer to edit (1.2154ms)
+✔ planners forbid a task from consuming a sibling in its own wave (1.0994ms)
+✔ planners forbid tombstone task headings and prose in the Role field (0.928ms)
+✔ fullstack-plan warns that dispatch count is not task count (0.4714ms)
+✔ every planner states the coalescing rule and the ordering it implies (1.469ms)
+✔ nestjs-plan sizes a task by behavior, not by a wall-clock estimate (0.4446ms)
+✔ executing-plans reports agent dispatches (0.2951ms)
+✔ delegating skills respect the GPT-6 Sol medium ceiling (1.7996ms)
+✔ fullstack-plan resolves the final-wave Role exception instead of leaving it to guesswork (0.5249ms)
+✔ apply-review requires an inventory before a "single point" fix (0.4291ms)
+ℹ tests 42
+ℹ suites 0
+ℹ pass 35
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4371.2103
+
+✖ failing tests:
+
+test at tests\catalog\generate-catalog.test.mjs:26:1
+✖ catalog command generates aggregate and per-component metadata (27.2186ms)
+  TypeError [ERR_INVALID_ARG_TYPE]: The "message" argument must be one of type string or function. Received undefined
+      at innerFail (node:internal/assert/utils:135:11)
+      at strict.strictEqual (node:assert:360:5)
+      at file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:34:12
+      at withFixtureProject (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:20:5)
+      at TestContext.<anonymous> (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:27:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1366:25)
+      at Test.start (node:internal/test_runner/test:1226:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    code: 'ERR_INVALID_ARG_TYPE'
+  }
+
+test at tests\catalog\generate-catalog.test.mjs:69:1
+✖ catalog validate mode reports broken fixtures without writing output (20.8238ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  null !== 1
+  
+      at withFixtureProject.includeBroken (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:77:12)
+      at withFixtureProject (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:20:5)
+      at TestContext.<anonymous> (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:70:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1366:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:946:18)
+      at Test.postRun (node:internal/test_runner/test:1506:19)
+      at Test.run (node:internal/test_runner/test:1431:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\catalog\generate-catalog.test.mjs:84:1
+✖ nb-catalog validates the current project root via bundled tsx wrapper (12.6597ms)
+  TypeError [ERR_INVALID_ARG_TYPE]: The "message" argument must be one of type string or function. Received undefined
+      at innerFail (node:internal/assert/utils:135:11)
+      at strict.strictEqual (node:assert:360:5)
+      at file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:91:12
+      at withFixtureProject (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:20:5)
+      at TestContext.<anonymous> (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:85:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1366:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:946:18)
+      at Test.postRun (node:internal/test_runner/test:1506:19)
+      at Test.run (node:internal/test_runner/test:1431:12) {
+    code: 'ERR_INVALID_ARG_TYPE'
+  }
+
+test at tests\catalog\generate-catalog.test.mjs:96:1
+✖ catalog domain filter emits only the requested domain (20.8759ms)
+  TypeError [ERR_INVALID_ARG_TYPE]: The "message" argument must be one of type string or function. Received undefined
+      at innerFail (node:internal/assert/utils:135:11)
+      at strict.strictEqual (node:assert:360:5)
+      at withFixtureProject.includeBroken (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:104:12)
+      at withFixtureProject (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:20:5)
+      at TestContext.<anonymous> (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:97:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1366:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:946:18)
+      at Test.postRun (node:internal/test_runner/test:1506:19)
+      at Test.run (node:internal/test_runner/test:1431:12) {
+    code: 'ERR_INVALID_ARG_TYPE'
+  }
+
+test at tests\catalog\generate-catalog.test.mjs:117:1
+✖ catalog domain filter fails cleanly for an unknown domain (18.0266ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  null !== 1
+  
+      at file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:125:12
+      at withFixtureProject (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:20:5)
+      at TestContext.<anonymous> (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:118:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1366:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:946:18)
+      at Test.postRun (node:internal/test_runner/test:1506:19)
+      at Test.run (node:internal/test_runner/test:1431:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:946:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\catalog\generate-catalog.test.mjs:131:1
+✖ catalog removes stale generated metadata after a failed full generation run (17.9861ms)
+  TypeError [ERR_INVALID_ARG_TYPE]: The "message" argument must be one of type string or function. Received undefined
+      at innerFail (node:internal/assert/utils:135:11)
+      at strict.strictEqual (node:assert:360:5)
+      at file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:139:12
+      at withFixtureProject (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:20:5)
+      at TestContext.<anonymous> (file:///C:/www/nimbou-skills/tests/catalog/generate-catalog.test.mjs:132:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1366:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:946:18)
+      at Test.postRun (node:internal/test_runner/test:1506:19)
+      at Test.run (node:internal/test_runner/test:1431:12) {
+    code: 'ERR_INVALID_ARG_TYPE'
+  }
+
+test at tests\plugin\chrome-devtools-wrapper.test.mjs:11:1
+✖ Chrome DevTools setup preserves marketplace and plugin sections (4208.373ms)
+  AssertionError [ERR_ASSERTION]: /bin/bash: C:wwwnimbou-skillsscriptssetup-chrome-devtools-wrapper.sh: No such file or directory
+  
+  
+  127 !== 0
+  
+      at TestContext.<anonymous> (file:///C:/www/nimbou-skills/tests/plugin/chrome-devtools-wrapper.test.mjs:25:14)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1366:25)
+      at Test.start (node:internal/test_runner/test:1226:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 127,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
