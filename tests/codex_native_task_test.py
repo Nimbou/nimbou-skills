@@ -1,17 +1,48 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
+import socket
+import subprocess
+import sys
 import tempfile
 import threading
 import unittest
-
-from websockets.sync.server import unix_serve
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "plugins/nimbou-skills/skills/codex-native-task/scripts/native_task.py"
 SPEC = importlib.util.spec_from_file_location("native_task", SCRIPT)
 native_task = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(native_task)
+
+
+class ClientDetectionTests(unittest.TestCase):
+    def test_allowlisted_launcher_hints(self):
+        for originator, surface in [
+            ("Codex Desktop", "desktop"),
+            ("codex_chatgpt_desktop", "desktop"),
+            ("codex_cli_rs", "cli"),
+            ("codex-tui", "cli"),
+            ("codex_exec", "cli"),
+            ("some-other-client", "unknown"),
+        ]:
+            with self.subTest(originator=originator):
+                self.assertEqual(
+                    native_task.detect_surface({"CODEX_INTERNAL_ORIGINATOR_OVERRIDE": originator}),
+                    surface,
+                )
+
+    def test_absent_originator_does_not_assume_cli_or_desktop(self):
+        self.assertEqual(native_task.detect_surface({"CODEX_THREAD_ID": "some-thread"}), "unknown")
+
+    def test_detect_command_reports_the_launcher_without_a_control_socket(self):
+        missing_socket = str(SCRIPT.parent / "missing-control.sock")
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--socket", missing_socket, "detect"],
+            env={**os.environ, "CODEX_INTERNAL_ORIGINATOR_OVERRIDE": "Codex Desktop"},
+            capture_output=True, text=True, check=True, timeout=10,
+        )
+        self.assertEqual(json.loads(result.stdout), {"surface": "desktop"})
 
 
 class FakeClient:
@@ -155,8 +186,11 @@ class NativeCreationTests(unittest.TestCase):
         self.assertEqual(self.client.calls, [])
 
 
+@unittest.skipUnless(hasattr(socket, "AF_UNIX") and hasattr(os, "getuid"), "requires Unix control transport")
 class LocalTransportTests(unittest.TestCase):
     def test_unix_handshake_notifications_and_no_automatic_approvals(self):
+        from websockets.sync.server import unix_serve
+
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "server.sock"
             observations = []

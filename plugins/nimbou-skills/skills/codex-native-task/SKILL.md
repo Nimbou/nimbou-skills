@@ -19,6 +19,18 @@ For a plan-execution task, include the saved plan path and source checkout. A dr
 
 Task creation must already be authorized by the user's request or an applicable authorized handoff. Do not ask for permission again when it has already been given. Creating the task does not grant permission for additional subagents, production changes, deployment or merge.
 
+## Identify the active client and route
+
+Use the host context when it identifies the active client as Codex Desktop or Codex CLI. Otherwise run `python <skill-dir>/scripts/native_task.py detect` in the current task's shell. The command returns `desktop`, `cli`, or `unknown` and needs only Python 3.10+. It reads the launcher hint without connecting to the App Server. If the hint is absent or unrecognized, keep the origin `unknown`. A running daemon, the `codex` executable, and the `codex_tui` bridge describe available capabilities.
+
+| Active client | Creation route |
+|---|---|
+| Desktop | Prefer the app’s native tool when its actual schema accepts the prepared checkout and verifies the requested configuration before the first turn. Otherwise use the existing local App Server when reachable. |
+| CLI | Prefer the existing local App Server and the bundled helper. Use a native tool as an alternative only when it meets the same requirements and targets the current local host. |
+| Unknown | Choose from the capabilities confirmed on the current local host. Prefer the App Server when the native tool’s host or configuration guarantees are unclear. Report the origin as unknown. |
+
+Check the route before preparing a worktree. Every route must be able to create a persistent native task at the verified checkout, verify the effective model, effort and Full Access, and then start the first turn. Discover the native tool’s actual schema. A tool that starts immediately without verifying the required settings, or creates its own checkout, does not meet these requirements. Read [App Server setup and diagnosis](references/local-api.md#optional-connection-diagnosis) to confirm the direct route with a read-only probe. If every candidate is blocked, report the concrete tool or transport limitation before creating a checkout or task.
+
 ## Prepare the checkout
 
 **Required sub-skill:** Use `nimbou-skills:using-git-worktrees` to create the Git worktree before calling any task-creation tool. Follow it through directory selection, `git worktree add`, project setup and baseline checks. Resolve the base revision from the requested branch or plan, or from the source checkout's current HEAD, and pass it explicitly to `git worktree add`.
@@ -27,13 +39,12 @@ Reuse an existing worktree only when it is already dedicated to this same task, 
 
 ## Create and start
 
-1. Discover available native tools and their actual schemas. Pass the already verified checkout path to task creation. Use a native creation tool only when it can accept that existing checkout and verify the required model, effort and Full Access settings before starting a turn. Worktree creation bundled with task creation does not satisfy the checkout prerequisite.
-2. Otherwise use `scripts/native_task.py create` through the existing local App Server. This is a direct creation path, available even when the MCP connector is healthy. See [the local API guide](references/local-api.md) for setup and commands. The helper sets `cwd`, `model`, `config.model_reasoning_effort`, `sandbox` and `approvalPolicy` on `thread/start`, verifies the returned configuration, names the task and sends `turn/start` with the chosen model/effort and explicit Full Access policies.
-3. Use one durable receipt for the operation. `--authorized` records authorization already given; it is not another approval gate. The helper persists intent and IDs before proceeding. Repeating the same request reads the existing task without submitting another prompt. Reconcile uncertain outcomes and stale locks against native state before retrying; never delete the receipt to force another creation.
-4. Verify the native task ID, effective model/effort, Full Access policies, worktree checkout and observed turn state. Never silently substitute a model or claim an unverified effort or permission setting.
+1. Use the selected route with the verified checkout. For the App Server route, follow [the local API guide](references/local-api.md) and run `scripts/native_task.py create`. The helper calls `thread/start`, verifies the effective configuration, names the task, and submits `turn/start` with the chosen model, effort and Full Access settings.
+2. Use one durable receipt for the operation. `--authorized` records authorization already given; it is not another approval gate. The helper persists intent and IDs before proceeding. Repeating the same request reads the existing task without submitting another prompt. Reconcile uncertain outcomes and stale locks against native state before retrying; never delete the receipt to force another creation.
+3. Verify the native task ID, effective model/effort, Full Access policies, worktree checkout and observed turn state. Never silently substitute a model or claim an unverified effort or permission setting.
 
-If a native tool fails with a transport error, stop repeating that mutation and use the local API path. Read-only `inspect` distinguishes a stale bridge from an unavailable daemon. Do not restart shared sessions, extract bearer tokens, weaken authentication or rewrite global configuration merely to create a task.
+If a creation request has an uncertain outcome, reconcile the native state using the same receipt before retrying or switching routes. Switch only after confirming the failed attempt created no task. Keep shared sessions, authentication and global configuration intact.
 
 ## Report
 
-Return the native task ID/name, verified model/effort, Full Access policies, worktree and current state. Distinguish creation, a started turn, implementation progress and completion. If the connector failed but the native API worked, report successful task creation without claiming the old connector was repaired.
+Return the active client classification, selected route, native task ID/name, verified model/effort, Full Access policies, worktree and current state. Distinguish creation, a started turn, implementation progress and completion. If the connector failed but the native API worked, report successful task creation without claiming the old connector was repaired.

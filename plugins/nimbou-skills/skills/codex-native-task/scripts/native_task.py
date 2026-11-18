@@ -62,7 +62,18 @@ class NativeClient:
             return message["result"]
 
 
+def detect_surface(environ):
+    originator = environ.get("CODEX_INTERNAL_ORIGINATOR_OVERRIDE", "").strip().casefold()
+    if originator in {"codex desktop", "codex_chatgpt_desktop"}:
+        return "desktop"
+    if originator in {"codex_cli_rs", "codex-tui", "codex_exec"}:
+        return "cli"
+    return "unknown"
+
+
 def resolve_socket(explicit=None):
+    if not hasattr(socket, "AF_UNIX") or not hasattr(os, "getuid"):
+        raise ValueError("Local App Server helper requires Unix sockets and Unix user IDs")
     if explicit is None:
         result = subprocess.run(["codex", "app-server", "daemon", "version"],
                                 check=True, capture_output=True, text=True, timeout=10)
@@ -195,6 +206,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--socket", help="Authoritative local Unix control socket; otherwise use daemon version")
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("detect", help="Identify the launcher hint without contacting Codex")
     diagnostic = commands.add_parser("inspect", help="Read-only native connection and optional bridge diagnosis")
     diagnostic.add_argument("--thread", default=os.environ.get("CODEX_THREAD_ID"))
     creation = commands.add_parser("create", help="Create/start one authorized native task with a durable receipt")
@@ -204,6 +216,9 @@ def main():
     creation.add_argument("--effort", default="low", help="Reasoning effort (default: low)")
     creation.add_argument("--authorized", action="store_true", help="Record authorization already given by the user")
     args = parser.parse_args()
+    if args.command == "detect":
+        print(json.dumps({"surface": detect_surface(os.environ)}))
+        return
     if args.command == "create" and not args.authorized:
         parser.error("--authorized must reflect an existing user request; no creation was attempted")
     try:

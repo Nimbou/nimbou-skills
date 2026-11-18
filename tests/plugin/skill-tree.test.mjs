@@ -102,8 +102,8 @@ test('planning skills hand off a saved plan to a separate execution task', () =>
   }
   assert.match(handoff, /docs\/plans\/<slug>\/doc\.md/)
   assert.match(handoff, /`model: gpt-6\.2-sol`, `reasoning_effort: medium`/)
-  assert.match(handoff, /`model: gpt-6\.2-sol`, `thinking: low`/)
-  assert.match(handoff, /create_thread/)
+  assert.match(handoff, /`gpt-6\.2-sol` with `low` reasoning/)
+  assert.match(handoff, /`nimbou-skills:codex-native-task`/)
   assert.match(handoff, /working-tree/)
 })
 

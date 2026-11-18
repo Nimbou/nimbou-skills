@@ -4,7 +4,7 @@ This is a normal native-task creation path, not just a repair procedure. The bun
 
 ## Runtime setup
 
-The helper requires Python 3.10+ and `websockets==15.0.1`. Use an existing environment when available. Otherwise create a temporary venv, without changing global Python packages:
+The connection helper requires Python 3.10+, Unix sockets, Unix user IDs and `websockets==15.0.1`. The `detect` subcommand requires only Python. Use an existing environment when available. Otherwise create a temporary venv, without changing global Python packages:
 
 ```bash
 native_task_env="$(mktemp -d)"
@@ -49,9 +49,11 @@ A repeat invocation with an existing ID performs only `thread/read`. `needsRecon
 "$native_task_env/bin/python" "$native_task_skill/scripts/native_task.py" inspect
 ```
 
-Diagnosis is not a prerequisite to normal creation. `inspect` uses `CODEX_THREAD_ID` when present; supply `--thread` for a known native thread. It reads metadata without turns or message contents. `runtimeStatus: connected` is cached, so the helper also checks whether the reported loopback endpoint has a listener. An open port alone does not prove the MCP service works or authenticates correctly. No bridge entry may simply mean this thread has no TUI connector.
+Run `inspect` when selecting the App Server route to verify reachability before creating a checkout or task. Use `inspect --thread ""` for a connection-only check. Otherwise `inspect` uses `CODEX_THREAD_ID` when present. Pass `--thread` to check a known native thread. It reads metadata without turns or message contents. The helper compares the cached bridge status with the reported loopback listener.
 
-A stale MCP port with a healthy native socket does not prevent direct task creation. If the host exposes only another transport, inspect `codex app-server --help` and current schemas rather than weakening security or guessing addresses. Do not repeatedly submit a failed mutation or restart shared tasks.
+Run `python <skill-dir>/scripts/native_task.py detect` separately for launcher classification. It checks allowlisted values of `CODEX_INTERNAL_ORIGINATOR_OVERRIDE` and emits only the classification. The variable is a launcher hint and may be absent on a standard CLI launch. Prefer active host metadata when available. A thread can be reopened in a different client, so its recorded origin and bridge status are useful only for diagnosis. See the [Codex originator implementation](https://github.com/openai/codex/blob/main/codex-rs/login/src/auth/default_client.rs).
+
+A healthy native socket can support direct task creation even when the MCP bridge is stale. If the host exposes only another transport, report that the bundled helper requires Unix sockets and Unix user IDs. Check the current native tool schema for a compatible route on the same host. Reconcile any uncertain creation before retrying.
 
 ## Protocol changes
 
