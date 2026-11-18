@@ -118,10 +118,10 @@ Resultado ausente/incompatível fica `verifying` ou `blocked`; peça correção 
 dentro do escopo autorizado, sem criar outro chat automaticamente.
 
 Modelos: `gpt-6.2-sol`/`medium` para decisões abertas, implementação comportamental
-e revisão substantiva; `gpt-6-luna`/`high` para trabalho mecânico com contrato fechado.
-O controller de execução técnica separado pode usar `gpt-6-luna`/`max` conforme
-[plan-session-handoff](../../executing-plans/plan-session-handoff.md); seus workers
-seguem as regras da tarefa. Não recomende `gpt-6-astra` nem Sol acima de `medium`.
+e revisão substantiva. Use `gpt-6-luna`/`max` para trabalho mecânico com contrato fechado.
+O controlador da tarefa separada de execução técnica usa `gpt-6.2-sol`/`low`
+conforme o [handoff de execução](../../executing-plans/plan-session-handoff.md).
+Seus workers seguem as regras da tarefa. Não recomende `gpt-6-astra` nem Sol acima de `medium`.
 Encaminhe um marco técnico com plano por ondas a `nimbou-skills:executing-plans`,
 preservando `prose-execution.md`. Não exija ondas de código de um plano administrativo.
 

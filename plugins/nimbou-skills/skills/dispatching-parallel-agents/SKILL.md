@@ -19,9 +19,8 @@ When you have multiple unrelated failures (different test files, different subsy
 **Core principle:** Dispatch one agent per independent problem domain, but never exceed the worker capacity available to the current Codex session.
 
 **Model policy:** use at most `gpt-6.2-sol` with `medium` reasoning for investigation or
-implementation that requires judgment; use `gpt-6-luna` at `high` for bounded
-mechanical work, never below `high`. Preserve an explicit user choice that meets
-these bounds. If a
+implementation that requires judgment. Use `gpt-6-luna` at `max` for bounded
+mechanical work. Preserve an explicit user choice that meets these bounds. If a
 worker needs an explicit model, give it a self-contained prompt with
 `fork_turns: "none"`; do not inherit a controller model above the ceiling.
 

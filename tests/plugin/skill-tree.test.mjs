@@ -101,8 +101,8 @@ test('planning skills hand off a saved plan to a separate execution task', () =>
     assert.match(read(`plugins/nimbou-skills/skills/${planner}/SKILL.md`), /plan-session-handoff\.md/)
   }
   assert.match(handoff, /docs\/plans\/<slug>\/doc\.md/)
-  assert.match(handoff, /gpt-6\.2-sol/)
-  assert.match(handoff, /gpt-6-luna/)
+  assert.match(handoff, /`model: gpt-6\.2-sol`, `reasoning_effort: medium`/)
+  assert.match(handoff, /`model: gpt-6\.2-sol`, `thinking: low`/)
   assert.match(handoff, /create_thread/)
   assert.match(handoff, /working-tree/)
 })

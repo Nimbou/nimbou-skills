@@ -18,8 +18,8 @@ It is not an upstream mirror and it is not meant to preserve upstream contributi
 
 - The highest model tier this library may recommend or dispatch is `gpt-6.2-sol`, with at most `medium` reasoning for general workflows.
 - Native task creation through `codex-native-task` defaults to `gpt-6.2-sol` with `low` reasoning. Worker and reviewer model settings follow their task-specific rules. Preserve a model/effort explicitly selected by the user or an authorized handoff within its applicable policy.
-- Use `gpt-6.2-sol`/`medium` for open design decisions, behavioral implementation, and substantive review. Use `gpt-6-luna`/`high` for bounded mechanical work with a closed contract; never set Luna below `high`.
-- For the requested plan-to-execution handoff, the planning subagent uses `gpt-6.2-sol`/`medium` and the separate execution task uses `gpt-6-luna`/`max` as its controller. Its implementation and review workers still follow the task-specific model rules above.
+- Use `gpt-6.2-sol`/`medium` for open design decisions, behavioral implementation, and substantive review. Use `gpt-6-luna`/`max` for bounded mechanical work with a closed contract.
+- For the requested plan-to-execution handoff, the planning subagent uses `gpt-6.2-sol`/`medium` and the separate execution task uses `gpt-6.2-sol`/`low` as its controller. Its implementation and review workers still follow the task-specific model rules above.
 - Independent Codex validation through `writing-skills` uses `gpt-6.2-sol` with `high` reasoning.
 - Do not use `gpt-6-astra`. For other workflows, keep Sol at `medium` or below. Split or clarify work that does not fit within these bounds.
 - Preserve a user's explicit choice when it meets these bounds. These rules guide future task creation and delegation; they do not change the current task's model setting.

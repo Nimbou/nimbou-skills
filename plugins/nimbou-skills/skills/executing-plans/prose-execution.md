@@ -38,8 +38,8 @@ it in the worker message.
 
 The highest model tier is `gpt-6.2-sol`, at most `medium` reasoning. Use that setting for
 behavioral implementation, spec review, boundary review, and fixes. A genuinely
-mechanical task with a closed contract may use `gpt-6-luna` at `high`, never below
-`high`. Never request `gpt-6-astra` or Sol reasoning above `medium`. Preserve an
+mechanical task with a closed contract may use `gpt-6-luna` at `max`. Never
+request `gpt-6-astra` or Sol reasoning above `medium`. Preserve an
 explicit user choice that meets these bounds; otherwise narrow the task or report
 the configuration conflict.
 When a worker needs a model override, provide a self-contained prompt and set

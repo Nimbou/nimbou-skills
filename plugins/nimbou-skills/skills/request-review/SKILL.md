@@ -12,7 +12,7 @@ reviewer gets precise context rather than the session history.
 
 Reviewers use at most `gpt-6.2-sol` with `medium` reasoning. Use that setting for
 behavioral, security, permission, migration, and concurrency review. A narrow
-mechanical diff may use `gpt-6-luna` at `high`, never below `high`. Preserve an
+mechanical diff may use `gpt-6-luna` at `max`. Preserve an
 explicit user choice that meets these bounds; narrow the review or report the
 configuration conflict when it does not.
 For an explicit model override, send a self-contained prompt with

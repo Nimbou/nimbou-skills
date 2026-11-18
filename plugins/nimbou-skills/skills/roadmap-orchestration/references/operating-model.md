@@ -16,9 +16,9 @@ entregas necessárias, sem criar um épico duplicado para cada papel técnico.
 Cada entrega corresponde a um `milestone.id` do registro compartilhado. Campos
 `planning.model/effort` e `execution.model/effort` podem preservar a preferência
 do usuário. Use `gpt-6.2-sol`/`medium` para decisões abertas e revisão substantiva,
-`gpt-6-luna`/`high` para inventário/reconciliação mecânicos com contrato fechado.
-Não recomende `gpt-6-astra` nem Sol acima de medium. O handoff técnico existente
-define a exceção Luna/max somente para seu controller de execução.
+`gpt-6-luna`/`max` para inventário/reconciliação mecânicos com contrato fechado.
+Não recomende `gpt-6-astra` nem Sol acima de `medium`. O controlador da tarefa
+separada de execução técnica usa `gpt-6.2-sol`/`low` conforme o handoff existente.
 
 ## Atividade e estado técnico
 

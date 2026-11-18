@@ -47,8 +47,8 @@ prova automática de que o marco ou o objetivo foi atingido.
 
 Criação de chat já inicia a tarefa. Preserve o limite de modelos:
 `gpt-6.2-sol`/`medium` para decisões abertas, comportamento e revisão;
-`gpt-6-luna`/`high` para trabalho mecânico delimitado. A configuração excepcional
-Luna/max do controller técnico segue o handoff existente, sem alterar seus workers.
+`gpt-6-luna`/`max` para trabalho mecânico delimitado. O controlador da tarefa
+separada de execução técnica usa `gpt-6.2-sol`/`low` conforme o handoff existente.
 
 Planejamento só grava artefato quando solicitado. Execução exige registro canônico
 em `docs/plans/<slug>/execucao.json`, ou no destino escolhido. Publique mudanças,

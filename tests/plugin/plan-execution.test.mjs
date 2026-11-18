@@ -48,7 +48,8 @@ test('persistent children report to the parent while the parent verifies outputs
   assert.match(core, /follow-up.*pode disparar um turno/is)
   assert.match(core, /filha.*callback.*nunca escreve `operations`/is)
   assert.match(core, /gpt-6\.2-sol.*medium/is)
-  assert.match(core, /gpt-6-luna.*high/is)
+  assert.match(core, /`gpt-6-luna`\/`max`/i)
+  assert.match(core, /`gpt-6\.2-sol`\/`low`/i)
 })
 
 test('heartbeat makes progress every 30 minutes and handles unknown creation outcomes', () => {
