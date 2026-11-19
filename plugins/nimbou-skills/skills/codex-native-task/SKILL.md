@@ -1,11 +1,11 @@
 ---
 name: codex-native-task
-description: Use when the user asks to create or start a native Codex task, including a separate task to execute a plan with a specified model, reasoning effort or Git worktree.
+description: Use when the user asks to create or start a native task in Codex Desktop or from Codex CLI, including tasks with Full Access, a specific model, or a Git worktree.
 ---
 
 # Create a Native Codex Task
 
-Create and start the requested persistent Codex task directly. This is the ordinary creation workflow: it does not require a connector failure first. The result is a native thread visible in Codex, not a collaboration subagent or a headless `codex exec` substitute.
+Create and start a persistent Codex task that appears in the user's Codex Desktop. When working in Desktop, use the app's own task creation surface so Desktop owns the running turn.
 
 ## Close the handoff
 
@@ -13,7 +13,7 @@ Resolve the task's purpose, target checkout, requested model and reasoning effor
 
 Default to `gpt-6.2-sol` with `low` reasoning unless the user or an explicitly authorized handoff specifies another model/effort.
 
-Always create with **Full Access**: `sandbox: "danger-full-access"` and `approvalPolicy: "never"`. Verify both effective values before starting the first turn. If the environment rejects or changes them, preserve the receipt and native ID, report the mismatch and do not start the turn or silently fall back to restricted access. Do not change global configuration.
+Always create with **Full Access** (`sandbox: "danger-full-access"` and `approvalPolicy: "never"`). Establish the effective permissions on the creation target before submitting the first prompt and verify what the new task received. If Full Access is unavailable or cannot be established, report the limitation before submitting. If verification after submission shows a mismatch, preserve the native ID and receipt, stop that turn using the owning client if possible, and report what happened. Keep global configuration unchanged.
 
 For a plan-execution task, include the saved plan path and source checkout. A draft plan may be handed off for preparation, but the new task must resolve its missing decisions before implementing it. Do not implement the work in the source conversation instead of creating the requested task.
 
@@ -21,30 +21,33 @@ Task creation must already be authorized by the user's request or an applicable 
 
 ## Identify the active client and route
 
-Use the host context when it identifies the active client as Codex Desktop or Codex CLI. Otherwise run `python <skill-dir>/scripts/native_task.py detect` in the current task's shell. The command returns `desktop`, `cli`, or `unknown` and needs only Python 3.10+. It reads the launcher hint without connecting to the App Server. If the hint is absent or unrecognized, keep the origin `unknown`. A running daemon, the `codex` executable, and the `codex_tui` bridge describe available capabilities.
+Use the host context when it identifies Codex Desktop or Codex CLI. Otherwise run `python <skill-dir>/scripts/native_task.py detect`. It reads only the launcher hint and reports `desktop`, `cli`, or `unknown`. The presence of a binary or daemon does not establish the active client.
 
 | Active client | Creation route |
 |---|---|
-| Desktop | Prefer the app’s native tool when its actual schema accepts the prepared checkout and verifies the requested configuration before the first turn. Otherwise use the existing local App Server when reachable. |
-| CLI | Prefer the existing local App Server and the bundled helper. Use a native tool as an alternative only when it meets the same requirements and targets the current local host. |
-| Unknown | Choose from the capabilities confirmed on the current local host. Prefer the App Server when the native tool’s host or configuration guarantees are unclear. Report the origin as unknown. |
+| Desktop | Use the app's native task tool or its native composer if the session exposes supported UI automation. Creation and the first turn must go through Desktop. A shared history directory does not make a separately running App Server part of Desktop. |
+| CLI | Use an available native Desktop tool targeting the user's Desktop project. Otherwise use the bundled helper only against an already-running, verified local App Server whose tasks appear in that Desktop profile. Verify visibility separately from which process owns the running turn. |
+| Unknown | Prefer a verified native route into the user's Desktop. Establish CLI origin before using the App Server helper for creation. Report an unresolved origin as unknown. |
 
-Check the route before preparing a worktree. Every route must be able to create a persistent native task at the verified checkout, verify the effective model, effort and Full Access, and then start the first turn. Discover the native tool’s actual schema. A tool that starts immediately without verifying the required settings, or creates its own checkout, does not meet these requirements. Read [App Server setup and diagnosis](references/local-api.md#optional-connection-diagnosis) to confirm the direct route with a read-only probe. If every candidate is blocked, report the concrete tool or transport limitation before creating a checkout or task.
+**Never launch another App Server for this workflow.** Do not start or restart a daemon, run `codex app-server --listen`, open a temporary socket backed by a new process, or use `codex exec` to substitute for native creation. In Desktop, a missing tool parameter or unavailable UI is a Desktop blocker. In CLI, an unavailable or unverified existing server is a CLI blocker. Resolve the route before preparing a checkout or creating a task.
+
+For Desktop, inspect the native tool's actual schema. Use it when the checkout can be targeted and Full Access can be selected or its inheritance for this creation request can be verified. Settings in `config.toml` or Full Access on a different chat alone do not establish how a new task will start. If the tool cannot establish Full Access, use the Desktop composer through supported UI controls when available. Select the checkout, model, reasoning effort and **Full Access** before submitting the prompt. If neither route is available, report the missing capability.
+
+For the CLI helper, read [App Server connection diagnosis](references/local-api.md#connection-diagnosis) and run a read-only probe before preparing the checkout.
 
 ## Prepare the checkout
 
-**Required sub-skill:** Use `nimbou-skills:using-git-worktrees` to create the Git worktree before calling any task-creation tool. Follow it through directory selection, `git worktree add`, project setup and baseline checks. Resolve the base revision from the requested branch or plan, or from the source checkout's current HEAD, and pass it explicitly to `git worktree add`.
+**Required sub-skill:** Use `nimbou-skills:using-git-worktrees` for checkout isolation, project setup and baseline checks. Resolve the base revision from the requested branch or plan, or from the source checkout's current HEAD. If the Desktop route provisions the worktree itself, pin its starting state to the verified branch and revision and include the checkout, revision, plan and baseline checks in the first prompt before implementation. Otherwise create the isolated checkout with `git worktree add` at the explicit base and target that exact checkout.
 
 Reuse an existing worktree only when it is already dedicated to this same task, including retries. Use the source checkout only when explicitly requested. Verify the checkout path, base revision and required artifacts, including the plan when applicable. Copy only uncommitted files required by the authorized starting state. If checkout preparation is blocked, report the blocker before creating the task.
 
 ## Create and start
 
-1. Use the selected route with the verified checkout. For the App Server route, follow [the local API guide](references/local-api.md) and run `scripts/native_task.py create`. The helper calls `thread/start`, verifies the effective configuration, names the task, and submits `turn/start` with the chosen model, effort and Full Access settings.
-2. Use one durable receipt for the operation. `--authorized` records authorization already given; it is not another approval gate. The helper persists intent and IDs before proceeding. Repeating the same request reads the existing task without submitting another prompt. Reconcile uncertain outcomes and stale locks against native state before retrying; never delete the receipt to force another creation.
-3. Verify the native task ID, effective model/effort, Full Access policies, worktree checkout and observed turn state. Never silently substitute a model or claim an unverified effort or permission setting.
+1. Use one durable receipt for the operation. On the Desktop route, record the intended target and then the ID returned by the app. For the CLI helper, follow [the local API guide](references/local-api.md) and run `scripts/native_task.py create`. The helper persists intent and IDs and verifies the effective settings between `thread/start` and `turn/start`. `--authorized` records authorization already given.
+2. Verify the native task ID, effective model and effort, Full Access policies, worktree checkout and observed turn state. Confirm the task in Desktop inventory when available. On the Desktop route, check that the Desktop can open the task and observe its turn. Report a task hosted elsewhere accurately if the CLI route created it in a shared profile.
 
-If a creation request has an uncertain outcome, reconcile the native state using the same receipt before retrying or switching routes. Switch only after confirming the failed attempt created no task. Keep shared sessions, authentication and global configuration intact.
+If a creation request has an uncertain outcome, reconcile the owning client's state using the same receipt before retrying. Retry only after confirming the failed attempt created no task. Keep shared sessions, authentication and global configuration intact.
 
 ## Report
 
-Return the active client classification, selected route, native task ID/name, verified model/effort, Full Access policies, worktree and current state. Distinguish creation, a started turn, implementation progress and completion. If the connector failed but the native API worked, report successful task creation without claiming the old connector was repaired.
+Return the active client, route, native task ID and name, verified model and effort, Full Access policies, worktree and current state. Distinguish a task appearing in Desktop from Desktop owning the active turn. If a required capability was unavailable, identify the specific blocker.

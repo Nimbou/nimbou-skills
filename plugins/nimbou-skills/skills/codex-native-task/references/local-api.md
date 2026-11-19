@@ -1,6 +1,6 @@
-# Create through the local App Server
+# Create from Codex CLI through an existing local App Server
 
-This is a normal native-task creation path, not just a repair procedure. The bundled Unix-socket helper was verified against Codex 0.166.0. Use the installed CLI and its generated schema as the authority when the protocol differs.
+Use this route from Codex CLI when a native Desktop tool is unavailable and an existing App Server uses the user's Desktop profile. Codex Desktop itself uses native creation as described in [the skill](../SKILL.md). Keep the existing App Server and session configuration intact. If a suitable server is unavailable, stop before preparing the checkout. The bundled Unix-socket helper was verified against Codex 0.166.0. Use the installed CLI and its generated schema as the authority when the protocol differs.
 
 ## Runtime setup
 
@@ -14,7 +14,7 @@ python3 -m venv "$native_task_env"
 
 Resolve `native_task_skill` to the directory containing this skill's `SKILL.md`. The local clone or a linked installation can supply it; do not assume a particular user's cache version or checkout.
 
-The helper locates the existing server using `codex app-server daemon version` and its reported `socketPath`. Supply `--socket` **before** the subcommand only for an authoritative alternate Unix socket. The socket must exist and belong to the current OS user. The helper does not start a daemon, change permissions or perform OAuth.
+The helper locates the existing server using the read-only `codex app-server daemon version` command and its reported `socketPath`. Supply `--socket` **before** the subcommand only for an authoritative socket of an already-running server. The socket must exist and belong to the current OS user. Never start or restart a server to obtain a socket for this workflow.
 
 ## Create and start one task
 
@@ -43,17 +43,17 @@ Mutation sequence: persist intent → `thread/start` (`cwd`, `model`, `config.mo
 
 A repeat invocation with an existing ID performs only `thread/read`. `needsReconciliation: true` means the helper deliberately did not resume a partial operation or the receipt lacks verified Full Access settings (including receipts created before this requirement). After a lost `thread/start` response or process crash, use native `thread/list`/`thread/turns/list` (current schema) to identify the outcome and update the receipt only from verified evidence. An interrupted process can leave the `.lock` directory: confirm no creator is active and reconcile before removing it.
 
-## Optional connection diagnosis
+## Connection diagnosis
 
 ```bash
 "$native_task_env/bin/python" "$native_task_skill/scripts/native_task.py" inspect
 ```
 
-Run `inspect` when selecting the App Server route to verify reachability before creating a checkout or task. Use `inspect --thread ""` for a connection-only check. Otherwise `inspect` uses `CODEX_THREAD_ID` when present. Pass `--thread` to check a known native thread. It reads metadata without turns or message contents. The helper compares the cached bridge status with the reported loopback listener.
+Run `inspect` before creating a checkout or task. Verify both reachability and the Desktop profile. For example, pass `--thread <id>` with the ID of an existing thread independently known to be in the target Desktop inventory. The default `CODEX_THREAD_ID` may refer to a CLI thread. `inspect --thread ""` checks reachability only. The helper reads metadata without turns or message contents and can compare cached bridge status with the loopback listener.
 
 Run `python <skill-dir>/scripts/native_task.py detect` separately for launcher classification. It checks allowlisted values of `CODEX_INTERNAL_ORIGINATOR_OVERRIDE` and emits only the classification. The variable is a launcher hint and may be absent on a standard CLI launch. Prefer active host metadata when available. A thread can be reopened in a different client, so its recorded origin and bridge status are useful only for diagnosis. See the [Codex originator implementation](https://github.com/openai/codex/blob/main/codex-rs/login/src/auth/default_client.rs).
 
-A healthy native socket can support direct task creation even when the MCP bridge is stale. If the host exposes only another transport, report that the bundled helper requires Unix sockets and Unix user IDs. Check the current native tool schema for a compatible route on the same host. Reconcile any uncertain creation before retrying.
+A reachable socket alone does not establish Desktop visibility. If the server or Desktop profile cannot be verified, use a verified native Desktop tool if available, or report the limitation. After creation, verify that Desktop can find the new ID when inventory is available. Report which client owns the running turn. Reconcile any uncertain creation before retrying.
 
 ## Protocol changes
 

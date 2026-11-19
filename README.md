@@ -38,7 +38,7 @@
 - `using-git-worktrees`
 - `finishing-a-development-branch`
 - `writing-skills`
-- `codex-native-task` — create and start native Codex tasks with the requested model, reasoning effort and checkout/worktree, using native tools or the local App Server directly
+- `codex-native-task` — start native tasks with Full Access in Codex Desktop, or from CLI on a verified Desktop-visible route. Uses an existing App Server only from CLI.
 
 ### NestJS-specific skills
 

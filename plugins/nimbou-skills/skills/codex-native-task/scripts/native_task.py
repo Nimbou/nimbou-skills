@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create native Codex tasks over a local Unix socket. Dependency: websockets==15.0.1."""
+"""Create native Codex tasks from CLI using an existing local Unix socket."""
 
 import argparse
 import hashlib
@@ -219,6 +219,8 @@ def main():
     if args.command == "detect":
         print(json.dumps({"surface": detect_surface(os.environ)}))
         return
+    if args.command == "create" and detect_surface(os.environ) == "desktop":
+        parser.error("Use the native Codex Desktop creation surface; no App Server creation was attempted")
     if args.command == "create" and not args.authorized:
         parser.error("--authorized must reflect an existing user request; no creation was attempted")
     try:

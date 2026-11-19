@@ -44,6 +44,23 @@ class ClientDetectionTests(unittest.TestCase):
         )
         self.assertEqual(json.loads(result.stdout), {"surface": "desktop"})
 
+    def test_desktop_creation_is_rejected_before_using_the_app_server_helper(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            prompt = root / "prompt.md"
+            prompt.write_text("Read the approved plan.", encoding="utf-8")
+            receipt = root / "receipt.json"
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), "--socket", str(root / "missing.sock"),
+                 "create", "--cwd", directory, "--name", "Desktop task", "--prompt-file", str(prompt),
+                 "--receipt", str(receipt), "--authorized"],
+                env={**os.environ, "CODEX_INTERNAL_ORIGINATOR_OVERRIDE": "Codex Desktop"},
+                capture_output=True, text=True, timeout=10,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Use the native Codex Desktop creation surface", result.stderr)
+            self.assertFalse(receipt.exists())
+
 
 class FakeClient:
     def __init__(self, cwd):
