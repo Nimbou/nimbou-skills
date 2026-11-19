@@ -83,6 +83,10 @@ The initial package download and update checks require network access. Queries s
 
 - [`doc-proposal`](plugins/nimbou-skills/skills/doc-proposal/SKILL.md) — concise, formal advisory proposals with execution across marketing, processes and technology; documented NOSE/SPIN concepts and buyer review. PDF plus editable source, modern branded cover, investment at the commercial close and product details in appendices. Includes the Nimbou vector symbol and cover helper; preserves approved designs and other providers' identities. Example: "Use doc-proposal para criar uma proposta com base nestas anotações e simular a leitura do decisor."
 
+### DNS and hosting
+
+- [`migrate-dns`](plugins/nimbou-skills/skills/migrate-dns/SKILL.md) — migrate DNS delegation or web records, including Registro.br and cPanel cutovers that keep email with its current provider. Covers staged cutovers, TTL, TLS, and rollback verification.
+
 ### Project-specific skills
 
 The Nimbou site and CMS workflows are maintained with the central CMS project in
