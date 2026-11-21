@@ -1,11 +1,16 @@
 ---
 name: nuxt-think
-description: Explore uma solicitação de frontend Nuxt/Vuetify e feche o desenho antes de planejar ou codar.
+description: Explore uma feature Nuxt/Vuetify antes de planejar ou codar, ou defina e audite decisões de um design system, incluindo tokens, variantes, estados e consumidores afetados.
 ---
 
 # Nuxt Think
 
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
+
+## Choose the workflow
+
+- **Feature or flow:** follow the existing feature design process below. For an isolated visual prototype, use `nimbou-skills:nuxt-design`.
+- **Shared design system:** read [Design system decisions](reference/design-system.md) when the request involves starting or auditing the system, or changing a shared token or component. For a system-only request, return the design decisions or audit findings. Use the domain specification gate and planning handoff when there is a feature to plan.
 
 ## Purpose
 
@@ -41,7 +46,7 @@ Treat `docs/domain/<domain>/` as the canonical specification bundle for the feat
 ## Flow
 
 1. Read `components.meta.json` when available. Fall back to `.generated/component-catalog/components.meta.json` when the project exposes only the slim catalog.
-2. Read the nearest `DESIGN.md` and `GUIDELINES.md` that apply to the target area in the target project. If one or both do not exist, note that explicitly, continue, and suggest generating or refreshing them with `/design-md`.
+2. Read the nearest `DESIGN.md` and `GUIDELINES.md` that apply to the target area in the target project. If one or both do not exist, note that explicitly, continue, and suggest generating or refreshing them with `/craft-setup`.
 3. Classify the request as simple, medium, or complex.
 4. Search for reusable components by `tags`, `category`, and `domain`. Use `useWhen` only when the rich catalog includes it.
 5. Ask focused follow-up questions only when the request still has material ambiguity. For discrete choices, offer concise options through the structured question UI when available, or in text otherwise.
@@ -53,6 +58,7 @@ Treat `docs/domain/<domain>/` as the canonical specification bundle for the feat
    - where state should live by locality: child, page, subtree composable, or app-wide store
    - whether communication should use props/emits, `defineModel`, `provide`/`inject`, or Pinia
    - what loading, empty, error, and success states must exist
+   - which additional cases apply from the [interface state inventory](reference/interface-states.md), particularly long data, permission changes and concurrent updates
    - what inline feedback or autosave behavior must be observable when the flow edits data in place
    - what user interactions change navigation, filtering, or local state
    - what responsive layout shifts matter

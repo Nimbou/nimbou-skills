@@ -1,6 +1,6 @@
 # DESIGN.md Example
 
-Fictional project. Use this file as a concrete reference when filling a real `DESIGN.md` via `/design-md`. It shows the expected split between machine-readable tokens and design rationale prose.
+Fictional project. Use this file as a concrete reference when filling a real `DESIGN.md` via `/craft-setup`. It shows the expected split between machine-readable tokens and design rationale prose.
 
 Do not copy this as-is. Copy the structure and the level of specificity only.
 

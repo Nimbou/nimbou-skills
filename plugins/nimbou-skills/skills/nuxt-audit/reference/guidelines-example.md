@@ -1,6 +1,6 @@
 # GUIDELINES.md Example
 
-Fictional project. Use this file as a concrete reference when filling a real `GUIDELINES.md` via `/design-md`. It shows the implementation and review rules that belong outside `DESIGN.md`.
+Fictional project. Use this file as a concrete reference when filling a real `GUIDELINES.md` via `/craft-setup`. It shows the implementation and review rules that belong outside `DESIGN.md`.
 
 Do not copy this as-is. Copy the structure and the level of specificity only.
 

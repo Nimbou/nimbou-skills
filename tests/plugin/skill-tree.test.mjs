@@ -250,7 +250,7 @@ test('core and audit skills document their new guardrails', () => {
 })
 
 test('Codex design and merge skills are packaged', () => {
-  assert.match(read('plugins/nimbou-skills/skills/design-md/SKILL.md'), /^---\nname: design-md/m)
+  assert.match(read('plugins/nimbou-skills/skills/craft-setup/SKILL.md'), /^---\nname: craft-setup/m)
   assert.match(read('plugins/nimbou-skills/skills/merge-pr/SKILL.md'), /^---\nname: merge-pr/m)
 })
 

@@ -40,7 +40,12 @@ test('skills tree ships the unified skill set directly', () => {
   assert.ok(shippedSkills.includes('nuxt-catalog'))
   assert.ok(shippedSkills.includes('nuxt-audit'))
   assert.ok(shippedSkills.includes('nuxt-performance'))
-  assert.ok(shippedSkills.includes('nuxt-components-redesign'))
+  for (const skill of ['nuxt-design', 'nuxt-component-harden', 'craft-setup', 'craft-sync', 'craft-explore']) {
+    assert.ok(shippedSkills.includes(skill))
+  }
+  for (const retired of ['design-md', 'nuxt-components-redesign']) {
+    assert.ok(!shippedSkills.includes(retired))
+  }
   assert.ok(shippedSkills.includes('refinar-google-ads'))
   assert.ok(shippedSkills.includes('nuxt-test'))
   assert.ok(shippedSkills.includes('nestjs-debug'))
@@ -72,7 +77,7 @@ test('skills tree ships the unified skill set directly', () => {
 
 test('Codex skills and supporting templates are packaged', () => {
   const files = [
-    'plugins/nimbou-skills/skills/design-md/SKILL.md',
+    'plugins/nimbou-skills/skills/craft-setup/SKILL.md',
     'plugins/nimbou-skills/skills/merge-pr/SKILL.md',
     'scripts/setup-chrome-devtools-wrapper.sh',
     'scripts/setup-codex-skills.sh',
@@ -237,7 +242,7 @@ test('README and installer document Codex distribution', () => {
   const install = read('install.sh')
   assert.match(readme, /Codex skill library/)
   assert.match(readme, /Codex marketplace/)
-  assert.match(readme, /design-md/)
+  assert.match(readme, /craft-setup/)
   assert.match(readme, /merge-pr/)
   assert.match(install, /codex plugin marketplace add/)
   assert.match(install, /codex plugin add nimbou-skills@nimbou-skills/)

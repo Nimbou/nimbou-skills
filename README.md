@@ -52,19 +52,34 @@
 
 ### Nuxt-specific skills
 
-- `nuxt-think`
 - `nuxt-plan`
 - `nuxt-catalog`
 - `nuxt-audit`
 - `nuxt-test`
 - `nuxt-debug`
 - `nuxt-performance` — Lighthouse/PageSpeed, LCP diagnosis and comparable before/after results
-- `nuxt-components-redesign` — branded component demos and application of approved visual/UX changes
 - `nuxt-compact-review` — browser screenshots before/after, compact spacing, aligned layouts and responsive UX fixes on existing pages and components
+
+### Interface and design system workflows
+
+| Skill | When to use it | Example request |
+| --- | --- | --- |
+| [`nuxt-design`](plugins/nimbou-skills/skills/nuxt-design/SKILL.md) | Prototype a page or flow in Nuxt or local HTML, redesign a family of existing components, or apply an approved visual change. | “Redesenhe os cards de projeto e confira títulos longos e ações no celular.” |
+| [`nuxt-component-harden`](plugins/nimbou-skills/skills/nuxt-component-harden/SKILL.md) | Validate and correct an isolated Vue component across defined states and viewports in Vitest Browser Mode. | “Monte o seletor de projetos isolado e valide a matriz de estados no Vitest Browser Mode.” |
+| [`nuxt-think`](plugins/nimbou-skills/skills/nuxt-think/SKILL.md) | Close the design of a Nuxt feature or propose and audit shared tokens, components and variants. | “Defina as variantes do seletor de projetos e identifique as telas afetadas.” |
+| [`craft-setup`](plugins/nimbou-skills/skills/craft-setup/SKILL.md) | Create or refresh `DESIGN.md` and `GUIDELINES.md`. | “Extraia os tokens do tema Vuetify e documente os padrões do app.” |
+| [`craft-sync`](plugins/nimbou-skills/skills/craft-sync/SKILL.md) | Import selected tokens and components into a local guide or reconcile and apply approved guide changes to code. | “Compare as cores do guia com o tema Vuetify e mostre o diff antes de aplicar.” |
+| [`craft-explore`](plugins/nimbou-skills/skills/craft-explore/SKILL.md) | Compare alternative layouts or interactions in an isolated board. | “Mostre três maneiras de organizar os filtros e recomende uma.” |
+
+For a read-only review of an existing Nuxt implementation, use `nuxt-audit`. To verify that a requested feature works in the real browser, use `browser-smoke`.
+
+Existing users can replace `design-md` with `craft-setup` and `nuxt-components-redesign` with `nuxt-design`. The installer reconciles links from this checkout on the next run.
+
+These workflows adapt [Craft at commit `2b1f0e`](https://github.com/diego3g/craft/tree/2b1f0eed509173edebbfe03f7442d72c16377e45). See the [Craft MIT license](plugins/nimbou-skills/LICENSE.craft).
 
 ### Web platform guidance
 
-- `modern-web-guidance` — shared official HTML/CSS/browser API guidance, adapted to Nuxt/Vuetify, SSR, accessibility and browser compatibility. Used by `nuxt-think`, `nuxt-design-posture`, `nuxt-performance`, `nuxt-audit` and `nuxt-components-redesign` when relevant.
+- `modern-web-guidance` — shared official HTML/CSS/browser API guidance, adapted to Nuxt/Vuetify, SSR, accessibility and browser compatibility. Used by `nuxt-think`, `nuxt-design-posture`, `nuxt-performance`, `nuxt-audit` and `nuxt-design` when relevant.
 
 The Nimbou skill calls the official CLI on demand; application repositories need no dependency or second plugin installation. The regular installer distributes this skill alongside the others. Example request: "Use modern-web-guidance para revisar o layout responsivo dos cards, preservando os wrappers existentes."
 
@@ -96,7 +111,7 @@ plugin.
 
 ## Repository Layout
 
-- `plugins/nimbou-skills/skills/` — Codex skill library, including `design-md` and `merge-pr`
+- `plugins/nimbou-skills/skills/` — Codex skill library, including `craft-setup` and `merge-pr`
 - `plugins/nimbou-skills/.codex-plugin/plugin.json` — Codex plugin manifest
 - `.agents/plugins/marketplace.json` — repository marketplace catalog
 - `docs/plans/` — generated plans and design artifacts
@@ -148,8 +163,7 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 
 ## Notes
 
-- `design-md` and `merge-pr` are Codex skills in `plugins/nimbou-skills/skills/`.
-- `/design-md` validates generated `DESIGN.md` files with the official Google CLI via `design.md lint` (or `npx @google/design.md lint` as fallback).
+- `craft-setup` validates generated `DESIGN.md` files with the official Google CLI via `design.md lint` (or `npx @google/design.md lint` as fallback).
 - `change-plan` is the single entry point for a small fullstack change (existing flow or a small new feature). It emits a plan ready for `executing-plans` directly, with no domain-artifact gate, and escalates to `feat-spec` or `fullstack-plan` when a size threshold trips. It replaces the former `change-spec`.
 - `feat-spec` is the mixed-request entry point for a large new feature or a new backend contract. It closes the shared feature contract and ownership boundary first, then detects the backend and hands contract closure to `nestjs-think` or `laravel-think`. Frontend-only requests stay in `nuxt-think`; backend-only requests use the detected backend think skill.
 - `nestjs-think` keeps backend contract and persistence viability together, including Prisma/schema impact when relevant, instead of splitting data modeling into a separate default step.
@@ -166,7 +180,6 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 - `action-plan` and `roadmap-orchestration` share a persistent execution contract. With explicit authorization for execution using persistent chats, monitoring, and human handoffs, the parent delegates automatic milestones to separate Codex chats, verifies their evidence, creates FAEPEN tasks for the exact designated teams, and advances the plan through a 30-minute heartbeat. Resume preserves that authorization, reconciles existing work before dispatch, and does not duplicate uncertain creations. Human task status alone cannot release a dependency. The objective and all active-scope criteria must be proved before the plan is complete and monitoring is paused.
 - `action-plan` retains its management PDF, 5W2H, phased planning and PDCA review; `plan-summary` retains its input. Operational data lives in `docs/plans/<slug>/execucao.json`. Technical milestones still use stack-specific plans and `executing-plans`; PR merge remains with `merge-pr` and its explicit confirmation. Editing or generating a plan does not start execution or schedule monitoring.
 - `nuxt-performance` handles measured loading improvements and performance reports, including responsive image layers, HTML-to-SPA first paint and Lighthouse comparison. Its bundled comparator accepts Lighthouse JSON or a PageSpeed API envelope and flags incompatible configurations; it does not certify equivalent content or attainment of a score target.
-- `nuxt-components-redesign` handles existing component families, local branded demos and application of approved designs. It preserves excluded consumers and real product actions, and verifies desktop/mobile rendering and navigation without requiring an isolated Vitest harness for direct visual edits.
 - `e2e-test-quality` covers broader end-to-end reliability beyond one Nuxt module slice.
 - This fork intentionally removed upstream bootstrap hooks and unsupported harness integrations.
 

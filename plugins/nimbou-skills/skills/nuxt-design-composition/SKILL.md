@@ -16,7 +16,7 @@ Disciplina de composição macro: o que montar, em que hierarquia, em que sequê
 - Definindo o primeiro viewport de uma landing / marketing page.
 - Desenhando a shell de um dashboard, admin ou workspace operacional (product UI).
 - Revisando uma página que "tem as peças certas" mas não se sustenta.
-- `/design-md` precisa preencher a composição visual do `DESIGN.md` e o mapeamento de modo no `GUIDELINES.md`.
+- `/craft-setup` precisa preencher a composição visual do `DESIGN.md` e o mapeamento de modo no `GUIDELINES.md`.
 
 ## When NOT to Use
 
@@ -64,5 +64,5 @@ Se sim, é o problema. Interface distintiva faz alguém perguntar "como isso foi
 - **`nuxt-design-posture`**: responsável pelos micro-detalhes estéticos (fontes, cor, tokens, CSS bans, motion techniques). Esta skill define a arquitetura visual; posture a preenche.
 - **`nuxt-design-architecture`**: responsável pela decomposição em componentes/composables/utils (tiers, SOLID, extração, contratos). Esta skill organiza a página; architecture organiza o código por trás dela.
 - **`nuxt-think`**: consulta esta skill quando o request envolve landing, hero, estrutura de página, ou shell de product UI.
-- **`/design-md` (comando)**: esta skill é fonte da seção **Layout** do `DESIGN.md` e da seção **Mode and Route Mapping** do `GUIDELINES.md`; posture fecha micro estética; architecture fecha implementação.
+- **`/craft-setup` (comando)**: esta skill é fonte da seção **Layout** do `DESIGN.md` e da seção **Mode and Route Mapping** do `GUIDELINES.md`; posture fecha micro estética; architecture fecha implementação.
 - **`DESIGN.md` do projeto**: quando existir, vence em conflito visual.

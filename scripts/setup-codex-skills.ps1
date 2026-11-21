@@ -55,4 +55,16 @@ foreach ($skillsDir in @($SharedSkillsDir)) {
   }
 }
 
+foreach ($retired in @('design-md', 'nuxt-components-redesign')) {
+  $source = Join-Path $SharedSkillsDir $retired
+  if (Test-Path -LiteralPath $source) { continue }
+
+  $target = Join-Path $CodexSkillsDir $retired
+  $item = Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue
+  if ($item.LinkType -eq 'Junction' -and $item.Target -eq $source) {
+    [System.IO.Directory]::Delete($target, $false)
+    Write-Host "Removed retired Codex skill link: $target"
+  }
+}
+
 Write-Host "Configured Codex skills: $CodexSkillsDir"

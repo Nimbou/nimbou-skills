@@ -25,6 +25,7 @@ Olhar o código não é evidência. Navegar uma página real não é o palco —
 
 ## When NOT to Use
 
+- Redesign visual de uma família ou aplicação de uma proposta aprovada → `nimbou-skills:nuxt-design`.
 - Bug pontual já reproduzido numa página real → `nimbou-skills:nuxt-debug`.
 - Cobertura E2E de um fluxo/rota → `nimbou-skills:nuxt-test`.
 - Revisão ampla read-only de uma feature → `nimbou-skills:nuxt-audit`.
@@ -34,7 +35,7 @@ Olhar o código não é evidência. Navegar uma página real não é o palco —
 ## Pré-condições (pare se faltarem)
 
 1. **Vitest Browser Mode** configurado no projeto-alvo, com provider de navegador e screenshots persistidos ou baseline visual comparável. Sem ele, **pare e reporte** — página real nunca é substituta.
-2. **`DESIGN.md` + `GUIDELINES.md`** resolvidos pela área do componente (mesma ordem da `nimbou-skills:nuxt-audit`: do diretório do componente subindo). São a régua do "agradável". Se faltarem, pare e sugira `/design-md`; só siga com aprovação explícita de usar regras genéricas.
+2. **`DESIGN.md` + `GUIDELINES.md`** resolvidos pela área do componente (mesma ordem da `nimbou-skills:nuxt-audit`: do diretório do componente subindo). São a régua do "agradável". Se faltarem, pare e sugira `/craft-setup`; só siga com aprovação explícita de usar regras genéricas.
 3. Edição autônoma de arquivo real → rode em branch/worktree (`nimbou-skills:using-git-worktrees`) e mostre o diff antes de qualquer commit.
 
 ## O loop fechado (núcleo)
@@ -117,7 +118,7 @@ Encerra **somente** quando, ao mesmo tempo:
 | "Uma rodada de validação basta" | Loop fechado exige re-render e estabilização (2 iterações iguais). |
 | "Vou polir mais um pouquinho" | Sem gate, vira gold-plating. Fecha nos gates ou para no teto. |
 | "Criei o teste e já commitei" | Teste browser persistente: confirme antes de commitar. |
-| "Sem guia eu uso meu gosto" | Sem `GUIDELINES.md`, pare e sugira `/design-md`. Gosto em produção é dívida. |
+| "Sem guia eu uso meu gosto" | Sem `GUIDELINES.md`, pare e sugira `/craft-setup`. Gosto em produção é dívida. |
 | "Conserto dentro do componente" (quebra é do pai) | Mascarar quebra estrutural é gambiarra. Reporte a origem real. |
 | "Tá com pressa, teste browser é frescura" | Pressa não rebaixa o palco. Sem Vitest Browser Mode, pare e reporte; não há override por página real. |
 | "Pode commitar que eu confio" | Pré-autorização não dispensa gates nem diff. Feche os gates, mostre o diff, confirme o teste browser — autoridade não colapsa o loop. |

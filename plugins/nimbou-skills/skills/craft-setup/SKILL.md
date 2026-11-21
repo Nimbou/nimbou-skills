@@ -1,13 +1,13 @@
 ---
-name: design-md
-description: Create or refresh DESIGN.md and GUIDELINES.md for a Nuxt/Vuetify app.
+name: craft-setup
+description: Create or refresh DESIGN.md and GUIDELINES.md from an app's identity, code and conventions, with support for Nuxt/Vuetify and local HTML. Use craft-sync for guide-to-code synchronization.
 ---
 
-# Generate DESIGN.MD
+# Craft Setup
 
 **Framework versions:** Use Nuxt 4 for Nuxt work. When Vuetify is involved, use Vuetify 4. Apply these versions to designs, examples, implementation, and reviews.
 
-Use this skill when the user wants frontend design guidance created, refreshed, or standardized for a Nuxt/Vuetify project.
+Use this skill when the user wants frontend design guidance created, refreshed, or standardized. For HTML, derive implementation conventions from the existing markup, CSS and shared patterns. For a design system proposal, consult `nimbou-skills:nuxt-think`. A request to mirror an existing system in an editable local guide belongs to `nimbou-skills:craft-sync`.
 
 ## Core Rules
 
@@ -16,8 +16,8 @@ Use this skill when the user wants frontend design guidance created, refreshed, 
 - Generate concrete guidance, not placeholders
 - Resolve the current file state before deciding what to write
 - Infer a `register` hypothesis early: `brand`, `product`, or `hybrid` with one primary default
-- `DESIGN.md` must follow the Google `design.md` format shape used in `skills/nuxt-audit/reference/design-md-template.md`
-- `GUIDELINES.md` is the local implementation companion, using `skills/nuxt-audit/reference/guidelines-template.md`
+- `DESIGN.md` must follow the Google `design.md` format in the [design template](../nuxt-audit/reference/design-md-template.md)
+- `GUIDELINES.md` is the local implementation companion, using the [guidelines template](../nuxt-audit/reference/guidelines-template.md)
 - If a useful `DESIGN.md` or `GUIDELINES.md` already exists, update it instead of replacing good project-specific guidance with generic prose
 - Never silently overwrite an existing `DESIGN.md` or rewrite an existing `GUIDELINES.md` from scratch
 - Keep visual identity and design tokens in `DESIGN.md`; keep implementation, architecture, audit, and review rules in `GUIDELINES.md`
@@ -94,12 +94,14 @@ Ask only the missing high-impact strategic and qualitative questions, such as:
 - whether there is a named creative north star worth carrying into the `DESIGN.md` prose
 - whether any project-specific patterns should be declared as required defaults in `GUIDELINES.md`
 
+For references the user supplies, inspect the relevant screens before asking and capture the traits to adopt or avoid. In seed mode, document unresolved brand choices as explicit hypotheses. Preserve the product goal, audience, tone and constraints together in the overview and the applicable sections.
+
 Do not ask questions the codebase already answered.
 Do not ask about colors, fonts, spacing, radius, or motion if the codebase already exposes them.
 
 ## Phase 6: Create or Refresh `DESIGN.md`
 
-Use `skills/nuxt-audit/reference/design-md-template.md` as the base structure, and consult `skills/nuxt-audit/reference/design-md-example.md` for the expected level of specificity.
+Use the [design template](../nuxt-audit/reference/design-md-template.md) as the base structure and consult the [design example](../nuxt-audit/reference/design-md-example.md) for the expected level of specificity.
 
 The resulting `DESIGN.md` should:
 - follow the Google `design.md` format: YAML front matter for tokens plus the canonical prose sections
@@ -138,9 +140,9 @@ Validation rules:
 
 ## Phase 7: Create or Refresh `GUIDELINES.md`
 
-Use `skills/nuxt-audit/reference/guidelines-template.md` as the base structure, and consult `skills/nuxt-audit/reference/guidelines-example.md` for granularity.
+Use the [guidelines template](../nuxt-audit/reference/guidelines-template.md) as the base structure and consult the [guidelines example](../nuxt-audit/reference/guidelines-example.md) for granularity.
 
-When writing each section, consult the corresponding skill as the source of generic posture, and let local project decisions override:
+For Nuxt, consult the corresponding skill as the source of generic posture and let local project decisions override:
 
 - **Mode** and **Page Composition** -> `nimbou-skills:nuxt-design-composition`
 - **Visual implementation guardrails** -> `nimbou-skills:nuxt-design-posture`

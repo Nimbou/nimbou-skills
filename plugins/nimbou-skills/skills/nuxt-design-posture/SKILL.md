@@ -15,7 +15,7 @@ Disciplina de micro-detalhes estéticos para interfaces Nuxt/Vuetify: o que pint
 
 - Decidindo fonte, paleta, tokens de espaçamento, easing, bans CSS.
 - `nuxt-design-composition` já fechou a hierarquia macro e falta o tratamento fino.
-- `/design-md` precisa fechar tokens e guardrails visuais concretos no `DESIGN.md`.
+- `/craft-setup` precisa fechar tokens e guardrails visuais concretos no `DESIGN.md`.
 
 ## When NOT to Use
 
@@ -40,7 +40,7 @@ Ao escolher técnicas CSS, cores, tipografia ou movimento com implicações de a
 - **`nuxt-design-composition`**: define a arquitetura visual (hierarquia, hero, sequência, landing vs product UI). Esta skill preenche-a com tokens, fontes, cores e técnicas.
 - **`nuxt-design-architecture`**: decompõe a UI em componentes/composables/utils. Ortogonal a esta skill — arquitetura ≠ estética.
 - **`nuxt-think`**: consulta esta skill ao preencher `Direcao visual` da feature, depois de `nuxt-design-composition` fechar a estrutura.
-- **`/design-md` (comando)**: esta skill é fonte dos tokens e guardrails visuais do `DESIGN.md`.
+- **`/craft-setup` (comando)**: esta skill é fonte dos tokens e guardrails visuais do `DESIGN.md`.
 - **`DESIGN.md` do projeto**: quando existir, vence em conflito. Esta skill justifica, não substitui.
 
 ## Red flags — pare e reconsidere

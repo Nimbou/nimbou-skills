@@ -40,4 +40,13 @@ for skills_dir in "$SHARED_SKILLS_DIR"; do
   done
 done
 
+for retired in design-md nuxt-components-redesign; do
+  target="$CODEX_SKILLS_DIR/$retired"
+  source="$SHARED_SKILLS_DIR/$retired"
+  if [ ! -e "$source" ] && [ -L "$target" ] && [ "$(readlink "$target")" = "$source" ]; then
+    rm -- "$target"
+    echo "Removed retired Codex skill link: $target"
+  fi
+done
+
 echo "Configured Codex skills: $CODEX_SKILLS_DIR"

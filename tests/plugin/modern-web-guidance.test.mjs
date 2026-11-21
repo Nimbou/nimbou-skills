@@ -36,7 +36,7 @@ test('frontend entry points resolve the shared guidance skill shipped in the plu
     'nuxt-design-posture',
     'nuxt-performance',
     'nuxt-audit',
-    'nuxt-components-redesign',
+    'nuxt-design',
   ]
   for (const name of consumers) {
     const content = readFileSync(resolve(skills, name, 'SKILL.md'), 'utf8')
