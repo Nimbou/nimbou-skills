@@ -1,23 +1,24 @@
 ---
 name: idea
-description: Use para esclarecer, desafiar e refinar uma ideia antes de decidir seu próximo passo.
+description: Use para melhorar ou validar uma ideia. Defina o objetivo principal, compare três caminhos antes de refinar, avalie suas consequências e recomende a melhor opção, refutando a proposta inicial quando necessário.
 ---
 
-# Idea Refinement
+# Idea Improvement
 
-Help the user improve an idea through deep questioning, clarification, challenge, and structured refinement.
+Help the user find the best way to achieve their objective. Treat the proposal as a possible approach and challenge its assumptions.
 
-Its default output is a refined understanding of the idea. If the user also requests a document, plan, or implementation, refine what is necessary and then fulfill that explicit request.
+The default output is a recommended approach with its rationale and consequences. If the user also requests a document, plan, or implementation, complete the comparison and refine the chosen approach before fulfilling that request.
 
-Before drawing conclusions or executing a requested next step, expose assumptions, identify weak points, and resolve uncertainty that could materially change the work. If enough is already known, proceed without an artificial interview.
+## Required workflow
 
-## Core Rule
+1. **Define one primary objective per idea.** State the intended outcome independently of the proposed solution. Define an observable success criterion when possible. If you infer the objective, flag that assumption. Ask only about uncertainties that could materially change the objective, feasible options, or recommendation.
+2. **Present exactly three distinct options before refining any of them.** Pick the strongest paths to the same objective. Include the original proposal when it is viable or useful as a baseline. Look at the whole workflow for steps that can be removed, consolidated, or handled by an existing process or system. Consider automation when it can improve the outcome or reduce total work. Evaluate AI when it can solve a specific limitation of simpler methods.
+3. **Assess the consequences of each option and recommend the best fit.** Show how well each option serves the objective, its main trade-off, and what changes in practice. Compare implementation and ongoing effort, cost, reliability, and downstream effects. Consider what can fail, who handles it, and how they recover. Challenge the original premise directly when it fails. If the evidence favors replacing the proposal, say so and explain why the alternative is better. If an untested assumption could change the ranking, state it and suggest the smallest check that would help decide.
+4. **Refine the selected approach.** Present the comparison and recommendation first. Proceed when the evidence supports a decision. When the choice depends on an unresolved constraint or a trade-off the user needs to make, keep the recommendation provisional and ask about that decision.
 
-Ask about doubts that could change the framing, validation, or next decision. Stop when remaining uncertainty can be stated as an assumption to validate without blocking useful progress.
+Use the same sequence for simple ideas, with proportionate detail. If enough is known, advance without an interview. Read the [interview process](reference/interview-process.md) for deeper exploration and examples.
 
-Do not stop questioning just because the idea seems simple. Simple ideas often hide unclear assumptions, missing constraints, weak positioning, or undefined success criteria.
-
-## Primary Mechanism: Structured Text Questionnaire
+## Structured Text Questionnaire
 
 Use plain text or the available question interface, whichever makes the interview easier to answer. Do not let an interface limit hide a material question.
 
@@ -26,7 +27,7 @@ Group related independent questions when that helps the user answer efficiently.
 ### Question format
 
 - Number questions continuously: `1.`, `2.`, `3.` and so on.
-- Offer options when there are real, comparable paths. Three options labeled `A`, `B`, and `C` are useful when they fit; use fewer or a free-text question when they do not. Options must be mutually exclusive unless multiple selection is explicit.
+- Offer options when there are real, comparable answers. Use as many as the question warrants or ask in free text. The three-option requirement applies to solution paths. Answers must be mutually exclusive unless multiple selection is explicit.
 - Recommend an option only when the known goal and evidence support it. State the premise behind the recommendation; do not recommend an answer to a fact only the user knows.
 - Explain the **trade-off or implication** after every option, not merely what its label means.
 - Base a recommendation on the idea's goal, evidence, constraints, risks, and cheapest useful learning. Where evidence is insufficient, surface the uncertainty instead of implying confidence.
@@ -68,21 +69,11 @@ Do not:
 - Ask dependent questions in the same call before their prerequisite answer exists
 - Demand answers to every possible question before making useful progress
 
-The default output is a refined understanding of the idea. An explicit request for another deliverable takes precedence.
-
 ## Operating Mode
 
-Work as a critical but helpful thinking partner.
-
-Your role is to improve the idea, not merely agree with it. Be supportive, but challenge weak assumptions. Point out ambiguity, risks, contradictions, and missing information.
+Challenge weak assumptions directly and explain how they affect the decision. Make the recommendation yourself when the evidence supports it.
 
 Minimize unnecessary round-trips while keeping each batch answerable; leave dependent, branching follow-ups until their prerequisite answers arrive.
-
-## Process
-
-O ciclo completo — restate the idea, mapear o desconhecido, interrogar, estressar, convergir — e o estilo de pergunta esperado (com exemplos de boas e más perguntas) estão em `reference/interview-process.md`.
-
-Consulte essa referência quando a ideia exigir exploração mais profunda. O Doubt Register abaixo acompanha o processo.
 
 ## Doubt Register
 
@@ -97,9 +88,10 @@ Check the points that apply to the type of idea:
 - The problem is clear
 - The target audience is clear
 - The value proposition is clear
-- The expected outcome is clear
+- One primary objective and its expected outcome are clear
 - The constraints are clear
-- The main risks are clear
+- Three distinct options have been compared against the objective
+- The main consequences and risks of each option are clear
 - The riskiest assumptions are identified
 - The first validation step is clear
 - The idea has a reasonable scope
@@ -109,11 +101,10 @@ Do not require a consumer audience or value proposition for every internal or te
 
 ## Final Output
 
-When no material doubt blocks the next decision, summarize the refined idea in plain text.
+When no material doubt blocks the next decision, summarize the objective, the three options and their consequences, the recommended approach and why it wins, and the resulting idea.
 
-Include the applicable points in the final response:
+Include other points when they matter:
 
-- Refined idea
 - Target audience
 - Problem being solved
 - Value proposition
@@ -123,18 +114,3 @@ Include the applicable points in the final response:
 - Recommended next step
 
 Distinguish facts provided by the user from your inferences. Create a document or other deliverable when the user explicitly requested it, using the refinement as input.
-
-## Key Principles
-
-- Ask before solving
-- Ask material independent questions in manageable batches; ask dependent ones after their prerequisite answer
-- Use options and recommendations where they clarify real choices
-- Each option carries its trade-off in the description, not just a restatement of the label
-- Challenge assumptions respectfully
-- Prefer clarity over speed
-- Narrow vague ideas
-- Make trade-offs explicit
-- Avoid premature execution
-- Keep refining until the idea is strong
-- Stop when remaining uncertainty can be recorded without blocking the next useful step
-- The goal is better thinking, not faster output

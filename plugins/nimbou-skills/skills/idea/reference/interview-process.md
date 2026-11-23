@@ -1,6 +1,6 @@
 # idea — processo da entrevista
 
-Referência para ideias que exigem exploração mais profunda. Percorra as etapas pertinentes e ajuste a ordem conforme as respostas; esta lista não é um questionário obrigatório.
+Referência para ideias que exigem exploração mais profunda. Use as etapas de investigação conforme a necessidade. Siga a sequência obrigatória do [SKILL.md](../SKILL.md) para definir o objetivo, comparar três caminhos e recomendar um deles antes de refinar.
 
 ## Process
 
@@ -11,7 +11,7 @@ Begin by briefly restating what you understood. Free-text is appropriate here �
 Your restatement should include:
 
 - The core idea
-- The apparent goal
+- The primary objective, stated as an outcome
 - The target user or audience, if known
 - The expected outcome, if known
 - Any assumptions you are already making
@@ -50,13 +50,11 @@ Clarify who the idea is for. Typical question shapes:
 
 If the target audience is too broad, help narrow it.
 
-### 5. Explore the Desired Outcome
+### 5. Define the Primary Objective
 
-Clarify what success means. Push the user to define success concretely. Where possible, surface measurable definitions as options:
+State one primary objective per idea and make success observable. Identify which other desired outcomes are constraints or secondary benefits. When goals compete and the priority changes the recommendation, ask the user to choose the main goal.
 
-- Main goal (e.g. "Validar demanda" / "Gerar receita" / "Aprender")
-- What would make it fail
-- Time horizon for the outcome
+Clarify the success criterion, what would count as failure, and the time horizon when it affects the choice.
 
 ### 6. Surface Assumptions
 
@@ -76,31 +74,29 @@ Clarify the limits around the idea. Let the user name more than one constraint w
 
 Do not suggest solutions that ignore the user's constraints.
 
-### 9. Explore Alternatives
+### 9. Compare Three Paths
 
-Once the idea is reasonably clear, propose plausible alternative framings. For each option, include:
+Trace how the work would get done from start to finish. Look for steps that can be removed, combined, or handled by a system already in use. Consider rules and existing capabilities, and identify any specific gap that automation or AI might close. Count the work shifted to other people or systems, including review, exceptions, and maintenance.
 
-- What it is in one phrase
-- Main trade-off
-- When to choose it
+Present three genuinely different paths to the same objective. When the constraints rule out immediate rollout, consider viable options such as keeping the current process for the time being or running a small pilot. Make clear which assumptions each path depends on.
 
-Examples of option labels: "Versão menor", "Versão mais ambiciosa", "Versão de nicho", "Versão manual primeiro", "Versão automatizada", "Uso interno", "Público externo".
+Explain how each path works, its main trade-off, its practical consequences, and when it makes sense. Compare the options on factors that could change the decision, such as time, recurring work, cost, accuracy, and effects on downstream users or workflows.
 
-### 10. Stress-Test the Idea
+### 10. Stress-Test the Options and Recommend a Path
 
-Challenge the idea before refining it. Useful question shapes:
+Test the strongest assumption and the most consequential failure in each path. Consider how a failure would be detected, who would handle it, and how it could be corrected. Useful questions:
 
-- "Qual é a objeção mais forte?"
-- "O que precisa ser testado primeiro?"
-- "Qual é a menor versão útil?"
+- "Se essa etapa falhar, quem percebe e como corrige?"
+- "A mudança elimina trabalho ou desloca o esforço para outra pessoa?"
+- "Que resultado de um teste pequeno mudaria a recomendação?"
 
-Be direct and useful, not harsh.
+Recommend the path that best meets the objective under the known constraints. Explain why the original proposal should be replaced when its premise fails or another path delivers a better overall outcome. Say when the recommendation would change.
 
-### 11. Refine the Idea
+### 11. Refine the Selected Approach
 
-After the main doubts are answered, help sharpen the idea. Refinement may include: clearer positioning, better target audience, narrower scope, stronger value proposition, simpler first version, better problem framing, better differentiation, better success criteria, better validation path.
+After presenting the comparison and recommendation, refine the selected approach. Focus on what would make it work, such as a narrower scope, a simpler first version, clearer success criteria, or a better validation path.
 
-When proposing a refinement that changes the user's intent, validate it with the user. Possible responses include accepting it, adjusting it, or rejecting it; do not preselect acceptance without a reason.
+Confirm with the user when a refinement would change their objective.
 
 ### 12. Check for Remaining Doubts
 
@@ -109,14 +105,30 @@ Before ending, perform an internal uncertainty check:
 - Do I understand the problem?
 - Do I understand who this is for?
 - Do I understand why it matters?
-- Do I understand the expected result?
+- Is there one primary objective for each idea, with an observable outcome where possible?
 - Do I understand the constraints?
-- Do I understand the main risks?
+- Did I compare three distinct paths and their main consequences?
+- Can I explain why the recommended path best serves the objective?
 - Do I understand the assumptions?
 - Do I understand what should be tested first?
-- Do I understand what the idea is not?
 
 If an unanswered doubt blocks the next decision, ask about it. Otherwise, record it as an assumption to validate and conclude.
+
+## Exemplo de comparação
+
+A proposta é pedir ao operador que divida um PDF e anexe cada parte separadamente. O processo recebe muitos PDFs, a maioria com separadores padronizados e alguns com páginas digitalizadas.
+
+**Objetivo principal.** Anexar cada documento ao registro correto a partir de um único PDF, reduzindo o tempo de trabalho sem aumentar os erros de vinculação.
+
+| Opção | Consequências |
+| --- | --- |
+| A. Divisão e anexação manuais | Exige pouca implementação e pode atender casos raros. A cada arquivo, o operador repete o trabalho e pode omitir uma página ou escolher o registro errado. |
+| B. Envio único e separação por regras | O sistema lê os separadores e vincula os documentos quando encontra uma referência inequívoca. Reduz o trabalho repetitivo e encaminha páginas sem correspondência para revisão. Mudanças no padrão exigem ajustar as regras. |
+| C. Envio único e classificação assistida por IA | OCR e IA podem sugerir a divisão e a vinculação quando faltam separadores ou o conteúdo varia. Aumentam o custo de processamento e podem sugerir um registro errado. O operador confirma os casos ambíguos antes de gravar os anexos. |
+
+**Recomendação.** Começar pela opção B, pois o padrão existente permite ao sistema assumir a maior parte do trabalho com regras verificáveis. A divisão manual recorrente mantém no operador uma etapa que o sistema já pode executar. Medir o tempo por PDF e a taxa de vinculações erradas ou pendentes com uma amostra representativa. As exceções mostram se vale testar IA.
+
+**Ideia resultante.** O operador envia um único PDF. O sistema separa e vincula os documentos com referência inequívoca e mostra os casos pendentes para conferência.
 
 ## Question Style
 
