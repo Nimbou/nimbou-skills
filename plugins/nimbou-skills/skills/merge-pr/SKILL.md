@@ -10,7 +10,8 @@ Use this skill when the user wants to merge one PR. It is merge-focused and does
 ## Core Rules
 
 - Never merge without showing the effective PR state first
-- Never merge a draft PR
+- Keep draft PRs blocked unless the user explicitly authorizes proceeding despite draft status
+- Resolve conflicts when the user asks to proceed and the resolution is within the PR's scope
 - If immediate merge is blocked, report the blocker without enabling auto-merge
 - Prefer remote PR state over local branch assumptions
 
@@ -27,7 +28,7 @@ If the user did not provide a PR number, ask for it before proceeding.
 Verify:
 
 - PR is open
-- PR is not draft
+- PR is ready for review, or the user explicitly authorized marking the draft ready and proceeding
 - merge conflicts are not reported
 - required checks are complete or passing
 - required approvals or review gates are satisfied when that status is available
@@ -51,6 +52,12 @@ Before any merge action, show:
 Continue directly to execution; do not ask the user to confirm the merge.
 
 ## Phase 4: Execute
+
+### Resolve conflicts and draft status when authorized
+
+For a conflicted PR, use an isolated worktree at the current PR head, merge the current remote base into it, and resolve the conflicts while preserving both sides' intended behavior. Validate the resolution and push it to the PR head branch without force. Recheck the PR and show its updated state.
+
+If draft status is still blocking an explicitly authorized merge, mark the PR ready with `gh pr ready <number>` once conflicts are resolved. Recheck mergeability, required checks, and review gates before merging.
 
 ### Immediate merge
 
