@@ -107,6 +107,19 @@ test('planning skills hand off a saved plan to a separate execution task', () =>
   assert.match(handoff, /working-tree/)
 })
 
+test('native task creation can fall back to a verified CLI session when Desktop cannot start it', () => {
+  const skillPath = 'plugins/nimbou-skills/skills/codex-native-task/'
+  const skill = read(skillPath + 'SKILL.md')
+  const cli = read(skillPath + 'references/interactive-cli.md')
+
+  assert.match(skill, /CLI fallback.*when the Desktop routes are unavailable/)
+  assert.match(skill, /explicitly requires Desktop to own the first turn/)
+  assert.match(skill, /reconcile.*before using the CLI fallback/i)
+  assert.match(cli, /--sandbox danger-full-access --ask-for-approval never/)
+  assert.match(cli, /Verify.*before submitting the first prompt/i)
+  assert.match(cli, /`\/app` opens the saved session/)
+})
+
 test('shared specification skills are shipped with the tree', () => {
   assert.ok(shippedSkills.includes('doc-domain'))
   assert.ok(shippedSkills.includes('doc-gherkin'))
