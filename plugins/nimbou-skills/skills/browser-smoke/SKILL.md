@@ -138,6 +138,8 @@ For a plan-driven smoke, derive flows from the plan's promise rather than
 merely opening changed files. For a direct request, verify the flows the user
 named without imposing a plan.
 
+If the plan has `## Referência visual`, run the visual checks from `## Pos-execucao` alongside the functional checks. Compare the implemented screens with the reference at a matching viewport and state, using equivalent data. Check the promised hierarchy, action placement, density, and responsive behavior. Capture the rendered evidence for each comparison and cite the violated decision on `FAIL`, even when the interaction works. Report visual checks without evidence as concerns and name the missing viewport or state.
+
 Rules:
 
 - Keep a smoke small by default, usually three to six flows. If the user names
@@ -175,6 +177,7 @@ the result.
 Per flow:
   - **<flow sentence>** — PASS | FAIL
     Rota final, screenshot: <path>
+    When the plan has visual checks: viewport, state, reference and observed result.
     Console: <errors, or "limpo">
     On FAIL: what you saw versus what the change promised, in one or two lines.
 

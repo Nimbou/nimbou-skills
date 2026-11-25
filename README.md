@@ -164,13 +164,13 @@ If a project wants a copied local fallback instead of depending on `/var/www/nim
 ## Notes
 
 - `craft-setup` validates generated `DESIGN.md` files with the official Google CLI via `design.md lint` (or `npx @google/design.md lint` as fallback).
-- `change-plan` is the single entry point for a small fullstack change (existing flow or a small new feature). It emits a plan ready for `executing-plans` directly, with no domain-artifact gate, and escalates to `feat-spec` or `fullstack-plan` when a size threshold trips. It replaces the former `change-spec`.
-- `feat-spec` is the mixed-request entry point for a large new feature or a new backend contract. It closes the shared feature contract and ownership boundary first, then detects the backend and hands contract closure to `nestjs-think` or `laravel-think`. Frontend-only requests stay in `nuxt-think`; backend-only requests use the detected backend think skill.
+- `change-plan` handles small fullstack changes. It designs the frontend first, asks about a prototype when the request leaves the choice open, and waits for approval when a prototype is made. The saved plan uses an inline HTTP contract for small API changes. When a size threshold trips, the full specification path retains the prototype decision and review.
+- `feat-spec` starts with the domain and Gherkin, then designs the frontend with `nuxt-think`. It asks whether to build a prototype when the request leaves that choice open. When requested, `nuxt-design` prototypes every in-scope screen and applicable state for user approval before backend design. The workflow ends with one saved `fullstack-plan`.
 - `nestjs-think` keeps backend contract and persistence viability together, including Prisma/schema impact when relevant, instead of splitting data modeling into a separate default step.
-- `doc-openapi` publishes the canonical HTTP transport artifact beside `domain.md` and the approved `.feature` files after the selected backend think skill and before `nuxt-think`.
+- `doc-openapi` publishes the canonical transport artifact for new or changed HTTP contracts after backend design and before `fullstack-plan`. The `feat-spec` prototype can be reviewed from the domain scenarios before this contract is written.
 - `doc-approval` turns a domain spec (`domain.md` + `*.feature`) into a non-technical approval PDF for a business sponsor, translating the Gherkin scenarios into plain business language and keeping the source HTML beside the spec for re-generation.
 - `nestjs-think`/`nestjs-plan` and `laravel-think`/`laravel-plan` are parallel backend workflows; `nuxt-think` and `nuxt-plan` cover Nuxt planning.
-- `fullstack-plan` produces ONE wave-structured plan for NestJS-or-Laravel + Nuxt work. A frontend task depends on the approved `openapi.yaml`, never on a backend task; platform rules stay in the selected backend planner and `nuxt-plan`.
+- `fullstack-plan` produces one wave-structured plan for NestJS-or-Laravel + Nuxt work. Frontend tasks consume the closed HTTP, event, or state contract independently of backend implementation tasks. Visible UI work carries the visual reference into implementation and the final browser smoke.
 - `nestjs-refactor` is the structural cleanup workflow for existing NestJS backends that need SOLID and Clean Architecture restoration in bounded batches.
 - `nestjs-test` handles Gherkin-driven backend coverage, audit routing, and backend test stabilization.
 - `nestjs-debug` handles NestJS, Prisma, and boundary failures across controller, use-case, repository, and transaction layers.

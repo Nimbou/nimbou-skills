@@ -28,18 +28,17 @@ When design choices involve HTML/CSS, browser APIs, accessibility, or browser su
 
 ## Domain Specification Gate
 
-Apply this gate during step 6 of `## Flow`, before considering the design step closed.
+Apply this gate during step 6 of `## Flow`, before considering the design step closed. In the small `change-plan` path, use existing behavior and inline acceptance cases for the affected screens, states, and actions. Return those decisions to `change-plan` without requiring domain or OpenAPI artifacts. Escalated changes use the full gate.
 
 Before closing design decisions:
 
 1. identify the target domain
 2. confirm `docs/domain/<domain>/domain.md` is closed and internally coherent
 3. confirm the relevant `docs/domain/<domain>/*.feature` files are closed and match the domain map
-4. for HTTP features, confirm `docs/domain/<domain>/openapi.yaml` is closed and treat it as the canonical transport contract
-5. after closure, invoke `nuxt-plan`
-- when the work spans both stacks, that planning step is `fullstack-plan`, not `nuxt-plan`: one joint plan whose waves mix frontend and backend. Use `nuxt-plan` directly only for frontend-only work
-6. do not advance to `nuxt-plan` with stale domain, Gherkin, or OpenAPI artifacts
-7. do not redefine the HTTP contract inside `nuxt-think`; consume the closed `openapi.yaml`
+4. in `feat-spec`, design from domain and Gherkin. Record the UI's data, actions, permissions, and outcomes. OpenAPI is not a prerequisite for the prototype. Leave transport details provisional until backend design.
+5. when working after backend design and HTTP changes, confirm `docs/domain/<domain>/openapi.yaml` is closed
+6. do not redefine the HTTP contract inside `nuxt-think`; consume the closed `openapi.yaml` when available, or cite the existing source for an unchanged contract
+7. do not hand off to implementation planning with stale domain, Gherkin, or applicable OpenAPI artifacts
 
 Treat `docs/domain/<domain>/` as the canonical specification bundle for the feature slice. If the request touches multiple independent domains, split them and close one domain at a time.
 
@@ -66,9 +65,20 @@ Treat `docs/domain/<domain>/` as the canonical specification bundle for the feat
    - what existing primitives, shells, or local patterns from `DESIGN.md` and `GUIDELINES.md` must be preferred
    - what visual direction should guide the UI so it does not drift into generic output
    - what local anti-patterns must be avoided, such as rebuilding an existing shell locally, creating a store for simple parent-child communication, or pushing child-only handlers up into the page
-7. Produce the structured output below with explicit references to the closed specification artifacts, publish it, and continue to `nuxt-plan` for frontend-only work or to `fullstack-plan` when backend implementation is also in scope. Do not write code or request approval unless the user explicitly asks for a review checkpoint.
+7. For visible UI work in a joint plan, document the visual reference below. In `feat-spec` and `change-plan`, use the prototype decision from the calling workflow before invoking `nuxt-design`. Record the affected screen and state inventory so the decision and review use the same scope.
+8. Publish the structured output and its references. Return to `feat-spec` or `change-plan` for the prototype decision and later backend handoff. For other workflows, continue to `nuxt-plan` for frontend-only work or to `fullstack-plan` once joint design and contract are closed. Do not write production code during this step. Outside the specified prototype decision and review, pause only for an explicit review checkpoint or a material decision that cannot be resolved from the request and repository.
 
 Consult `nimbou-skills:nuxt-design-architecture`, the local `GUIDELINES.md`, and the local `DESIGN.md` before proposing component splits. `GUIDELINES.md` owns implementation rules; `DESIGN.md` owns visual rules and wins on visual conflict.
+
+## Visual reference for fullstack work
+
+When `feat-spec` or `change-plan` calls for a prototype, use the [prototype for fullstack planning](../nuxt-design/SKILL.md#prototype-for-fullstack-planning) workflow. In other workflows, if the feature creates a screen or materially changes its composition, use `nimbou-skills:nuxt-design` to build an isolated prototype. When a user-supplied design already covers the requested screen, use it as a reference. Use the app shell, components, and tokens from the closest relevant screens and guides. Settle hierarchy and action placement with `nimbou-skills:nuxt-design-composition`, and use `nimbou-skills:nuxt-design-posture` for feature-specific density and visual treatment.
+
+For a prototype, render at representative desktop and supported narrow widths. Use the [visual critique checklist](../nuxt-audit/reference/visual-critique.md) to inspect the renders, repair issues within scope, and rerender the affected states. Save the prototype and evidence at paths accessible from the execution checkout. If the app preview cannot run, use the standalone HTML preview from `nuxt-design`. If no browser can render the preview, provide the runnable preview and name the states and widths that still need visual verification.
+
+When proceeding without a prototype, use the user-supplied design or an existing visual pattern. Reuse it as the reference and specify the exact route or component, what to preserve, and what changes. If no reference exists, record concrete UI decisions and observable checks in the design artifact for the planner.
+
+Under `### Referência visual`, link the reference and available renders. For each affected screen, describe the order of the main regions, the placement of the primary action and feedback, the shared components to use, and the behavior at each relevant width and state. Write observable checks tied to those decisions. For example, a dense review queue might keep search and status filters in a single toolbar on desktop. At 390 px, search stays in the page, filters open in the existing drawer, and long titles wrap without hiding the row action.
 
 ## How To Ask The User
 
@@ -135,9 +145,11 @@ Describe the requested page, flow, or component in one sentence.
 
 ### Pronto para planejar
 
+In the initial `feat-spec` or `change-plan` pass, report readiness for the prototype decision. Apply the planning checks below after the backend handoff, using inline acceptance cases and contract sources for small changes.
+
 - Route ownership, reuse decisions, state behavior, and responsive behavior are closed.
 - `docs/domain/<domain>/domain.md` closed.
 - `docs/domain/<domain>/*.feature` closed.
-- `docs/domain/<domain>/openapi.yaml` closed when the feature changes HTTP.
+- `docs/domain/<domain>/openapi.yaml` closed when the feature changes HTTP. In `feat-spec`, check this at the final planning handoff after backend design.
 - The relevant `DESIGN.md` and `GUIDELINES.md` constraints are closed.
-- `nuxt-plan` should only turn this into exact file paths and execution waves (parallel-by-default, sequential only for contract dependencies).
+- The applicable planner turns the design into exact file paths and execution waves.

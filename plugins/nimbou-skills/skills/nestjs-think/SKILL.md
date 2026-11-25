@@ -18,8 +18,10 @@ Use `change-plan` when a small change or bugfix touches both frontend and backen
 Before closing backend design decisions, locate the nearest backend `GUIDELINES.md` in the target project when one exists. Start from the likely owning module or app, walk upward, and treat the closest file as the primary local implementation source. If none exists, continue with this skill as the fallback baseline.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until the design is written and self-reviewed. A plan is not implementation: continue to `doc-openapi`, `nuxt-think`, and `fullstack-plan` when the user requested that path.
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until the design is written and self-reviewed.
 </HARD-GATE>
+
+When invoked by `feat-spec`, consume the existing domain and Gherkin, the `nuxt-think` decisions, and the recorded prototype decision. When a prototype was built, use the user-approved revision. Surface any conflict with the designed screens, states, or actions to `feat-spec`.
 
 ## Domain Specification Gate
 
@@ -37,8 +39,7 @@ Before writing the implementation plan:
 8. if the request splits into multiple independent domains, split them and close one domain at a time
 9. for HTTP features, close the backend-viable transport contract before handing off to `doc-openapi`
 10. close persistence viability for the chosen backend shape: repositories, transactions, Prisma boundaries, constraints, and schema impact when relevant
-11. only after `doc-openapi` and `nuxt-think` are closed, invoke `nestjs-plan`
-- when the work spans both stacks, that planning step is `fullstack-plan`, not `nestjs-plan`: one joint plan whose waves mix backend and frontend, so frontend tasks consuming the closed `openapi.yaml` do not queue behind backend implementation. Use `nestjs-plan` directly only for backend-only work
+11. follow the transition below when the backend design is closed. Joint work uses `fullstack-plan` after frontend decisions and any new or changed HTTP contract are closed.
 
 Treat the domain directory as the closed specification bundle for backend planning, route coverage, and later test generation. `doc-openapi` publishes the canonical transport contract after this skill closes the backend-viable shape.
 
@@ -211,8 +212,4 @@ After the self-review loop passes, publish the written spec and continue to the 
 
 ## Transition
 
-When the backend design is closed, the next skill is:
-
-- `doc-openapi` for HTTP features
-- `nuxt-think` for frontend design on top of the published contract
-- `nestjs-plan` only after `doc-openapi` and `nuxt-think` are closed when the feature is fullstack
+When backend design closes, return to `feat-spec` for contract publication when HTTP changes, reconciliation with the frontend design, and `fullstack-plan`. For other paths, use `doc-openapi` for a new or changed shared HTTP contract. Use `nuxt-think` when joint frontend design is still pending, then `fullstack-plan`. Use `nestjs-plan` for backend-only work.

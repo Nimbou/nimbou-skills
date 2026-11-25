@@ -12,8 +12,10 @@ Turn backend requests into a closed Laravel design before code changes. Prefer t
 Use `nimbou-cms-think` for the Nimbou CMS shell. Use `nuxt-think` for frontend-only work. For fullstack work, enter through `feat-spec` (large feature) or `change-plan` (small change); backend design still returns here.
 
 <HARD-GATE>
-Do not write implementation code, migrations, or scaffolding until the design is written and self-reviewed. A plan is not implementation: continue to `doc-openapi`, `nuxt-think`, and `fullstack-plan` when the user requested that path.
+Do not write implementation code, migrations, or scaffolding until the design is written and self-reviewed.
 </HARD-GATE>
+
+When invoked by `feat-spec`, consume the existing domain and Gherkin, the `nuxt-think` decisions, and the recorded prototype decision. When a prototype was built, use the user-approved revision. Surface any conflict with the designed screens, states, or actions to `feat-spec`.
 
 ## Specification gate
 
@@ -23,9 +25,7 @@ Before planning:
 2. Use `doc-domain` for `docs/domain/<domain>/domain.md` and `doc-gherkin` for its `*.feature` files; self-review and refresh them when states or invariants change.
 3. Inspect `composer.json`, the nearest `GUIDELINES.md`, routes, controllers, Form Requests, Resources, Policies, models, migrations, jobs, tests, and recent commits.
 4. Close the backend-viable contract and persistence design. For HTTP changes, hand the closed shape to `doc-openapi`.
-5. Use `laravel-plan` only for backend-only work. Fullstack work ends in `fullstack-plan` after `doc-openapi` and `nuxt-think` are closed.
-
-when the work spans both stacks, that planning step is `fullstack-plan`, not separate `laravel-plan` and `nuxt-plan` documents.
+5. Follow the transition below when the backend design is closed. Joint work uses `fullstack-plan` after frontend decisions and any new or changed HTTP contract are closed.
 
 ## Design workflow
 
@@ -33,7 +33,7 @@ when the work spans both stacks, that planning step is `fullstack-plan`, not sep
 2. Present 2–3 grounded approaches with trade-offs. Consider Laravel-native controllers/models, application Actions or Services, and stronger domain isolation only when the domain or existing code justifies it.
 3. Recommend one approach and present the design in reviewable sections.
 4. Save the closed design to `docs/plans/YYYY-MM-DD-<topic>-design.md`.
-5. Self-review it, publish it, and continue to `laravel-plan` for backend-only work or through `doc-openapi` + `nuxt-think` to `fullstack-plan` when Nuxt changes too. Do not pause for approval unless the user explicitly requests a review checkpoint.
+5. Self-review it, publish it, and follow the transition below. Do not pause for approval unless the user explicitly requests a review checkpoint.
 
 ## Decisions to close
 
@@ -58,9 +58,4 @@ Check that there are no placeholders or incompatible interpretations; controller
 
 ## Transition
 
-After closure:
-
-- HTTP contract: `doc-openapi`.
-- Frontend consuming that contract: `nuxt-think`.
-- Backend-only implementation planning: `laravel-plan`.
-- Laravel + Nuxt implementation planning: `fullstack-plan`.
+When backend design closes, return to `feat-spec` for contract publication when HTTP changes, reconciliation with the frontend design, and `fullstack-plan`. For other paths, use `doc-openapi` for a new or changed shared HTTP contract. Use `nuxt-think` when joint frontend design is still pending, then `fullstack-plan`. Use `laravel-plan` for backend-only work.

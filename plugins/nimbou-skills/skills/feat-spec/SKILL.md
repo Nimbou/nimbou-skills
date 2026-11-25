@@ -1,6 +1,6 @@
 ---
 name: feat-spec
-description: Use when a feature changes both Nuxt frontend and a NestJS or Laravel backend, or when the frontend depends on a new backend contract.
+description: Take a large feature spanning Nuxt and a NestJS or Laravel backend from shared specification through one fullstack implementation plan. Use change-plan for small fullstack changes.
 ---
 
 # Feat Spec
@@ -14,14 +14,20 @@ For a small fullstack change — evolving an existing flow or a small new featur
 If the request is frontend-only, use `nuxt-think`.
 If the request is backend-only, use `nestjs-think` or `laravel-think` according to the target repository.
 
-This skill does not replace the platform-specific think skills. It closes the shared feature design once, defines the preliminary contract and ownership boundary between frontend and backend, then hands backend contract closure to the detected backend skill: `nestjs-think` for NestJS or `laravel-think` for Laravel. Inspect the repository; never choose from the feature description alone.
-Close the shared feature design, ownership boundary, and preliminary contract before platform-specific design begins.
+This skill does not replace the platform-specific think skills. Close the shared feature design, ownership boundary, and preliminary contract needed to design the UI. The selected backend skill closes the implementation-ready contract later.
 
-## Continuous Planning Path
+## Planning Path
 
-When the user asks for a feature specification and a `fullstack-plan` in the same request, complete the whole path without pausing for approval: `doc-domain` → `doc-gherkin` → detected backend think skill → `doc-openapi` when HTTP changes → `nuxt-think` → `fullstack-plan`.
+`doc-domain` → `doc-gherkin` → `nuxt-think` → prototype decision → `nestjs-think` or `laravel-think` → `doc-openapi` when HTTP changes → `fullstack-plan`.
 
-Publish each artifact, state the decisions and assumptions made, and continue. Ask the user only when a material ambiguity cannot be resolved from the request or repository; never ask for approval of an intermediate artifact or a next-step confirmation. A user may explicitly request a review checkpoint or ask to stop after a named artifact.
+1. Close the domain and Gherkin. Use `nuxt-think` to design the flow from the scenarios, including the data, permissions, transitions, and feedback the UI needs. Keep endpoints, payload formats, and persistence provisional until backend design.
+2. Resolve whether to prototype. Follow the user's explicit choice. If the choice is unspecified, ask the user whether to build and review the prototype or proceed with the design and available references. Recommend one based on the scope and wait for the answer. If the user explicitly skips the prototype, record the decision and continue to backend design without a prototype approval step.
+3. If the user chooses a prototype, use `nuxt-design` to cover all screens and applicable states of the feature. Present the working demo, the screen and state coverage, and any gaps in browser verification. Wait for explicit user approval before starting backend design. If the user requests changes, update the affected views and ask for approval of that revision. Record the approved reference and the user's decision with the feature artifacts.
+4. Inspect the repository and invoke `nestjs-think` or `laravel-think` for the detected backend. Use the closed scenarios and frontend decisions to close transport and persistence viability.
+5. Check the backend design against the UI decisions and scenarios. Resolve transport details that preserve visible behavior during the handoff. If the contract requires a change to approved screens, states, permissions, or transitions, update the affected specifications and ask the user to approve the affected prototype again before planning.
+6. Publish `openapi.yaml` with `doc-openapi` for new or changed HTTP contracts. For existing HTTP contracts used as-is, cite the existing source. For other integrations, carry the closed event or state contract into the plan. Save the joint plan and stop there unless the user also requested implementation.
+
+Publish each artifact and state the decisions and assumptions made. When waiting for the user's prototype choice or approval, save the current status and reference in the feature's design artifact so the next turn resumes from that point. After the prototype decision and any required prototype approval, continue without another routine approval. Honor any explicit review checkpoint or stopping point.
 
 When handing off to planning, do not introduce **frontend** Playwright/browser E2E as
 implied acceptance work; it requires an explicit user request. Backend verification
@@ -29,19 +35,21 @@ may use Playwright when appropriate. `typecheck` still requires an explicit requ
 
 ## Domain Specification Gate
 
-Before routing to backend contract design:
+Before routing to `nuxt-think`:
 
 1. identify the target domain
 2. use `doc-domain` to create or update `docs/domain/<domain>/domain.md`
 3. use `doc-gherkin` to create or update `docs/domain/<domain>/*.feature`
 4. self-review the domain and Gherkin artifacts for consistency with the feature
-5. close the preliminary HTTP, event, or state contract that both sides need
+5. capture the shared data, actions, and constraints the UI needs and mark transport assumptions as provisional
 6. close the ownership boundary between frontend and backend
-7. close the feature-level states and interactions that are contract-dependent
+7. close the feature-level states and interactions described in the scenarios
 8. do not advance with stale domain or Gherkin artifacts
 9. inventory any concrete seed data, catalog keys, criteria text, mappings, and externally approved values required by the feature. Locate the source in the repository or supplied material and cite its path or attachment identifier in the domain artifact. A list of topics or examples does not establish the exact values. If the values are absent, resolve the business choice with the user before calling the specification closed; do not defer it to a planner or tell an implementer to find an unspecified "approved source"
 
-## Shared Decisions To Close
+## Shared Decisions
+
+Resolve what affects the domain or the UI before frontend design. Carry remaining technical choices to the selected backend skill.
 
 - target feature slice and owning domain
 - preliminary HTTP, event, or state contract shape shared by both sides
@@ -67,26 +75,14 @@ Ask when these decisions remain unresolved:
 
 Lead with a recommendation and its trade-off. Use free-form text for genuinely open answers.
 
-Do not ask for:
+Outside the prototype decision and review described above, do not ask for:
 
 - yes/no confirmations of an obvious next step
 - plan-approval gates — do not ask for them; continue unless the user explicitly requests a review checkpoint
 - requests for prose-level explanations from the user
 
-Do not use this skill to finish Nuxt component decomposition, visual direction, or route-level UI structure. Hand that to `nuxt-think` after `doc-openapi`.
+Hand Nuxt component decomposition, visual direction, and route-level UI structure to `nuxt-think` after Gherkin.
 Do not finish framework-specific backend design here. Hand NestJS/Prisma boundaries to `nestjs-think`, or Laravel/Eloquent/Policy/transaction boundaries to `laravel-think`.
-
-## Flow
-
-1. confirm the request is genuinely mixed
-2. close shared specification and contract decisions
-3. decide which questions are truly shared and which belong to frontend-only or backend-only design
-4. challenge accidental chatty contracts, array-by-array validation loops, and payloads that resend unchanged data
-5. write the shared feature design and ownership boundary in a way both sides can consume
-6. inspect the backend and route the next contract step to `nestjs-think` or `laravel-think`
-7. do not route to `doc-openapi`, `nuxt-think`, or a platform planner directly from this skill
-8. state that planning ends in `fullstack-plan`, not in the platform planners: this feature spans both stacks, so it gets one joint plan whose waves mix backend and frontend work. Two separate plans would queue the frontend behind the whole backend for a dependency it does not have
-9. when the user requested a plan in this run, continue through that path and produce it rather than stopping at any intermediate handoff
 
 ## Output
 
@@ -94,9 +90,10 @@ Produce:
 
 - shared domain summary
 - generated specification artifacts
-- preliminary shared contract
+- preliminary UI requirements and shared assumptions, followed by the closed contract and its source after backend design
 - frontend ownership boundary
 - backend ownership boundary
 - contract-dependent states and error handling
-- required next skill: `nestjs-think` or `laravel-think`, naming the detected backend
-- planning skill once `doc-openapi` and `nuxt-think` are closed: `fullstack-plan` (one joint plan, not separate backend and frontend plans)
+- frontend decisions, visual references, and the prototype decision
+- prototype path, coverage, and approval status when a prototype is requested
+- detected backend, and path and delivery summary of the saved joint `fullstack-plan`

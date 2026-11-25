@@ -11,7 +11,9 @@ Create or update `docs/domain/<domain>/openapi.yaml` as the canonical HTTP trans
 
 ## When to Use
 
-Use this after the selected backend design skill (`nestjs-think` or `laravel-think`) and before `nuxt-think` when the feature adds or changes an HTTP endpoint that frontend and backend both depend on.
+Use this after the selected backend design skill (`nestjs-think` or `laravel-think`) and before `fullstack-plan` when the feature adds or changes a shared HTTP contract. In `feat-spec`, `nuxt-think` and any prototype review have already happened. Check that the published contract supports the agreed data, actions, and visible states. Other workflows may use the closed HTTP contract as an input to `nuxt-think` when frontend design is still pending.
+
+When the feature uses an existing HTTP contract unchanged, cite its canonical source in planning and reuse it. Generate or update the domain YAML only when defining a new or changed contract.
 
 Do not use this skill for:
 
@@ -36,7 +38,7 @@ Do not ask the user to approve `openapi.yaml`. Write it, self-check traceability
 - `docs/domain/<domain>/openapi.yaml`
 - keep it beside `domain.md` and the `.feature` files
 - treat it as the shared transport contract for backend and frontend planning
-- `nuxt-think` should consume this contract instead of redefining it
+- `fullstack-plan` consumes the closed transport contract. When frontend design is already closed, carry the integration details forward without reopening visual approval unless the contract changes the approved behavior.
 
 ## Rules
 

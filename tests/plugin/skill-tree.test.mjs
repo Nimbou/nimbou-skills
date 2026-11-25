@@ -331,7 +331,7 @@ test('browser-smoke ships as a standalone skill and is wired into executing-plan
   // The two rules that keep the lens honest: it never invents a pass, and it never
   // blames the code for an environment that was never usable.
   assert.match(smoke, /health-check|Health check/i)
-  assert.match(smoke, /route the change did NOT touch/i)
+  assert.match(smoke, /route the change did not\s+touch/i)
   assert.match(smoke, /integrated browser/i)
   assert.match(smoke, /Chrome DevTools MCP/)
   assert.ok(
@@ -340,8 +340,8 @@ test('browser-smoke ships as a standalone skill and is wired into executing-plan
   )
   assert.match(
     smoke,
-    /Chrome DevTools MCP[^\n]*fail[\s\S]*integrated browser[^\n]*available[^\n]*not[^\n]*no browser driver/i,
-    'a headful Chrome DevTools failure must not hide an available integrated browser',
+    /If a driver fails to launch or attach, try the next available driver/i,
+    'a failed driver must not hide a later fallback',
   )
   assert.ok(
     smoke.indexOf('Chrome DevTools MCP') < smoke.indexOf('Playwright MCP'),
@@ -349,12 +349,12 @@ test('browser-smoke ships as a standalone skill and is wired into executing-plan
   )
   assert.match(
     smoke,
-    /Playwright MCP[^\n]*fallback[\s\S]*Chrome DevTools MCP[^\n]*not available/i,
+    /Playwright MCP[^\n]*use an already available session as the final fallback/i,
     'Playwright must run when Chrome DevTools MCP is unavailable',
   )
   assert.doesNotMatch(smoke, /Playwright MCP[^\n]*only when the user explicitly requests/i)
   assert.match(smoke, /skip the smoke and say so loudly/i)
-  assert.match(smoke, /do not\s+report the change as verified/i)
+  assert.match(smoke, /Do not install a browser toolchain solely for this smoke or report an\s+unexecuted flow as verified/i)
   assert.match(smoke, /screenshot/i)
   assert.match(smoke, /A claim that a flow worked is not evidence that it ran/)
   // Flows come from the promise, not the file list — the distinction the whole

@@ -38,7 +38,9 @@ It does **not** restate platform rules. They have one home each, and this skill 
 - **Backend tasks** follow exactly one detected planner: `nimbou-skills:nestjs-plan` for NestJS/Prisma or `nimbou-skills:laravel-plan` for Laravel/Eloquent. Inspect the target repository and record the selected backend in the plan header.
 - **Frontend tasks** follow `nimbou-skills:nuxt-plan` — Role Mapping, `DESIGN.md` and `GUIDELINES.md` resolution, component catalog reuse, naming, layout strategy, and `## Pos-execucao`.
 
-Read the relevant planner before writing tasks for that side. When this file and a platform planner disagree about a platform rule, the platform planner wins — this file is only authoritative about how the waves interleave.
+Read the relevant planner before writing tasks for that side. Use its task rules within the joint workflow. The `feat-spec` path reaches the joint plan after the prototype decision, any required prototype approval, and contract closure.
+
+When this file and a platform planner disagree about a platform rule, the platform planner wins — this file is only authoritative about how the waves interleave.
 
 Do not use this skill when the work touches one stack only. Use the detected backend planner or `nuxt-plan` directly.
 
@@ -48,9 +50,9 @@ Do not start until all of these hold. Each is a real input, not a formality:
 
 1. `docs/domain/<domain>/domain.md` exists and is internally coherent.
 2. `docs/domain/<domain>/*.feature` files exist and match the domain map.
-3. `docs/domain/<domain>/openapi.yaml` is closed when the feature changes HTTP. **This is what unblocks the frontend.** Without it there is no joint plan to write — frontend tasks would have nothing stable to consume, and you would be back to serializing.
+3. `docs/domain/<domain>/openapi.yaml` is closed when the feature changes HTTP. For reused HTTP operations, cite the existing contract. For a joint feature without HTTP, cite the closed event or state contract. The applicable contract is the shared input to implementation planning.
 4. `nestjs-think` or `laravel-think` closed backend contract and persistence viability for the detected stack.
-5. `nuxt-think` closed UI structure, reuse, state ownership, and responsive behavior.
+5. `nuxt-think` closed UI structure, reuse, state ownership, and responsive behavior. For `feat-spec` and escalated `change-plan` work, verify the recorded prototype decision and, when a prototype was made, the user approval of the linked revision. Check that UI decisions and contract describe the same actions, permissions, and outcomes. For visible UI changes, consume the [visual reference](../nuxt-think/SKILL.md#visual-reference-for-fullstack-work). Return to the owning design step to resolve inconsistencies before writing affected tasks.
 6. Every exact value needed by a planned seed or migration (keys, labels, criteria, mapping rows) is present in a cited source available to the executor. A domain topic list is not a substitute for the rows. If a source is missing, close that decision upstream before writing an executable plan.
 7. The domain, OpenAPI, target schema, and planned migration/backfill describe compatible persisted values. In particular, a domain snapshot or revision history has a storage and retrieval strategy, and each generated identifier satisfies the API's declared type and format. Resolve mismatches in the design or plan before scheduling waves.
 
@@ -60,11 +62,11 @@ If the contract is not closed, stop and close it. Planning around an unstable co
 
 **A frontend task never declares a dependency on a backend task.**
 
-Its `Consome` field cites the closed `openapi.yaml` — the route, the payload shape, the error mapping — not a use-case, repository, or controller.
+Its `Consome` field cites the closed contract. For HTTP, include the route, payload shape, and error mapping. For event or state contracts, include the applicable declarations and outcomes. Backend implementation classes stay outside this dependency.
 
 When you catch yourself putting a frontend task in a later wave *because a backend task must land first*, one of two things is true, and both are bugs:
 
-- **the contract was not actually closed** — the frontend needs something `openapi.yaml` does not specify. Go back and close it.
+- **the contract was not actually closed** — the frontend needs something the shared contract does not specify. Go back and close it.
 - **the wave boundary is wrong** — the dependency is imagined. Move the task earlier.
 
 The same rule runs the other way: a backend task never waits on a frontend task. If it appears to, the ownership boundary from `feat-spec` or `change-plan` was not closed.
@@ -77,7 +79,7 @@ The default shape. Collapse or split only when a real contract dependency justif
 
 | Onda | Backend | Frontend |
 |---|---|---|
-| 1 — Contratos | stable declarations and migration/schema expand-step defined by the selected backend planner | types derived from `openapi.yaml`, fixtures |
+| 1 — Contratos | stable declarations and migration/schema expand-step defined by the selected backend planner | types derived from the closed contract, fixtures |
 | 2 — Implementação | use-cases, domain services, repository adapters — each with its test, written first, in the same task | components, composables, utils |
 | 3 — Wiring | controllers, guards, filters, interceptors, module composition | page and layout integration, route wiring |
 | Final — Verificação | scoped `nestjs-test` for NestJS, or the declared scoped Laravel verification task | catalog verification; a test command only when explicitly requested |
@@ -107,7 +109,7 @@ Two consequences the plan must be written against:
 
 **Onda 1 carries no tests, on either side.** A test is consumed by no later wave, and splitting it away from its implementation hands RED to one agent and GREEN to another — test-first, not TDD. Backend tests live inside the task that implements the behavior.
 
-**The two stacks are not symmetric about TDD, deliberately.** Backend tasks are test-driven and declare `RED:`. Frontend tasks are not: the browser-level equivalent is a Playwright run, which is too slow and too coupled to serve as a short red-green cycle, and unit-testing a Vuetify component mostly asserts the framework. Frontend quality is covered by the `guidelines-gap-analyzer` pass and by `/code-review`, where reading the diff is cheap and asserting the visual result is expensive — the opposite of the backend's economics. Do not invent a frontend RED to make the table look balanced.
+Backend behavior tasks use test-driven development and declare `RED:`. Frontend tasks use scoped checks and review. The post-execution browser smoke checks the visual result against the plan's reference. Do not invent a frontend RED to make the table look balanced.
 
 **Unbalanced sides are normal and correct.** If the backend needs three implementation waves and the frontend finishes in one, the frontend simply has no task in the later waves. Do not invent frontend work to fill a wave, and do not hold a wave open waiting for symmetry. One shared wave numbering, gaps allowed.
 
@@ -136,6 +138,12 @@ Rules specific to a joint plan:
 - **No task declares a commit step.** `executing-plans` commits once per wave, and a wave now mixes both stacks — per-task commits would interleave two stacks' history.
 - **Roles come from the owning platform planner.** NestJS uses its specialized roles, Laravel currently uses explicit `general-purpose`, and frontend roles come from `nuxt-plan`.
 
+## Visual handoff
+
+For visible UI changes, include `## Referência visual` in the saved plan. Carry over the prototype or reusable reference, its renders when available, and the observable decisions for each screen. Use portable links for local artifacts and carry them with the plan when execution moves to another checkout. Each affected frontend task links to its screen's entry and states what it implements or preserves. Reference files are inputs. Include them in a task's `Files` only when the task will edit them.
+
+Under `## Pos-execucao`, hand the visual checks to `nimbou-skills:browser-smoke` through `executing-plans`. Name the routes, representative data and states, and viewport sizes to compare against the reference. If the prototype lacked a browser render, carry forward that gap and the concrete checks to perform on the implemented screen.
+
 ## Response Shape
 
 ```md
@@ -144,13 +152,15 @@ Rules specific to a joint plan:
 > **For agentic workers:** REQUIRED SUB-SKILL: Use nimbou-skills:executing-plans to implement this plan wave-by-wave. Waves mix backend and frontend tasks. Backend tasks are driven by their failing test; frontend tasks declare `RED: n/a`. The final wave uses the verification contract of the selected backend planner and scoped Nuxt checks.
 
 **Goal:** [one sentence]
-**Contrato:** `docs/domain/<domain>/openapi.yaml` [closed on <date or commit>]
+**Contrato:** [closed HTTP, event, or state contract source and revision]
 **Ownership:** [what frontend owns locally vs what backend owns centrally]
 **Backend planner:** `nestjs-plan` | `laravel-plan`
 
 ## Contexto
 
 ## Decisoes Fechadas
+
+## Referência visual
 
 ## Arquivos
 | Acao | Caminho | Stack | Onda | Role | Consome |
@@ -181,10 +191,10 @@ After writing the plan, check:
 
    Do **not** answer any of these three with "same `Role`, same lane, so it runs in order." That is the trap *Dispatch is not task count* describes: the ordering holds only while the cap keeps both tasks in one implementer, and breaks silently when an unrelated task is added to that role.
 
-2. **Contract closed:** every frontend `Consome` traces to closed `openapi.yaml`, and none names a backend task
+2. **Contract closed:** every frontend `Consome` that uses the shared contract traces to its closed source, and none names a backend task
 3. **No false serialization:** for every frontend task outside Onda 1, the reason it is not earlier is a contract it consumes — not a backend task landing
 4. **Write sets:** no two tasks in the same wave write the same file, across both stacks
-5. **Write-set completeness:** every concrete file path named anywhere in a task's body — including a one-line edit that reads as obvious, like declaring the inverse side of a relation — appears in that task's `Files`. An implementer is instructed to stop rather than write outside its declared boundary, so a path the task mentions but does not declare blocks the wave. "It is one line" is precisely the case that gets left out.
+5. **Write-set completeness:** every concrete file path the task creates, edits, or deletes appears in its `Files`, including one-line changes such as declaring the inverse side of a relation. Cite design references and other read-only inputs in the task body.
 6. **Execution Contract:** every field on every task; no commit steps
 7. **Deletion ownership, across both stacks:** a task that deletes a file owns **every** consumer of it, or lands in a later wave than the last consumer to be migrated. Grep the symbol before planning the delete. Two importers where you assumed one leaves the wave committed with an import pointing at nothing — and in a joint plan the second consumer is often in the *other* stack, or in a slice this feature does not otherwise touch. When the last consumer is out of scope, the deletion is out of scope too: say so in the plan instead of deleting.
 8. **Scoped commands are verified, not composed:** run each distinct `RED`/`Verificação` shape once in the target repo before writing it into a task. Package managers append extra args to the end of the **whole** script string, so a script that chains (`vitest run … && pnpm run lint:rules`) hands your path filter to the *last* command: the runner executes the full suite unfiltered and the trailing command fails on an argument it never expected. `RED` then goes red regardless of the code and `Verificação` can never go green — both fields stop proving anything. Bypass the script and invoke the runner directly when it chains. Copying the form from an older plan in the same repo is not verification; that is how the bug propagates.
@@ -200,6 +210,7 @@ After writing the plan, check:
 18. **Prisma relation closure:** when the backend uses split Prisma schemas, inspect both models for each new or changed relation. Put the inverse model's schema file in the schema task's `Files` and check for same-wave write collisions. A relation whose inverse is omitted is an incomplete write set even when the task body never names that file.
 19. **Cross-artifact reconciliation:** make a compact evidence map under `## Riscos e Validacoes` for each new persisted snapshot, audit record, and generated ID: domain invariant → OpenAPI field and format when exposed → schema columns → writer/backfill → reader → scoped proof. Inspect existing files and the planned migration, not just the task titles. Repair missing columns, history storage, incompatible generated values, and tests before handing the plan to `executing-plans`.
 20. **Scenario-to-file coverage:** for every behavior promised by the domain scenarios or a task checklist, enumerate the existing entrypoints that can perform it and the tests that prove it. Check update and submission paths separately unless repository evidence shows they share the same validation path. Match each required edit against task `Files`; add omitted consumers and tests before handoff. Cite the flow paths under `## Riscos e Validacoes`.
+21. **Visual coverage:** for visible UI changes, each affected screen has a reference accessible from the execution checkout, each affected task names the decisions it implements, and `## Pos-execucao` carries observable browser checks for the relevant viewports and states.
 
 Fix issues inline before handing off.
 
@@ -209,7 +220,7 @@ Upstream — this skill runs after all of them:
 
 - `nimbou-skills:feat-spec` or `nimbou-skills:change-plan` — closes the shared boundary and routes here (`change-plan` routes here only when the change escalates past its small-work threshold)
 - `nimbou-skills:nestjs-think` or `nimbou-skills:laravel-think` — backend contract and persistence viability
-- `nimbou-skills:doc-openapi` — publishes the `openapi.yaml` this plan depends on
+- `nimbou-skills:doc-openapi` — publishes `openapi.yaml` when the feature adds or changes a shared HTTP contract
 - `nimbou-skills:nuxt-think` — UI structure, reuse, state ownership
 
 Deferred to for platform rules:
