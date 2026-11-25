@@ -1,6 +1,6 @@
 # idea — processo da entrevista
 
-Referência para ideias que exigem exploração mais profunda. Use as etapas de investigação conforme a necessidade. Siga a sequência obrigatória do [SKILL.md](../SKILL.md) para definir o objetivo, comparar três caminhos e recomendar um deles antes de refinar.
+Referência para ideias que exigem exploração mais profunda. Use as etapas de investigação conforme a necessidade. Siga o fluxo do [SKILL.md](../SKILL.md) para inferir o objetivo, avaliar a ideia e sugerir uma alternativa quando ela atender claramente melhor ao objetivo.
 
 ## Process
 
@@ -16,7 +16,7 @@ Your restatement should include:
 - The expected outcome, if known
 - Any assumptions you are already making
 
-Then ask the independent questions that could change the next decision, grouped into an answerable batch. Defer questions whose framing depends on an earlier answer. Use options only when they describe real alternatives, as explained in `SKILL.md`.
+If the objective is uncertain and the answer would change your assessment, state the most likely objective and ask the user to confirm or correct it before assessing the idea. Once the objective is clear, group any remaining independent questions that could change the next decision. Defer questions whose framing depends on an earlier answer.
 
 ### 2. Identify the Type of Idea
 
@@ -74,27 +74,25 @@ Clarify the limits around the idea. Let the user name more than one constraint w
 
 Do not suggest solutions that ignore the user's constraints.
 
-### 9. Compare Three Paths
+### 9. Evaluate the Proposal Against the Objective
 
 Trace how the work would get done from start to finish. Look for steps that can be removed, combined, or handled by a system already in use. Consider rules and existing capabilities, and identify any specific gap that automation or AI might close. Count the work shifted to other people or systems, including review, exceptions, and maintenance.
 
-Present three genuinely different paths to the same objective. When the constraints rule out immediate rollout, consider viable options such as keeping the current process for the time being or running a small pilot. Make clear which assumptions each path depends on.
+Assess the original proposal on the factors that could change the decision, such as time, recurring work, cost, accuracy, and effects on downstream users or workflows. Consider other ways to achieve the same objective and surface only the strongest one if its advantage is material under the user's constraints.
 
-Explain how each path works, its main trade-off, its practical consequences, and when it makes sense. Compare the options on factors that could change the decision, such as time, recurring work, cost, accuracy, and effects on downstream users or workflows.
+### 10. Stress-Test the Recommendation
 
-### 10. Stress-Test the Options and Recommend a Path
-
-Test the strongest assumption and the most consequential failure in each path. Consider how a failure would be detected, who would handle it, and how it could be corrected. Useful questions:
+Examine the most consequential assumption and failure mode in the proposal and, when you recommend an alternative, check them for that approach too. Consider how a failure would be detected, who would handle it, and how it could be corrected. Useful questions:
 
 - "Se essa etapa falhar, quem percebe e como corrige?"
 - "A mudança elimina trabalho ou desloca o esforço para outra pessoa?"
 - "Que resultado de um teste pequeno mudaria a recomendação?"
 
-Recommend the path that best meets the objective under the known constraints. Explain why the original proposal should be replaced when its premise fails or another path delivers a better overall outcome. Say when the recommendation would change.
+Explain what would make the proposal succeed or fail. If you found a clearly better approach, explain what it improves and what could change your recommendation. If no clear advantage emerged, focus the assessment on the user's proposal.
 
 ### 11. Refine the Selected Approach
 
-After presenting the comparison and recommendation, refine the selected approach. Focus on what would make it work, such as a narrower scope, a simpler first version, clearer success criteria, or a better validation path.
+Refine the recommended approach when doing so adds value. Focus on what would make it work, such as a narrower scope, a simpler first version, clearer success criteria, or a better validation path.
 
 Confirm with the user when a refinement would change their objective.
 
@@ -107,32 +105,24 @@ Before ending, perform an internal uncertainty check:
 - Do I understand why it matters?
 - Is there one primary objective for each idea, with an observable outcome where possible?
 - Do I understand the constraints?
-- Did I compare three distinct paths and their main consequences?
-- Can I explain why the recommended path best serves the objective?
+- Did I evaluate the proposal and its main consequences against the objective?
+- If I recommend an alternative, can I explain its advantage for that objective?
 - Do I understand the assumptions?
 - Do I understand what should be tested first?
 
 If an unanswered doubt blocks the next decision, ask about it. Otherwise, record it as an assumption to validate and conclude.
 
-## Exemplo de comparação
+## Exemplos
 
-A proposta é pedir ao operador que divida um PDF e anexe cada parte separadamente. O processo recebe muitos PDFs, a maioria com separadores padronizados e alguns com páginas digitalizadas.
+**Objetivo a confirmar.** O usuário diz “Quero mandar um lembrete diário no canal da equipe”. Pergunte “Pelo que entendi, seu objetivo é reduzir os atrasos nas entregas. É isso que você quer resolver?” Aguarde a confirmação para avaliar o lembrete.
 
-**Objetivo principal.** Anexar cada documento ao registro correto a partir de um único PDF, reduzindo o tempo de trabalho sem aumentar os erros de vinculação.
+**Ideia adequada.** O usuário recebe dois PDFs por mês e quer dividir cada um manualmente para vincular os documentos aos registros certos. A divisão manual é proporcional ao volume. Uma conferência dos vínculos antes de concluir atende ao objetivo de evitar anexos incorretos.
 
-| Opção | Consequências |
-| --- | --- |
-| A. Divisão e anexação manuais | Exige pouca implementação e pode atender casos raros. A cada arquivo, o operador repete o trabalho e pode omitir uma página ou escolher o registro errado. |
-| B. Envio único e separação por regras | O sistema lê os separadores e vincula os documentos quando encontra uma referência inequívoca. Reduz o trabalho repetitivo e encaminha páginas sem correspondência para revisão. Mudanças no padrão exigem ajustar as regras. |
-| C. Envio único e classificação assistida por IA | OCR e IA podem sugerir a divisão e a vinculação quando faltam separadores ou o conteúdo varia. Aumentam o custo de processamento e podem sugerir um registro errado. O operador confirma os casos ambíguos antes de gravar os anexos. |
-
-**Recomendação.** Começar pela opção B, pois o padrão existente permite ao sistema assumir a maior parte do trabalho com regras verificáveis. A divisão manual recorrente mantém no operador uma etapa que o sistema já pode executar. Medir o tempo por PDF e a taxa de vinculações erradas ou pendentes com uma amostra representativa. As exceções mostram se vale testar IA.
-
-**Ideia resultante.** O operador envia um único PDF. O sistema separa e vincula os documentos com referência inequívoca e mostra os casos pendentes para conferência.
+**Alternativa claramente melhor.** O usuário quer reduzir o tempo de anexação e propõe que o operador divida centenas de PDFs padronizados à mão. O sistema já consegue ler os separadores e identificar os registros. Sugira o envio único com separação automática e revisão dos casos ambíguos. Isso elimina a divisão repetitiva e concentra a conferência onde o vínculo precisa de confirmação.
 
 ## Question Style
 
-Good when these are three plausible audiences and the recommendation has a stated basis:
+Good when the answers describe plausible audiences and the recommendation has a stated basis:
 
 > **1. Quem sente este problema mais fortemente?**
 > - A. Iniciantes — pouca familiaridade, alta fricção, possível disposição a pagar por simplicidade
@@ -141,7 +131,7 @@ Good when these are three plausible audiences and the recommendation has a state
 
 Good when a concrete answer is not known in advance:
 
-> **2. Qual transformação o usuário deve sentir?** Responda em uma frase; posso comparar opções depois de conhecer seu objetivo.
+> **2. Qual resultado o usuário deve perceber?** Responda em uma frase.
 
 Bad:
 
@@ -151,7 +141,7 @@ Bad:
 
 > "Ótima ideia, aqui está o plano final."
 
-Good when the three alternatives are real and comparable:
+Good when the user's priority changes the recommendation:
 
 > **3. Qual foco vem primeiro?**
 > - A. Validar demanda — reduz investimento inicial, mas adia receita.

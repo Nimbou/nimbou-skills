@@ -1,20 +1,19 @@
 ---
 name: idea
-description: Use para melhorar ou validar uma ideia. Defina o objetivo principal, compare três caminhos antes de refinar, avalie suas consequências e recomende a melhor opção, refutando a proposta inicial quando necessário.
+description: Use para melhorar ou validar uma ideia. Infira o objetivo por trás da proposta, confirme-o se houver dúvida relevante e sugira uma alternativa apenas quando ela atender claramente melhor ao objetivo.
 ---
 
 # Idea Improvement
 
 Help the user find the best way to achieve their objective. Treat the proposal as a possible approach and challenge its assumptions.
 
-The default output is a recommended approach with its rationale and consequences. If the user also requests a document, plan, or implementation, complete the comparison and refine the chosen approach before fulfilling that request.
+The default output is a short assessment of the proposal against the user's objective. If the user also requests a document, plan, or implementation, use the resulting approach to fulfill that request once material doubts are resolved.
 
 ## Required workflow
 
-1. **Define one primary objective per idea.** State the intended outcome independently of the proposed solution. Define an observable success criterion when possible. If you infer the objective, flag that assumption. Ask only about uncertainties that could materially change the objective, feasible options, or recommendation.
-2. **Present exactly three distinct options before refining any of them.** Pick the strongest paths to the same objective. Include the original proposal when it is viable or useful as a baseline. Look at the whole workflow for steps that can be removed, consolidated, or handled by an existing process or system. Consider automation when it can improve the outcome or reduce total work. Evaluate AI when it can solve a specific limitation of simpler methods.
-3. **Assess the consequences of each option and recommend the best fit.** Show how well each option serves the objective, its main trade-off, and what changes in practice. Compare implementation and ongoing effort, cost, reliability, and downstream effects. Consider what can fail, who handles it, and how they recover. Challenge the original premise directly when it fails. If the evidence favors replacing the proposal, say so and explain why the alternative is better. If an untested assumption could change the ranking, state it and suggest the smallest check that would help decide.
-4. **Refine the selected approach.** Present the comparison and recommendation first. Proceed when the evidence supports a decision. When the choice depends on an unresolved constraint or a trade-off the user needs to make, keep the recommendation provisional and ask about that decision.
+1. **Infer the objective behind the idea.** Use the context to identify what the user wants to achieve and state it as an outcome. Make success observable when possible. If different plausible objectives would change the assessment, tell the user which objective you infer and ask whether it is the one they want. Wait for their answer before evaluating the idea. If the objective is clear, proceed directly.
+2. **Evaluate the proposal against that objective.** Explain what would work and challenge assumptions or limitations that could compromise the outcome. Think through the whole workflow, including steps that could be removed or handled by an existing process or system. Consider practical consequences such as effort, cost, reliability, and who handles exceptions in proportion to the idea.
+3. **Recommend one alternative only if it serves the objective clearly better.** Explain the material drawback of the original idea and the practical advantage of the alternative. When the proposal serves the goal well or no alternative has a clear advantage, give your assessment and refine the idea where useful. If an untested assumption could change the recommendation, state it and suggest the smallest useful check. Compare multiple alternatives when the user explicitly requests that comparison.
 
 Use the same sequence for simple ideas, with proportionate detail. If enough is known, advance without an interview. Read the [interview process](reference/interview-process.md) for deeper exploration and examples.
 
@@ -27,7 +26,7 @@ Group related independent questions when that helps the user answer efficiently.
 ### Question format
 
 - Number questions continuously: `1.`, `2.`, `3.` and so on.
-- Offer options when there are real, comparable answers. Use as many as the question warrants or ask in free text. The three-option requirement applies to solution paths. Answers must be mutually exclusive unless multiple selection is explicit.
+- Offer options when there are real, comparable answers. Use as many as the question warrants or ask in free text. Answers must be mutually exclusive unless multiple selection is explicit.
 - Recommend an option only when the known goal and evidence support it. State the premise behind the recommendation; do not recommend an answer to a fact only the user knows.
 - Explain the **trade-off or implication** after every option, not merely what its label means.
 - Base a recommendation on the idea's goal, evidence, constraints, risks, and cheapest useful learning. Where evidence is insufficient, surface the uncertainty instead of implying confidence.
@@ -90,8 +89,8 @@ Check the points that apply to the type of idea:
 - The value proposition is clear
 - One primary objective and its expected outcome are clear
 - The constraints are clear
-- Three distinct options have been compared against the objective
-- The main consequences and risks of each option are clear
+- The proposal has been assessed against the objective
+- The main consequences and risks of the recommendation are clear
 - The riskiest assumptions are identified
 - The first validation step is clear
 - The idea has a reasonable scope
@@ -101,7 +100,7 @@ Do not require a consumer audience or value proposition for every internal or te
 
 ## Final Output
 
-When no material doubt blocks the next decision, summarize the objective, the three options and their consequences, the recommended approach and why it wins, and the resulting idea.
+When no material doubt blocks the next decision, summarize the objective and your assessment of the proposal. If you recommend an alternative, explain why it better achieves the objective. Otherwise, give your verdict on the original idea and include any refinement that helps it succeed.
 
 Include other points when they matter:
 
