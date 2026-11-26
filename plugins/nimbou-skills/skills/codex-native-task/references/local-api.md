@@ -1,6 +1,6 @@
 # Create from Codex CLI through an existing local App Server
 
-Use this route from Codex CLI when a native Desktop tool is unavailable and an existing App Server uses the user's Desktop profile. Codex Desktop itself uses native creation as described in [the skill](../SKILL.md). Keep the existing App Server and session configuration intact. If a suitable server is unavailable, stop before preparing the checkout. The bundled Unix-socket helper was verified against Codex 0.166.0. Use the installed CLI and its generated schema as the authority when the protocol differs.
+Use this route from CLI/TUI when its native creation tool cannot target the required checkout or permissions and an existing App Server serves the active thread. Codex Desktop itself uses native creation as described in [the skill](../SKILL.md). Keep the existing App Server and session configuration intact. If a suitable server is unavailable, stop before preparing the checkout. The bundled Unix-socket helper was verified against Codex 0.166.0. Use the installed CLI and its generated schema as the authority when the protocol differs.
 
 ## Runtime setup
 
@@ -49,11 +49,11 @@ A repeat invocation with an existing ID performs only `thread/read`. `needsRecon
 "$native_task_env/bin/python" "$native_task_skill/scripts/native_task.py" inspect
 ```
 
-Run `inspect` before creating a checkout or task. Verify both reachability and the Desktop profile. For example, pass `--thread <id>` with the ID of an existing thread independently known to be in the target Desktop inventory. The default `CODEX_THREAD_ID` may refer to a CLI thread. `inspect --thread ""` checks reachability only. The helper reads metadata without turns or message contents and can compare cached bridge status with the loopback listener.
+Run `inspect` before creating a checkout or task. Verify reachability and identity using the current CLI/TUI thread ID (the default `CODEX_THREAD_ID` or explicit `--thread <id>`). Match the returned ID and checkout to the active session. `inspect --thread ""` checks reachability only. The helper reads metadata without turns or message contents and can compare cached bridge status with the loopback listener.
 
 Run `python <skill-dir>/scripts/native_task.py detect` separately for launcher classification. It checks allowlisted values of `CODEX_INTERNAL_ORIGINATOR_OVERRIDE` and emits only the classification. The variable is a launcher hint and may be absent on a standard CLI launch. Prefer active host metadata when available. A thread can be reopened in a different client, so its recorded origin and bridge status are useful only for diagnosis. See the [Codex originator implementation](https://github.com/openai/codex/blob/main/codex-rs/login/src/auth/default_client.rs).
 
-A reachable socket alone does not establish Desktop visibility. If the server or Desktop profile cannot be verified, use a verified native Desktop tool if available, or report the limitation. After creation, verify that Desktop can find the new ID when inventory is available. Report which client owns the running turn. Reconcile any uncertain creation before retrying.
+A reachable socket alone is insufficient. If the current session cannot be matched to the server, report the missing evidence. After creation, use the CLI/TUI thread reader or inventory to verify the new ID and turn. Reconcile any uncertain creation before retrying.
 
 ## Protocol changes
 

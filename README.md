@@ -38,7 +38,7 @@
 - `using-git-worktrees`
 - `finishing-a-development-branch`
 - `writing-skills`
-- `codex-native-task` — start a persistent task with Full Access in the interactive CLI by default, including requests from Desktop. Saved CLI sessions can be opened in Desktop. Explicit Desktop-owned tasks use the Desktop route.
+- `codex-native-task` — start a persistent task with Full Access in the interactive CLI by default. Requests to use the current client can use native Desktop creation or the active CLI/TUI's existing App Server. Saved CLI sessions can be opened in Desktop.
 
 ### NestJS-specific skills
 
