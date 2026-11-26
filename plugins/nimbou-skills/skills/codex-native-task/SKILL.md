@@ -1,11 +1,11 @@
 ---
 name: codex-native-task
-description: Use when the user asks to create or start a persistent native task in Codex Desktop or Codex CLI, including tasks with Full Access, a model and reasoning effort, or a Git worktree.
+description: Use when the user asks to create or start a persistent Codex task, including requests from Codex Desktop and tasks with Full Access, a model, reasoning effort, or a Git worktree. The interactive CLI is the default creation route.
 ---
 
 # Create a Native Codex Task
 
-Create and start a persistent Codex task. Prefer Desktop-owned execution when the request comes from Desktop. A saved CLI task can be opened in Desktop and continued there.
+Create and start a persistent Codex task. Default to the interactive CLI, including from Codex Desktop. A saved CLI task can be opened in Desktop and continued there.
 
 ## Close the handoff
 
@@ -17,21 +17,19 @@ Always create with **Full Access** (`sandbox: "danger-full-access"` and `approva
 
 For plan execution, include the saved plan path and source checkout. A task receiving a draft resolves its open decisions before implementation. Task creation requires authorization and does not authorize production changes, deployment, merging, or additional agents. Start the separate task instead of implementing in the source conversation.
 
-## Identify the active client and select a route
+## Select a creation route
 
-Use the host context when it identifies Codex Desktop or Codex CLI. Otherwise run `python <skill-dir>/scripts/native_task.py detect`. It reports the launcher hint as `desktop`, `cli`, or `unknown`. The presence of a binary or daemon does not establish the active client.
-
-| Request or active client | Creation route |
+| Request | Creation route |
 |---|---|
-| Desktop | Use the native task tool when its schema can select Full Access or establish it for this creation request. Otherwise use the Desktop composer through supported UI controls if available. Use the [interactive CLI fallback](references/interactive-cli.md) when the Desktop routes are unavailable. |
-| CLI requested or active | Use the [interactive CLI](references/interactive-cli.md) for a terminal-owned task. From a CLI-originated conversation, the [local App Server helper](references/local-api.md) is available when creating through a verified, already-running server visible to the Desktop profile. Probe that server before using the helper. |
-| Unknown | Prefer an available native route with verifiable settings. The interactive CLI works as a new launch on the intended host. Establish CLI origin before using the App Server helper. |
+| Persistent task, CLI execution, or a saved task that can later be opened in Desktop | Use the [interactive CLI](references/interactive-cli.md) on the intended host. The terminal owns the first turn. |
+| Desktop must own the first turn | Use the Desktop task tool when it can apply and verify Full Access for this request. Use the Desktop composer through supported UI controls when the user requests that interaction. |
+| Local App Server requested from a CLI-originated conversation | Use the [local App Server helper](references/local-api.md) with a verified, already-running server visible to the Desktop profile. Probe that server first. |
 
-If the user explicitly requires Desktop to own the first turn, use only Desktop creation. If the user asks for a persistent task or wants to continue it in Desktop, the CLI fallback is allowed. When a Desktop submission may already have created a task, reconcile the Desktop inventory and receipt before using the CLI fallback.
+If the user explicitly requires Desktop to own the first turn, use only Desktop creation. When a previous submission may already have created a task, reconcile the owning client's inventory and the receipt before starting another session.
 
-For the Desktop composer, select checkout, model, effort, and Full Access before submitting. Full Access on a different chat or settings in `config.toml` alone are insufficient evidence. For the terminal, use a supported CLI launch on the intended host and verify the selected settings in that session before submitting. If neither route can establish Full Access or meet the required ownership, report the specific blocker before submitting a prompt.
+Verify checkout, model, effort, and Full Access in the selected composer or CLI session before submitting. If the selected route cannot establish Full Access or meet the required ownership, report the specific blocker before submitting a prompt. When the local helper requires CLI origin and the host context is inconclusive, use `python <skill-dir>/scripts/native_task.py detect` to check the launcher hint.
 
-Use the standard interactive CLI for the fallback. Do not launch or restart a standalone App Server, open a temporary control socket, or use `codex exec` in place of an interactive or Desktop-owned task.
+Use the standard interactive CLI for terminal-owned tasks. Do not launch or restart a standalone App Server, open a temporary control socket, or use `codex exec` in place of an interactive or Desktop-owned task.
 
 ## Prepare the checkout
 

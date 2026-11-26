@@ -107,14 +107,15 @@ test('planning skills hand off a saved plan to a separate execution task', () =>
   assert.match(handoff, /working-tree/)
 })
 
-test('native task creation can fall back to a verified CLI session when Desktop cannot start it', () => {
+test('native task creation defaults to the interactive CLI and preserves explicit Desktop ownership', () => {
   const skillPath = 'plugins/nimbou-skills/skills/codex-native-task/'
   const skill = read(skillPath + 'SKILL.md')
   const cli = read(skillPath + 'references/interactive-cli.md')
 
-  assert.match(skill, /CLI fallback.*when the Desktop routes are unavailable/)
+  assert.match(skill, /default to the interactive CLI, including from Codex Desktop/i)
   assert.match(skill, /explicitly requires Desktop to own the first turn/)
-  assert.match(skill, /reconcile.*before using the CLI fallback/i)
+  assert.match(skill, /reconcile.*before starting another session/i)
+  assert.match(cli, /default creation route/i)
   assert.match(cli, /--sandbox danger-full-access --ask-for-approval never/)
   assert.match(cli, /Verify.*before submitting the first prompt/i)
   assert.match(cli, /`\/app` opens the saved session/)
