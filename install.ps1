@@ -11,8 +11,31 @@ codex plugin marketplace --help *> $null
 if ($LASTEXITCODE -ne 0) { throw 'Codex marketplace support is required. Install Codex rust-v0.121.0+ or newer.' }
 pnpm install --dir $RepoRoot
 if ($LASTEXITCODE -ne 0) { throw 'pnpm install failed.' }
-codex plugin marketplace add $RepoRoot
-if ($LASTEXITCODE -ne 0) { throw 'Codex marketplace registration failed.' }
+$MarketplaceOutput = codex plugin marketplace add $RepoRoot 2>&1
+if ($LASTEXITCODE -eq 0) {
+  $MarketplaceOutput | Write-Host
+} else {
+  $MarketplaceError = $MarketplaceOutput -join "`n"
+  if ($MarketplaceError -cnotlike "*marketplace 'nimbou-skills' is already added from a different source*") {
+    throw $MarketplaceError
+  }
+  $Marketplaces = codex plugin marketplace list --json
+  if ($LASTEXITCODE -ne 0) { throw $MarketplaceError }
+  $Registration = (($Marketplaces -join "`n") | ConvertFrom-Json).marketplaces |
+    Where-Object { $_.name -ceq 'nimbou-skills' }
+  $PreviousSource = $Registration.marketplaceSource
+  if ($PreviousSource.sourceType -cne 'local' -or -not $PreviousSource.source) { throw $MarketplaceError }
+
+  Write-Host "Switching the nimbou-skills marketplace from $($PreviousSource.source) to $RepoRoot."
+  codex plugin marketplace remove 'nimbou-skills'
+  if ($LASTEXITCODE -ne 0) { throw 'Removing the previous Codex marketplace registration failed.' }
+  codex plugin marketplace add $RepoRoot
+  if ($LASTEXITCODE -ne 0) {
+    codex plugin marketplace add $PreviousSource.source
+    if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not restore the previous marketplace registration.' }
+    throw 'Codex marketplace registration failed.'
+  }
+}
 codex plugin add 'nimbou-skills@nimbou-skills'
 if ($LASTEXITCODE -ne 0) { throw 'Codex plugin installation failed.' }
 $env:npm_config_prefix = $LocalPrefix

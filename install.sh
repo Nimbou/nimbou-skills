@@ -16,7 +16,25 @@ if ! codex plugin marketplace --help >/dev/null 2>&1; then
   exit 1
 fi
 pnpm install --dir "$REPO_ROOT"
-codex plugin marketplace add "$REPO_ROOT"
+if marketplace_output=$(codex plugin marketplace add "$REPO_ROOT" 2>&1); then
+  printf '%s\n' "$marketplace_output"
+elif [[ "$marketplace_output" == *"marketplace 'nimbou-skills' is already added from a different source"* ]] &&
+  marketplace_list=$(codex plugin marketplace list --json) &&
+  previous_source=$(node -e '
+    const { marketplaces } = JSON.parse(require("node:fs").readFileSync(0, "utf8"))
+    const source = marketplaces.find(({ name }) => name === "nimbou-skills")?.marketplaceSource
+    if (source?.sourceType === "local") process.stdout.write(source.source)
+  ' <<< "$marketplace_list") && [[ -n "$previous_source" ]]; then
+  printf 'Switching the nimbou-skills marketplace from %s to %s.\n' "$previous_source" "$REPO_ROOT"
+  codex plugin marketplace remove nimbou-skills
+  if ! codex plugin marketplace add "$REPO_ROOT"; then
+    codex plugin marketplace add "$previous_source" >&2 || printf 'Could not restore the previous marketplace registration.\n' >&2
+    exit 1
+  fi
+else
+  printf '%s\n' "$marketplace_output" >&2
+  exit 1
+fi
 codex plugin add nimbou-skills@nimbou-skills
 (cd "$REPO_ROOT" && npm_config_prefix="$HOME/.local" npm link)
 npm_config_prefix="$HOME/.local" npm install -g @google/design.md
